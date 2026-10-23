@@ -1,5 +1,7 @@
 # esp32s3_ardupilot
 
+**English** | [Tiếng Việt](README.vi.md)
+
 ArduPilot (ArduRover 4.6.3) for the **ESP32-S3** (`esp32s3devkit` board) driving an
 **RC car** (steering servo + ESC, PPM/SBUS receiver) with an MPU9250 IMU on I2C, and:
 
