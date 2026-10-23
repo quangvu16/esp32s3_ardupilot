@@ -1,0 +1,40 @@
+# ArduRover 4.6 on esp32s3devkit: LDROBOT LD14 LiDAR + ZED-F9P RTK GPS
+# RTK corrections from Mission Planner (NTRIP -> MAVLink over WiFi), option A.
+#
+# Load: Mission Planner -> Config -> Full Parameter List -> Load from file
+#       -> Write Params, then reboot the board.
+#
+# Wiring (esp32s3devkit.h, HAL_ESP32_UART_DEVICES):
+#   LD14 TX      -> GPIO5    SERIAL2 (UART2 rx)   LD14 RX unwired
+#   F9P UART1 TX -> GPIO17   SERIAL3 (UART1 rx)
+#   F9P UART1 RX <- GPIO18   SERIAL3 (UART1 tx)
+#   all GNDs joined; F9P D_SEL open/high (UART mode, not SPI)
+
+# ---------------------------------------------------------------- LD14 LiDAR
+SERIAL2_PROTOCOL,11     # Lidar360
+SERIAL2_BAUD,115        # this unit runs the LD14 profile at 115200; a true LD14P is 230
+PRX1_TYPE,19            # LD14 (LD06 parser + ranging-centre angle correction)
+PRX1_ORIENT,0           # 0 = right side up, 1 = upside down
+PRX1_YAW_CORR,0         # deg; set so an object straight ahead reads 0 in the proximity view
+PRX1_MIN,0.05           # m; ignore returns from the robot's own chassis
+PRX1_MAX,8              # m; LD14 rated range
+
+# ---------------------------------------------------------------- ZED-F9P GPS
+SERIAL3_PROTOCOL,5      # GPS (board default, set explicitly)
+SERIAL3_BAUD,230        # ArduPilot autobauds the F9P, then switches it to this
+GPS1_TYPE,2             # u-blox
+GPS_AUTO_CONFIG,1       # ArduPilot sets the F9P's UBX messages and rates over SERIAL3
+GPS1_RATE_MS,200        # 5 Hz; F9P can do 100 (10 Hz) if wanted
+GPS1_GNSS_MODE,0        # receiver default constellations (F9P: GPS+GLO+GAL+BDS)
+GPS_INJECT_TO,127       # pass RTCM from Mission Planner to all GPSes (the only one here)
+
+# ---------------------------------------------------------------- MAVLink link
+# SERIAL1 is the WiFi link (HAL_ESP32_WIFI): Mission Planner connects over it,
+# and the NTRIP corrections arrive as GPS_RTCM_DATA on the same link.
+SERIAL1_PROTOCOL,2      # MAVLink2
+
+# ---------------------------------------------------------------- avoidance
+# Use the LiDAR for Rover's obstacle avoidance; uncomment once PRX1_YAW_CORR is
+# verified, or the robot will avoid obstacles that are not where it thinks.
+#AVOID_ENABLE,3          # fence + proximity
+#AVOID_MARGIN,0.5        # m kept from obstacles
