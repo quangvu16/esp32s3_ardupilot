@@ -24,6 +24,10 @@ lại trong [README_ArduPilot.md](README_ArduPilot.md).
 
 ## Đấu dây
 
+![Sơ đồ đấu dây: ESP32-S3 DevKitC-1 với servo, ESC, bộ thu RC, MPU9250, ZED-F9P, LiDAR LD14 và nguồn](docs/wiring.svg)
+
+(Nhãn trong sơ đồ bằng tiếng Anh; bảng bên dưới có đầy đủ thông tin bằng tiếng Việt.)
+
 | Thiết bị | Chân | ESP32-S3 | Cổng ArduPilot |
 | --- | --- | --- | --- |
 | Servo lái | tín hiệu | GPIO11 | SERVO1 |

@@ -24,6 +24,8 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 
 ## Wiring
 
+![Wiring diagram: ESP32-S3 DevKitC-1 with servo, ESC, RC receiver, MPU9250, ZED-F9P, LD14 LiDAR and power](docs/wiring.svg)
+
 | Device | Pin | ESP32-S3 | ArduPilot port |
 | --- | --- | --- | --- |
 | Steering servo | signal | GPIO11 | SERVO1 |

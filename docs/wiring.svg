@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1060" viewBox="0 0 1300 1060" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14">
+<rect width="1300" height="1060" fill="#ffffff"/>
+<text x="40" y="44" font-size="24" font-weight="600" fill="#1f2328">ESP32-S3 RC rover — wiring</text>
+<text x="40" y="70" fill="#59636e">ArduRover 4.6 · esp32s3devkit firmware · board drawn as ESP32-S3-DevKitC-1 (other S3 boards: match by GPIO number)</text>
+<line x1="820" y1="40" x2="842" y2="40" stroke="#d4700a" stroke-width="4"/>
+<text x="848" y="45" fill="#1f2328">PWM out</text>
+<line x1="922" y1="40" x2="944" y2="40" stroke="#8250df" stroke-width="4"/>
+<text x="950" y="45" fill="#1f2328">RC in</text>
+<line x1="1008" y1="40" x2="1030" y2="40" stroke="#0f8a7e" stroke-width="4"/>
+<text x="1036" y="45" fill="#1f2328">I2C</text>
+<line x1="1078" y1="40" x2="1100" y2="40" stroke="#0969da" stroke-width="4"/>
+<text x="1106" y="45" fill="#1f2328">UART</text>
+<line x1="1156" y1="40" x2="1178" y2="40" stroke="#cf222e" stroke-width="4"/>
+<text x="1184" y="45" fill="#1f2328">+5 V</text>
+<line x1="1234" y1="40" x2="1256" y2="40" stroke="#1f2328" stroke-width="4"/>
+<text x="1262" y="45" fill="#1f2328">GND</text>
+<rect x="580" y="118" width="280" height="656" rx="10" fill="#1b4d3e"/>
+<rect x="620" y="124" width="200" height="34" rx="4" fill="#2f6b58"/>
+<text x="720" y="146" text-anchor="middle" fill="#e6f4ea" font-size="12">antenna</text>
+<text x="720" y="440" text-anchor="middle" fill="#e6f4ea" font-size="16" font-weight="600">ESP32-S3</text>
+<text x="720" y="460" text-anchor="middle" fill="#e6f4ea" font-size="12">DevKitC-1 N8R8</text>
+<text x="720" y="478" text-anchor="middle" fill="#e6f4ea" font-size="12">(top view)</text>
+<rect x="626" y="756" width="40" height="24" rx="3" fill="#c9d1d9"/>
+<rect x="774" y="756" width="40" height="24" rx="3" fill="#c9d1d9"/>
+<text x="720" y="800" text-anchor="middle" fill="#1f2328" font-size="13">USB connectors: flash via the one marked <tspan font-weight="600">UART</tspan></text>
+<circle cx="596" cy="180" r="6" fill="#cf222e" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="184" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">3V3</text>
+<circle cx="596" cy="206" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="210" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">3V3</text>
+<circle cx="596" cy="232" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="236" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">RST</text>
+<circle cx="596" cy="258" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="262" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO4</text>
+<circle cx="596" cy="284" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="288" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO5</text>
+<circle cx="596" cy="310" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="314" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO6</text>
+<circle cx="596" cy="336" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="340" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO7</text>
+<circle cx="596" cy="362" r="6" fill="#0f8a7e" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="366" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO15</text>
+<circle cx="596" cy="388" r="6" fill="#0f8a7e" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="392" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO16</text>
+<circle cx="596" cy="414" r="6" fill="#0969da" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="418" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO17</text>
+<circle cx="596" cy="440" r="6" fill="#0969da" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="444" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO18</text>
+<circle cx="596" cy="466" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="470" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO8</text>
+<circle cx="596" cy="492" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="496" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO3</text>
+<circle cx="596" cy="518" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="522" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO46</text>
+<circle cx="596" cy="544" r="6" fill="#d4700a" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="548" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO9</text>
+<circle cx="596" cy="570" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="574" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO10</text>
+<circle cx="596" cy="596" r="6" fill="#d4700a" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="600" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO11</text>
+<circle cx="596" cy="622" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="626" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO12</text>
+<circle cx="596" cy="648" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="652" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO13</text>
+<circle cx="596" cy="674" r="6" fill="#8250df" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="678" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO14</text>
+<circle cx="596" cy="700" r="6" fill="#cf222e" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="704" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">5V</text>
+<circle cx="596" cy="726" r="6" fill="#1f2328" stroke="#0b2e24" stroke-width="1"/>
+<text x="608" y="730" text-anchor="start" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GND</text>
+<circle cx="844" cy="180" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="184" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GND</text>
+<circle cx="844" cy="206" r="6" fill="#e6f4ea" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="210" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">43 TX</text>
+<circle cx="844" cy="232" r="6" fill="#e6f4ea" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="236" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">44 RX</text>
+<circle cx="844" cy="258" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="262" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO1</text>
+<circle cx="844" cy="284" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="288" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO2</text>
+<circle cx="844" cy="310" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="314" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO42</text>
+<circle cx="844" cy="336" r="6" fill="#0969da" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="340" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="600">GPIO41</text>
+<circle cx="844" cy="362" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="366" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO40</text>
+<circle cx="844" cy="388" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="392" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO39</text>
+<circle cx="844" cy="414" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="418" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO38</text>
+<circle cx="844" cy="440" r="6" fill="#9aa1a9" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="444" text-anchor="end" fill="#9aa1a9" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400" text-decoration="line-through">GPIO37</text>
+<circle cx="844" cy="466" r="6" fill="#9aa1a9" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="470" text-anchor="end" fill="#9aa1a9" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400" text-decoration="line-through">GPIO36</text>
+<circle cx="844" cy="492" r="6" fill="#9aa1a9" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="496" text-anchor="end" fill="#9aa1a9" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400" text-decoration="line-through">GPIO35</text>
+<circle cx="844" cy="518" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="522" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO0</text>
+<circle cx="844" cy="544" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="548" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO45</text>
+<circle cx="844" cy="570" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="574" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO48</text>
+<circle cx="844" cy="596" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="600" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO47</text>
+<circle cx="844" cy="622" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="626" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO21</text>
+<circle cx="844" cy="648" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="652" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO20</text>
+<circle cx="844" cy="674" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="678" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GPIO19</text>
+<circle cx="844" cy="700" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="704" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GND</text>
+<circle cx="844" cy="726" r="6" fill="#6e9a8c" stroke="#0b2e24" stroke-width="1"/>
+<text x="832" y="730" text-anchor="end" fill="#e6f4ea" font-size="12" font-family="Consolas, Menlo, monospace" font-weight="400">GND</text>
+<rect x="60" y="236" width="300" height="168" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="74" y="260" font-size="16" font-weight="600" fill="#1f2328">MPU9250 IMU</text>
+<text x="74" y="278" font-size="12" fill="#59636e">I2C address 0x68</text>
+<text x="346" y="366" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#0f8a7e">SCL  ◀</text>
+<text x="346" y="392" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#0f8a7e">SDA  ◀▶</text>
+<text x="74" y="294" font-size="13" fill="#1f2328">VCC ← 3V3 (top-left pin)</text>
+<text x="74" y="316" font-size="13" fill="#1f2328">GND ← GND · AD0 ← GND</text>
+<text x="74" y="336" font-size="12" fill="#59636e">BMP280 (optional): same 4 wires, addr 0x77</text>
+<polyline points="360,362 596,362" fill="none" stroke="#0f8a7e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="360,388 596,388" fill="none" stroke="#0f8a7e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="210,236 210,214 536,214 536,180 596,180" fill="none" stroke="#cf222e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="60" y="420" width="300" height="104" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="74" y="444" font-size="16" font-weight="600" fill="#1f2328">ZED-F9P RTK GPS</text>
+<text x="74" y="462" font-size="12" fill="#59636e">D_SEL open (UART mode)</text>
+<text x="346" y="476" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#0969da">UART1 TX  ▶</text>
+<text x="346" y="502" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#0969da">UART1 RX  ◀</text>
+<text x="74" y="516" font-size="12" fill="#59636e">VCC/GND from 5 V rail</text>
+<polyline points="596,414 480,414 480,472 360,472" fill="none" stroke="#0969da" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="596,440 510,440 510,498 360,498" fill="none" stroke="#0969da" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="60" y="536" width="300" height="74" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="74" y="560" font-size="16" font-weight="600" fill="#1f2328">ESC (throttle)</text>
+<text x="74" y="578" font-size="12" fill="#59636e">BEC 5 V out → servo, receiver</text>
+<text x="346" y="588" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#d4700a">signal  ◀</text>
+<polyline points="596,544 480,544 480,584 360,584" fill="none" stroke="#d4700a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="60" y="620" width="300" height="74" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="74" y="644" font-size="16" font-weight="600" fill="#1f2328">Steering servo</text>
+<text x="74" y="662" font-size="12" fill="#59636e">+ / − from ESC BEC</text>
+<text x="346" y="672" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#d4700a">signal  ◀</text>
+<polyline points="596,596 480,596 480,668 360,668" fill="none" stroke="#d4700a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="60" y="704" width="300" height="74" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="74" y="728" font-size="16" font-weight="600" fill="#1f2328">RC receiver</text>
+<text x="74" y="746" font-size="12" fill="#59636e">+ / − from ESC BEC · signal ≤ 3.3 V</text>
+<text x="346" y="756" text-anchor="end" font-size="13" font-family="Consolas, Menlo, monospace" fill="#8250df">PPM/SBUS  ▶</text>
+<polyline points="596,674 480,674 480,752 360,752" fill="none" stroke="#8250df" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="596,700 530,700 530,900" fill="none" stroke="#cf222e" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="596,726 550,726 550,900" fill="none" stroke="#1f2328" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="960" y="266" width="300" height="140" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="974" y="290" font-size="16" font-weight="600" fill="#1f2328">LD14 / LD14P LiDAR</text>
+<text x="974" y="308" font-size="12" fill="#59636e">115200 baud · free-running</text>
+<text x="974" y="340" font-size="13" font-family="Consolas, Menlo, monospace" fill="#0969da">▶  TX</text>
+<text x="974" y="366" font-size="13" fill="#59636e">RX: not connected</text>
+<text x="974" y="388" font-size="13" fill="#1f2328">VCC 5 V (~200 mA), GND</text>
+<polyline points="960,336 844,336" fill="none" stroke="#0969da" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="960" y="470" width="300" height="190" rx="8" fill="#fff8c5" stroke="#d4a72c"/>
+<text x="974" y="496" font-size="13" font-weight="600" fill="#1f2328">Do not use:</text>
+<text x="974" y="519" font-size="13" font-weight="400" fill="#1f2328">• GPIO35-37: octal PSRAM on N8R8</text>
+<text x="974" y="542" font-size="13" font-weight="400" fill="#1f2328">• GPIO43/44: console (UART port)</text>
+<text x="974" y="565" font-size="13" font-weight="400" fill="#1f2328">• GPIO0, 3, 45, 46: strapping pins</text>
+<text x="974" y="588" font-size="13" font-weight="400" fill="#1f2328">• GPIO19/20: native USB</text>
+<text x="974" y="611" font-size="13" font-weight="600" fill="#1f2328">Analog pins 1-4 (BATT_VOLT_PIN):</text>
+<text x="974" y="634" font-size="13" font-weight="400" fill="#1f2328">  GPIO5, 4, 2, 1 — max 3.1 V</text>
+<text x="40" y="850" font-size="17" font-weight="600" fill="#1f2328">Power</text>
+<rect x="60" y="880" width="150" height="58" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="135.0" y="905" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">Battery</text>
+<text x="135.0" y="924" text-anchor="middle" font-size="12" fill="#59636e">2S/3S LiPo</text>
+<line x1="210" y1="909" x2="232" y2="909" stroke="#cf222e" stroke-width="3"/>
+<polygon points="240,909 230,903 230,915" fill="#cf222e"/>
+<rect x="240" y="880" width="220" height="58" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="350.0" y="905" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">ESC</text>
+<text x="350.0" y="924" text-anchor="middle" font-size="12" fill="#59636e">BEC 5 V → servo + receiver</text>
+<polyline points="135,938 135,990 585,990 585,966" fill="none" stroke="#cf222e" stroke-width="3"/>
+<polygon points="585,958 579,970 591,970" fill="#cf222e"/>
+<rect x="470" y="900" width="230" height="58" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="585.0" y="925" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">5 V regulator (≥ 1 A)</text>
+<text x="585.0" y="944" text-anchor="middle" font-size="12" fill="#59636e">out → board 5V + GND pins</text>
+<text x="524" y="894" text-anchor="end" font-size="12" fill="#cf222e">5V</text>
+<text x="556" y="894" font-size="12" fill="#1f2328">GND</text>
+<line x1="700" y1="929" x2="752" y2="929" stroke="#cf222e" stroke-width="3"/>
+<polygon points="760,929 750,923 750,935" fill="#cf222e"/>
+<rect x="760" y="900" width="250" height="58" rx="8" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+<text x="885.0" y="925" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">LiDAR VCC, F9P VCC</text>
+<text x="885.0" y="944" text-anchor="middle" font-size="12" fill="#59636e">same 5 V rail (or USB on the bench)</text>
+<text x="60" y="1042" font-size="14" font-weight="600" fill="#1f2328">All grounds joined: battery, ESC, servo, receiver, ESP32, IMU, LiDAR, GPS. Never power servos from the ESP32.</text>
+</svg>
