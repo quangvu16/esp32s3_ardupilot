@@ -2,9 +2,47 @@
 """Generate docs/wiring.svg for the esp32s3devkit RC rover build.
 
 Usage: python3 docs/gen_wiring.py docs/wiring.svg
+       python3 docs/gen_wiring.py docs/wiring.vi.svg vi     (Vietnamese labels)
 Pin assignments must match libraries/AP_HAL_ESP32/boards/esp32s3devkit.h.
 """
 import sys
+
+LANG = sys.argv[2] if len(sys.argv) > 2 else "en"
+VI = {
+    "ESP32-S3 RC rover — wiring": "ESP32-S3 xe RC — sơ đồ đấu dây",
+    "ArduRover 4.6 · esp32s3devkit firmware · board drawn as ESP32-S3-DevKitC-1 (other S3 boards: match by GPIO number)":
+        "ArduRover 4.6 · firmware esp32s3devkit · vẽ theo board ESP32-S3-DevKitC-1 (board S3 khác: đối chiếu theo số GPIO)",
+    "PWM out": "PWM ra", "RC in": "RC vào",
+    "antenna": "ăng-ten", "(top view)": "(nhìn từ trên)",
+    "USB connectors: flash via the one marked": "Cổng USB: nạp qua cổng ghi",
+    "I2C address 0x68": "I2C, địa chỉ 0x68",
+    "VCC ← 3V3 (top-left pin)": "VCC ← 3V3 (chân trên cùng bên trái)",
+    "BMP280 (optional): same 4 wires, addr 0x77": "BMP280 (tùy chọn): chung 4 dây, địa chỉ 0x77",
+    "D_SEL open (UART mode)": "D_SEL để hở (chế độ UART)",
+    "VCC/GND from 5 V rail": "VCC/GND từ đường 5 V",
+    "ESC (throttle)": "ESC (ga)", "signal  ◀": "tín hiệu  ◀",
+    "BEC 5 V out → servo, receiver": "BEC 5 V → servo, bộ thu",
+    "Steering servo": "Servo lái", "+ / − from ESC BEC": "+ / − từ BEC của ESC",
+    "RC receiver": "Bộ thu RC",
+    "+ / − from ESC BEC · signal ≤ 3.3 V": "+ / − từ BEC · tín hiệu ≤ 3,3 V",
+    "115200 baud · free-running": "115200 baud · tự phát dữ liệu",
+    "RX: not connected": "RX: không nối",
+    "Do not use:": "Không dùng:",
+    "• GPIO35-37: octal PSRAM on N8R8": "• GPIO35-37: PSRAM octal trên N8R8",
+    "• GPIO43/44: console (UART port)": "• GPIO43/44: console (cổng UART)",
+    "• GPIO0, 3, 45, 46: strapping pins": "• GPIO0, 3, 45, 46: chân strapping",
+    "• GPIO19/20: native USB": "• GPIO19/20: USB gốc",
+    "Analog pins 1-4 (BATT_VOLT_PIN):": "Chân analog 1-4 (BATT_VOLT_PIN):",
+    "  GPIO5, 4, 2, 1 — max 3.1 V": "  GPIO5, 4, 2, 1 — tối đa 3,1 V",
+    "Power": "Nguồn", "Battery": "Pin",
+    "BEC 5 V → servo + receiver": "BEC 5 V → servo + bộ thu",
+    "5 V regulator (≥ 1 A)": "Mạch ổn áp 5 V (≥ 1 A)",
+    "out → board 5V + GND pins": "ra → chân 5V + GND của board",
+    "same 5 V rail (or USB on the bench)": "chung đường 5 V (hoặc USB khi thử)",
+    "All grounds joined: battery, ESC, servo, receiver, ESP32, IMU, LiDAR, GPS. Never power servos from the ESP32.":
+        "Nối chung mọi mass (GND): pin, ESC, servo, bộ thu, ESP32, IMU, LiDAR, GPS. Không bao giờ cấp nguồn servo từ ESP32.",
+}
+def T(s): return VI.get(s, s) if LANG == "vi" else s
 
 W, H = 1300, 1060
 out = []
@@ -38,12 +76,12 @@ add(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="
     f'font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14">')
 add(f'<rect width="{W}" height="{H}" fill="{C["bg"]}"/>')
 add(f'<text x="40" y="44" font-size="24" font-weight="600" fill="{C["ink"]}">'
-    f'ESP32-S3 RC rover — wiring</text>')
-add(f'<text x="40" y="70" fill="{C["muted"]}">ArduRover 4.6 · esp32s3devkit firmware · '
-    f'board drawn as ESP32-S3-DevKitC-1 (other S3 boards: match by GPIO number)</text>')
+    f'{T("ESP32-S3 RC rover — wiring")}</text>')
+add(f'<text x="40" y="70" fill="{C["muted"]}">'
+    f'{T("ArduRover 4.6 · esp32s3devkit firmware · board drawn as ESP32-S3-DevKitC-1 (other S3 boards: match by GPIO number)")}</text>')
 
 # legend
-lg = [("pwm", "PWM out"), ("rc", "RC in"), ("i2c", "I2C"), ("uart", "UART"), ("pwr", "+5 V"),
+lg = [("pwm", T("PWM out")), ("rc", T("RC in")), ("i2c", "I2C"), ("uart", "UART"), ("pwr", "+5 V"),
       ("gnd", "GND")]
 x = 820
 for k, t in lg:
@@ -56,18 +94,18 @@ add(f'<rect x="{BX0}" y="{PY0-62}" width="{BX1-BX0}" height="{py(21)-PY0+110}" r
     f'fill="{C["board"]}"/>')
 add(f'<rect x="{BX0+40}" y="{PY0-56}" width="{BX1-BX0-80}" height="34" rx="4" fill="#2f6b58"/>')
 add(f'<text x="{(BX0+BX1)//2}" y="{PY0-34}" text-anchor="middle" fill="{C["boardtxt"]}" '
-    f'font-size="12">antenna</text>')
+    f'font-size="12">{T("antenna")}</text>')
 add(f'<text x="{(BX0+BX1)//2}" y="{py(10)}" text-anchor="middle" fill="{C["boardtxt"]}" '
     f'font-size="16" font-weight="600">ESP32-S3</text>')
 add(f'<text x="{(BX0+BX1)//2}" y="{py(10)+20}" text-anchor="middle" fill="{C["boardtxt"]}" '
     f'font-size="12">DevKitC-1 N8R8</text>')
 add(f'<text x="{(BX0+BX1)//2}" y="{py(10)+38}" text-anchor="middle" fill="{C["boardtxt"]}" '
-    f'font-size="12">(top view)</text>')
+    f'font-size="12">{T("(top view)")}</text>')
 ub = py(21) + 30
 for ux in (BX0 + 46, BX1 - 86):
     add(f'<rect x="{ux}" y="{ub}" width="40" height="24" rx="3" fill="#c9d1d9"/>')
 add(f'<text x="{(BX0+BX1)//2}" y="{ub+44}" text-anchor="middle" fill="{C["ink"]}" font-size="13">'
-    f'USB connectors: flash via the one marked <tspan font-weight="600">UART</tspan></text>')
+    f'{T("USB connectors: flash via the one marked")} <tspan font-weight="600">UART</tspan></text>')
 
 def pin(x, y, label, side, state, color_key):
     if state == "used":
@@ -116,10 +154,10 @@ def comp(x, y, w, h, title, lines, sub=None):
 CX0, CX1 = 60, 360          # left components
 # MPU9250: straight to GPIO15/16
 comp(CX0, 236, CX1-CX0, 168, "MPU9250 IMU", [
-    (py(7), "SCL  ◀", "i2c"), (py(8), "SDA  ◀▶", "i2c")], "I2C address 0x68")
-add(f'<text x="{CX0+14}" y="{290+4}" font-size="13" fill="{C["ink"]}">VCC ← 3V3 (top-left pin)</text>')
+    (py(7), "SCL  ◀", "i2c"), (py(8), "SDA  ◀▶", "i2c")], T("I2C address 0x68"))
+add(f'<text x="{CX0+14}" y="{290+4}" font-size="13" fill="{C["ink"]}">{T("VCC ← 3V3 (top-left pin)")}</text>')
 add(f'<text x="{CX0+14}" y="{312+4}" font-size="13" fill="{C["ink"]}">GND ← GND · AD0 ← GND</text>')
-add(f'<text x="{CX0+14}" y="{336}" font-size="12" fill="{C["muted"]}">BMP280 (optional): same 4 wires, addr 0x77</text>')
+add(f'<text x="{CX0+14}" y="{336}" font-size="12" fill="{C["muted"]}">{T("BMP280 (optional): same 4 wires, addr 0x77")}</text>')
 wire([(CX1, py(7)), (LX, py(7))], "i2c")
 wire([(CX1, py(8)), (LX, py(8))], "i2c")
 wire([(CX0+150, 236), (CX0+150, 214), (LX-60, 214), (LX-60, py(0)), (LX, py(0))], "pwr", 2)
@@ -127,22 +165,22 @@ wire([(CX0+150, 236), (CX0+150, 214), (LX-60, 214), (LX-60, py(0)), (LX, py(0))]
 # ZED-F9P: GPIO17 <- F9P TX, GPIO18 -> F9P RX
 fy = 420
 comp(CX0, fy, CX1-CX0, 104, "ZED-F9P RTK GPS", [
-    (fy+52, "UART1 TX  ▶", "uart"), (fy+78, "UART1 RX  ◀", "uart")], "D_SEL open (UART mode)")
-add(f'<text x="{CX0+14}" y="{fy+96}" font-size="12" fill="{C["muted"]}">VCC/GND from 5 V rail</text>')
+    (fy+52, "UART1 TX  ▶", "uart"), (fy+78, "UART1 RX  ◀", "uart")], T("D_SEL open (UART mode)"))
+add(f'<text x="{CX0+14}" y="{fy+96}" font-size="12" fill="{C["muted"]}">{T("VCC/GND from 5 V rail")}</text>')
 wire([(LX, py(9)), (480, py(9)), (480, fy+52), (CX1, fy+52)], "uart")
 wire([(LX, py(10)), (510, py(10)), (510, fy+78), (CX1, fy+78)], "uart")
 
 # ESC: GPIO9
 ey = 536
-comp(CX0, ey, CX1-CX0, 74, "ESC (throttle)", [(ey+48, "signal  ◀", "pwm")], "BEC 5 V out → servo, receiver")
+comp(CX0, ey, CX1-CX0, 74, T("ESC (throttle)"), [(ey+48, T("signal  ◀"), "pwm")], T("BEC 5 V out → servo, receiver"))
 wire([(LX, py(14)), (480, py(14)), (480, ey+48), (CX1, ey+48)], "pwm")
 # Servo: GPIO11
 sy = 620
-comp(CX0, sy, CX1-CX0, 74, "Steering servo", [(sy+48, "signal  ◀", "pwm")], "+ / − from ESC BEC")
+comp(CX0, sy, CX1-CX0, 74, T("Steering servo"), [(sy+48, T("signal  ◀"), "pwm")], T("+ / − from ESC BEC"))
 wire([(LX, py(16)), (480, py(16)), (480, sy+48), (CX1, sy+48)], "pwm")
 # Receiver: GPIO14
 ry = 704
-comp(CX0, ry, CX1-CX0, 74, "RC receiver", [(ry+48, "PPM/SBUS  ▶", "rc")], "+ / − from ESC BEC · signal ≤ 3.3 V")
+comp(CX0, ry, CX1-CX0, 74, T("RC receiver"), [(ry+48, "PPM/SBUS  ▶", "rc")], T("+ / − from ESC BEC · signal ≤ 3.3 V"))
 wire([(LX, py(19)), (480, py(19)), (480, ry+48), (CX1, ry+48)], "rc")
 
 # 5V / GND pins of the board -> power section
@@ -151,29 +189,29 @@ wire([(LX, py(21)), (550, py(21)), (550, 900)], "gnd")
 
 # right: LD14 LiDAR on GPIO41
 DX0, DX1 = 960, 1260
-comp(DX0, 266, DX1-DX0, 140, "LD14 / LD14P LiDAR", [], "115200 baud · free-running")
+comp(DX0, 266, DX1-DX0, 140, "LD14 / LD14P LiDAR", [], T("115200 baud · free-running"))
 add(f'<text x="{DX0+14}" y="{py(6)+4}" font-size="13" font-family="Consolas, Menlo, monospace" '
     f'fill="{C["uart"]}">▶  TX</text>')
-add(f'<text x="{DX0+14}" y="{py(6)+30}" font-size="13" fill="{C["muted"]}">RX: not connected</text>')
+add(f'<text x="{DX0+14}" y="{py(6)+30}" font-size="13" fill="{C["muted"]}">{T("RX: not connected")}</text>')
 add(f'<text x="{DX0+14}" y="{py(6)+52}" font-size="13" fill="{C["ink"]}">VCC 5 V (~200 mA), GND</text>')
 wire([(DX0, py(6)), (RX, py(6))], "uart")
 
 # right: notes
 ny = 470
 add(f'<rect x="{DX0}" y="{ny}" width="{DX1-DX0}" height="190" rx="8" fill="#fff8c5" stroke="#d4a72c"/>')
-notes = ["Do not use:",
+notes = [T(n) for n in ["Do not use:",
          "• GPIO35-37: octal PSRAM on N8R8",
          "• GPIO43/44: console (UART port)",
          "• GPIO0, 3, 45, 46: strapping pins",
          "• GPIO19/20: native USB",
          "Analog pins 1-4 (BATT_VOLT_PIN):",
-         "  GPIO5, 4, 2, 1 — max 3.1 V"]
+         "  GPIO5, 4, 2, 1 — max 3.1 V"]]
 for k, t in enumerate(notes):
     add(f'<text x="{DX0+14}" y="{ny+26+k*23}" font-size="13" '
         f'font-weight="{"600" if t.endswith(":") else "400"}" fill="{C["ink"]}">{t}</text>')
 
 # power section
-add(f'<text x="40" y="{850}" font-size="17" font-weight="600" fill="{C["ink"]}">Power</text>')
+add(f'<text x="40" y="{850}" font-size="17" font-weight="600" fill="{C["ink"]}">{T("Power")}</text>')
 def pbox(x, y, w, t, s):
     add(f'<rect x="{x}" y="{y}" width="{w}" height="58" rx="8" fill="{C["box"]}" stroke="{C["edge"]}" stroke-width="1.5"/>')
     add(f'<text x="{x+w/2}" y="{y+25}" text-anchor="middle" font-size="14" font-weight="600" fill="{C["ink"]}">{t}</text>')
@@ -182,18 +220,17 @@ def arrow(x1, y1, x2, y2, key="pwr"):
     add(f'<line x1="{x1}" y1="{y1}" x2="{x2-8}" y2="{y2}" stroke="{C[key]}" stroke-width="3"/>')
     add(f'<polygon points="{x2},{y2} {x2-10},{y2-6} {x2-10},{y2+6}" fill="{C[key]}"/>')
 yy = 880
-pbox(60, yy, 150, "Battery", "2S/3S LiPo")
+pbox(60, yy, 150, T("Battery"), "2S/3S LiPo")
 arrow(210, yy+29, 240, yy+29)
-pbox(240, yy, 220, "ESC", "BEC 5 V → servo + receiver")
+pbox(240, yy, 220, "ESC", T("BEC 5 V → servo + receiver"))
 add(f'<polyline points="135,{yy+58} 135,{yy+110} 585,{yy+110} 585,{yy+86}" fill="none" stroke="{C["pwr"]}" stroke-width="3"/>')
 add(f'<polygon points="585,{yy+78} 579,{yy+90} 591,{yy+90}" fill="{C["pwr"]}"/>')
-pbox(470, yy+20, 230, "5 V regulator (≥ 1 A)", "out → board 5V + GND pins")
+pbox(470, yy+20, 230, T("5 V regulator (≥ 1 A)"), T("out → board 5V + GND pins"))
 add(f'<text x="524" y="{yy+14}" text-anchor="end" font-size="12" fill="{C["pwr"]}">5V</text>')
 add(f'<text x="556" y="{yy+14}" font-size="12" fill="{C["gnd"]}">GND</text>')
 arrow(700, yy+49, 760, yy+49)
-pbox(760, yy+20, 250, "LiDAR VCC, F9P VCC", "same 5 V rail (or USB on the bench)")
+pbox(760, yy+20, 250, "LiDAR VCC, F9P VCC", T("same 5 V rail (or USB on the bench)"))
 add(f'<text x="60" y="{H-18}" font-size="14" font-weight="600" fill="{C["ink"]}">'
-    f'All grounds joined: battery, ESC, servo, receiver, ESP32, IMU, LiDAR, GPS. '
-    f'Never power servos from the ESP32.</text>')
+    f'{T("All grounds joined: battery, ESC, servo, receiver, ESP32, IMU, LiDAR, GPS. Never power servos from the ESP32.")}</text>')
 add('</svg>')
 open(sys.argv[1], 'w').write("\n".join(out) + "\n")
