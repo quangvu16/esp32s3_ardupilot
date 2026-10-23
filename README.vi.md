@@ -75,13 +75,101 @@ Sửa tên `idf5.3_py3.10_env` trong `esp32s3-env.sh` nếu Python của bạn k
 
 ## Nạp firmware
 
-Kết quả nằm trong `build/esp32s3devkit/esp-idf_build/` (flash 8 MB, DIO, 80 MHz):
+### Cần chuẩn bị
 
-| Tệp | Địa chỉ |
+- Board ESP32-S3 DevKit và cáp USB **truyền dữ liệu** (một số cáp chỉ để sạc).
+- Firmware từ trang [Releases](https://github.com/quangvu16/esp32s3_ardupilot/releases).
+  Lần nạp đầu tiên chỉ cần tệp `ardurover-esp32s3devkit-factory.bin`.
+- `esptool`, công cụ nạp của Espressif: `pip install esptool` (mọi hệ điều hành có Python 3).
+  Hoặc nạp ngay trên trình duyệt, không cần cài gì (cách C bên dưới).
+
+Dùng cổng có ghi **UART** trên DevKit (cạnh chip chuyển USB-serial CP2102 hoặc CH343): nạp
+ổn định và hiện được thông báo khởi động của ArduPilot. Cổng ghi **USB** cũng nạp được, nhưng
+console của ArduPilot không nằm ở cổng đó.
+
+| Tệp trong Release | Địa chỉ nạp | Khi nào |
+| --- | --- | --- |
+| `ardurover-esp32s3devkit-factory.bin` | `0x0` | Lần nạp đầu; gồm bootloader + bảng phân vùng + firmware trong một tệp |
+| `ardurover-esp32s3devkit.bin` | `0x20000` | Cập nhật (chỉ firmware) |
+| `bootloader.bin`, `partition-table.bin` | `0x0`, `0x10000` | Chỉ khi nạp riêng ba phần |
+
+Bố cục flash: 8 MB, DIO, 80 MHz. Tham số được lưu ở `0x320000`, nằm sau firmware, nên nạp
+tệp nào ở trên cũng **giữ nguyên tham số**. Chỉ `erase_flash` mới xóa chúng.
+
+### A. Linux
+
+```bash
+# 1. cho phép user mở cổng serial (làm một lần; sau đó đăng xuất rồi đăng nhập lại)
+sudo usermod -aG dialout $USER
+
+# 2. kiểm tra tệp đã tải
+sha256sum -c SHA256SUMS --ignore-missing
+
+# 3. cắm cổng UART và tìm tên cổng: thường là /dev/ttyUSB0 (hoặc /dev/ttyACM0)
+ls /dev/ttyUSB* /dev/ttyACM*
+
+# 4. chỉ lần nạp đầu: xóa toàn bộ flash (xóa luôn tham số cũ)
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 erase_flash
+
+# 5. nạp
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 -b 460800 \
+    write_flash 0x0 ardurover-esp32s3devkit-factory.bin
+```
+
+### B. Windows
+
+1. Nếu máy không nhận board, cài driver USB-serial: CP210x (Silicon Labs) hoặc CH343 (WCH),
+   tùy chip nằm cạnh cổng UART.
+2. Cắm cổng UART. Xem số cổng **COM** trong Device Manager → Ports (COM & LPT).
+3. Mở Command Prompt trong thư mục chứa các tệp đã tải (thay `COM5` bằng cổng của bạn):
+   ```bat
+   certutil -hashfile ardurover-esp32s3devkit-factory.bin SHA256
+   python -m esptool --chip esp32s3 --port COM5 erase_flash
+   python -m esptool --chip esp32s3 --port COM5 -b 460800 write_flash 0x0 ardurover-esp32s3devkit-factory.bin
+   ```
+   So mã của certutil với dòng tương ứng trong `SHA256SUMS`. Bỏ qua `erase_flash` nếu muốn giữ
+   tham số.
+
+### C. Nạp trên trình duyệt (không cần cài đặt)
+
+1. Mở https://espressif.github.io/esptool-js/ bằng **Chrome hoặc Edge**.
+2. Baudrate `460800` → **Connect** → chọn cổng serial của board.
+3. Flash Address `0x0`, chọn `ardurover-esp32s3devkit-factory.bin` → **Program**.
+   (Bấm **Erase Flash** trước nếu muốn bắt đầu sạch.)
+
+### Cập nhật về sau
+
+Chỉ nạp firmware. Tham số và hiệu chuẩn được giữ nguyên:
+
+```bash
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 -b 460800 write_flash 0x20000 ardurover-esp32s3devkit.bin
+```
+
+### Kiểm tra hoạt động
+
+1. Bấm **RST** (hoặc rút ra cắm lại).
+2. Trong khoảng 10 giây sẽ xuất hiện mạng WiFi **`ardupilot123`**. Kết nối Mission Planner bằng
+   TCP tới `192.168.4.1:5760` rồi làm tiếp phần **Cài đặt tham số** bên dưới.
+3. Muốn xem thông báo khởi động, mở cổng UART ở tốc độ 115200:
+   ```bash
+   python3 -m serial.tools.miniterm /dev/ttyUSB0 115200     # Ctrl+] để thoát
+   ```
+
+### Xử lý sự cố
+
+| Hiện tượng | Cách xử lý |
 | --- | --- |
-| `bootloader/bootloader.bin` | `0x0` |
-| `partition_table/partition-table.bin` | `0x10000` |
-| `ardupilot.bin` | `0x20000` |
+| `Failed to connect to ESP32-S3: No serial data received` | Đưa board vào chế độ nạp bằng tay: giữ **BOOT**, bấm rồi nhả **RST**, nhả **BOOT**, rồi chạy lại lệnh. Bấm **RST** sau khi nạp xong. |
+| `Permission denied: '/dev/ttyUSB0'` | Linux: `sudo usermod -aG dialout $USER`, rồi đăng xuất và đăng nhập lại. |
+| Không thấy cổng serial | Thử cáp khác (phải truyền được dữ liệu) và cổng USB còn lại. Trên Windows cài driver CP210x/CH343. |
+| Cổng đang bận | Đóng Mission Planner, Arduino IDE, miniterm hoặc chương trình khác đang dùng cổng. |
+| Nạp bị dừng giữa chừng | Giảm tốc độ: `-b 115200`. |
+| Board khởi động lại liên tục, hoặc không có WiFi sau khi nạp | Chạy `erase_flash`, rồi nạp lại tệp factory. |
+| Mission Planner không kết nối được | Máy tính phải đang ở WiFi `ardupilot123`. Dùng TCP, không phải UDP, tới `192.168.4.1` cổng `5760`. |
+
+### Nạp bản tự biên dịch
+
+Sau khi chạy `./waf rover` (xem phần **Biên dịch**), cắm board vào cổng UART:
 
 ```bash
 ./waf rover --upload
@@ -90,9 +178,6 @@ cd build/esp32s3devkit/esp-idf_build
 python -m esptool --chip esp32s3 -b 460800 write_flash --flash_mode dio --flash_freq 80m --flash_size 8MB \
   0x0 bootloader/bootloader.bin 0x10000 partition_table/partition-table.bin 0x20000 ardupilot.bin
 ```
-
-Bản firmware dựng sẵn có ở trang [Releases](https://github.com/quangvu16/esp32s3_ardupilot/releases):
-nạp `ardurover-esp32s3devkit-factory.bin` vào địa chỉ `0x0`.
 
 ## Cài đặt tham số
 

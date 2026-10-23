@@ -75,13 +75,101 @@ Adjust the `idf5.3_py3.10_env` name in `esp32s3-env.sh` if your Python is not 3.
 
 ## Flash
 
-Output in `build/esp32s3devkit/esp-idf_build/` (8 MB flash, DIO, 80 MHz):
+### What you need
 
-| File | Offset |
+- The ESP32-S3 DevKit and a USB **data** cable (some cables only carry power).
+- Firmware from the [Releases](https://github.com/quangvu16/esp32s3_ardupilot/releases) page.
+  For a first flash you only need `ardurover-esp32s3devkit-factory.bin`.
+- `esptool`, Espressif's flashing tool: `pip install esptool` (any OS with Python 3).
+  Or flash from the browser, with no install (option C below).
+
+Use the DevKit's port labelled **UART** (next to the USB-to-serial chip, CP2102 or CH343):
+it flashes reliably and shows ArduPilot's boot messages. The port labelled **USB** also
+flashes, but ArduPilot's console is not on it.
+
+| Release file | Flash at | When |
+| --- | --- | --- |
+| `ardurover-esp32s3devkit-factory.bin` | `0x0` | First flash; bootloader + partition table + firmware in one file |
+| `ardurover-esp32s3devkit.bin` | `0x20000` | Updates (firmware only) |
+| `bootloader.bin`, `partition-table.bin` | `0x0`, `0x10000` | Only if you flash the three parts separately |
+
+Flash layout: 8 MB, DIO, 80 MHz. Parameters are stored at `0x320000`, beyond the firmware, so
+flashing either image **keeps your parameters**. Only `erase_flash` clears them.
+
+### A. Linux
+
+```bash
+# 1. let your user open serial ports (once; log out and back in afterwards)
+sudo usermod -aG dialout $USER
+
+# 2. check the download
+sha256sum -c SHA256SUMS --ignore-missing
+
+# 3. plug in the UART port and find it: usually /dev/ttyUSB0 (or /dev/ttyACM0)
+ls /dev/ttyUSB* /dev/ttyACM*
+
+# 4. first flash only: erase everything (also clears old parameters)
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 erase_flash
+
+# 5. flash
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 -b 460800 \
+    write_flash 0x0 ardurover-esp32s3devkit-factory.bin
+```
+
+### B. Windows
+
+1. Install the USB-serial driver if the board doesn't show up: CP210x (Silicon Labs) or CH343
+   (WCH), whichever chip is next to the UART port.
+2. Plug in the UART port. Find its **COM** number in Device Manager → Ports (COM & LPT).
+3. In a Command Prompt, in the folder with the downloaded files (replace `COM5`):
+   ```bat
+   certutil -hashfile ardurover-esp32s3devkit-factory.bin SHA256
+   python -m esptool --chip esp32s3 --port COM5 erase_flash
+   python -m esptool --chip esp32s3 --port COM5 -b 460800 write_flash 0x0 ardurover-esp32s3devkit-factory.bin
+   ```
+   Compare the certutil hash with the line in `SHA256SUMS`. Skip `erase_flash` if you want to
+   keep your parameters.
+
+### C. From the browser (no install)
+
+1. Open https://espressif.github.io/esptool-js/ in **Chrome or Edge**.
+2. Baudrate `460800` → **Connect** → choose the board's serial port.
+3. Flash Address `0x0`, choose `ardurover-esp32s3devkit-factory.bin` → **Program**.
+   (**Erase Flash** first for a clean start.)
+
+### Updating later
+
+Flash only the firmware. Parameters and calibration are kept:
+
+```bash
+python3 -m esptool --chip esp32s3 --port /dev/ttyUSB0 -b 460800 write_flash 0x20000 ardurover-esp32s3devkit.bin
+```
+
+### Check that it works
+
+1. Press **RST** (or unplug and replug).
+2. A WiFi network **`ardupilot123`** should appear within ~10 s. Connect Mission Planner over
+   TCP to `192.168.4.1:5760` and go on to [Set up](#set-up).
+3. To see the boot messages, open the UART port at 115200 baud:
+   ```bash
+   python3 -m serial.tools.miniterm /dev/ttyUSB0 115200     # Ctrl+] to quit
+   ```
+
+### Troubleshooting
+
+| Problem | Fix |
 | --- | --- |
-| `bootloader/bootloader.bin` | `0x0` |
-| `partition_table/partition-table.bin` | `0x10000` |
-| `ardupilot.bin` | `0x20000` |
+| `Failed to connect to ESP32-S3: No serial data received` | Put it in download mode by hand: hold **BOOT**, press and release **RST**, release **BOOT**, then run the command again. Press **RST** after flashing. |
+| `Permission denied: '/dev/ttyUSB0'` | Linux: `sudo usermod -aG dialout $USER`, then log out and back in. |
+| No serial port appears | Try another cable (it must carry data) and the other USB port. On Windows install the CP210x/CH343 driver. |
+| Port busy | Close Mission Planner, Arduino IDE, miniterm or anything else using the port. |
+| Flashing stops partway | Lower the speed: `-b 115200`. |
+| Boot loop, or no WiFi after flashing | Run `erase_flash`, then flash the factory image again. |
+| Mission Planner can't connect | Your PC must be on the `ardupilot123` WiFi. Use TCP, not UDP, to `192.168.4.1` port `5760`. |
+
+### Flashing your own build
+
+After `./waf rover` (see [Build](#build)), with the board on the UART port:
 
 ```bash
 ./waf rover --upload
