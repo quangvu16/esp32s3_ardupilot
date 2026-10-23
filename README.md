@@ -91,6 +91,9 @@ python -m esptool --chip esp32s3 -b 460800 write_flash --flash_mode dio --flash_
 
 ## Set up
 
+Full step-by-step parameter guide (calibration, failsafes, tuning, avoidance):
+**[ROVER_SETUP.md](ROVER_SETUP.md)**. In short:
+
 1. Connect Mission Planner over WiFi, Config → Full Parameter List → Load from file →
    `esp32s3_rover_ld14_f9p.parm` → Write Params, reboot.
 2. Object straight ahead of the robot; in the proximity view (Ctrl-F → Proximity) adjust
