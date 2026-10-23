@@ -1,6 +1,7 @@
 # esp32s3_ardupilot
 
-ArduPilot (ArduRover 4.6.3) for the **ESP32-S3** (`esp32s3devkit` board), with:
+ArduPilot (ArduRover 4.6.3) for the **ESP32-S3** (`esp32s3devkit` board) driving an
+**RC car** (steering servo + ESC, PPM/SBUS receiver) with an MPU9250 IMU on I2C, and:
 
 - **LDROBOT LD14 / LD14P 360° LiDAR** as a proximity sensor — new `PRX1_TYPE = 19` (LD14)
 - **u-blox ZED-F9P RTK GPS**, with NTRIP corrections sent from Mission Planner over WiFi
@@ -15,20 +16,29 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 | --- | --- |
 | `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | LD14 model: the LD06 packet parser plus the LDROBOT SDK ranging-centre angle correction (the LD14 is a triangulation sensor, its raw angles are off by up to ~7°), 8 m max range, no confidence filter |
 | `libraries/AP_Proximity/AP_Proximity.{h,cpp}`, `AP_Proximity_Params.cpp` | `PRX_TYPE` 19 = LD14 |
-| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | UART2 (RX GPIO5, TX GPIO21) added so SERIAL2 exists; ADC channel names updated for ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), without which the board does not compile |
-| `esp32s3_rover_ld14_f9p.parm` | Parameters for the LiDAR, the F9P and RTK injection |
+| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | UART2 (RX GPIO41, TX GPIO42) added so SERIAL2 exists; MPU9250 IMU moved from SPI to I2C (0x68) and SPI removed, since GPIO33-37 belong to the octal PSRAM on N8R8/N16R8 modules; SD card disabled, since on the S3 it takes GPIO14/15/2 (RC input, I2C SCL, analog pin 3); ADC channel names updated for ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), without which the board does not compile |
+| `esp32s3_rover_ld14_f9p.parm` | Parameters for the RC car (servo, ESC, receiver, modes), the LiDAR, the F9P and RTK injection |
 | `esp32s3-env.sh` | ESP-IDF environment for an S3-only toolchain install |
 
 ## Wiring
 
 | Device | Pin | ESP32-S3 | ArduPilot port |
 | --- | --- | --- | --- |
-| LD14 LiDAR | TX | GPIO5 | SERIAL2 (UART2) |
+| Steering servo | signal | GPIO11 | SERVO1 |
+| ESC | signal | GPIO9 | SERVO3 |
+| (spare outputs) | | GPIO10, 8, 7, 6 | SERVO2, 4, 5, 6 |
+| RC receiver | PPM or SBUS out | GPIO14 | RCIN |
+| MPU9250 IMU | SDA / SCL | GPIO16 / GPIO15 | I2C bus 0, address 0x68 |
+| BMP280 baro (optional) | SDA / SCL | GPIO16 / GPIO15 | I2C bus 0, address 0x77 |
+| LD14 LiDAR | TX | GPIO41 | SERIAL2 (UART2) |
 | LD14 LiDAR | RX | not connected | |
 | ZED-F9P | UART1 TX | GPIO17 | SERIAL3 (UART1) |
 | ZED-F9P | UART1 RX | GPIO18 | SERIAL3 (UART1) |
 | all | GND | GND | |
 
+- Power the servo and receiver from the ESC's BEC; join its ground to the ESP32's. Never power servos from the ESP32.
+- Analog inputs (for `BATT_VOLT_PIN` etc.): analog pins 1-4 = GPIO5, 4, 2, 1, through a divider to below 3.1 V.
+- No SD card: parameters are stored in the ESP32's flash. `LOG_BACKEND_TYPE=2` streams logs over MAVLink.
 - Power the LiDAR (5 V, ~200 mA) from the robot's 5 V rail, not from the DevKit's 5V pin while on USB.
 - ZED-F9P: leave **D_SEL** open/high. Pulled low it selects SPI and turns UART1 off; ArduPilot has no SPI GPS support.
 - SERIAL1 is MAVLink over WiFi (Mission Planner connects to the board's access point).

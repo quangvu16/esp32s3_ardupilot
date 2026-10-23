@@ -43,7 +43,8 @@
 //#define HAL_BOARD_ESP32 12
 #define AP_INERTIALSENSOR_ENABLED 1
 //INS choices:
-#define HAL_INS_DEFAULT HAL_INS_MPU9250_SPI
+// MPU9250 on I2C bus 0 (GPIO16 SDA / GPIO15 SCL) at 0x68, see HAL_INS_PROBE_LIST
+#define HAL_INS_DEFAULT HAL_INS_MPU9250_I2C
 //#define HAL_INS_MPU9250_NAME "MPU9250"
 
 // or this:
@@ -103,8 +104,6 @@
 //#define HAL_ESP32_ADC_PINS HAL_ESP32_ADC_PINS_OPTION1
 #define HAL_ESP32_ADC_PINS HAL_ESP32_ADC_PINS_OPTION1
 
-#define HAL_INS_MPU9250_NAME "mpu9250"
-
 // uncommenting one or more of these will give more console debug in certain areas..
 //#define INSEDEBUG 1
 //#define STORAGEDEBUG 1
@@ -112,8 +111,7 @@
 //#define FSDEBUG 1
 //#define BUSDEBUG 1
 
-#define HAL_INS_PROBE_LIST PROBE_IMU_SPI( Invensense, HAL_INS_MPU9250_NAME, ROTATION_NONE)
-//#define HAL_INS_PROBE_LIST PROBE_IMU_SPI( Invensense, HAL_INS_MPU9250_NAME, ROTATION_ROLL_180)
+#define HAL_INS_PROBE_LIST PROBE_IMU_I2C(Invensense, 0, 0x68, ROTATION_NONE)
 // MAG/COMPASS probing:
 #define AP_COMPASS_AK8963_ENABLED TRUE
 #define HAL_MAG_PROBE_LIST ADD_BACKEND(DRIVER_AK8963, AP_Compass_AK8963::probe_mpu9250(0, ROTATION_NONE))
@@ -144,17 +142,10 @@
 
 #define HAL_ESP32_RCOUT { GPIO_NUM_11,GPIO_NUM_10, GPIO_NUM_9, GPIO_NUM_8, GPIO_NUM_7, GPIO_NUM_6 }
 
-// SPI BUS setup, including gpio, dma, etc
-// note... we use 'vspi' for the bmp280 and mpu9250
-#define HAL_ESP32_SPI_BUSES \
-    {.host=SPI3_HOST, .dma_ch=SPI_DMA_CH_AUTO, .mosi=GPIO_NUM_36, .miso=GPIO_NUM_37, .sclk=GPIO_NUM_35}
-// tip:  VSPI_HOST  is an alternative name for esp's SPI3
-//#define HAL_ESP32_SPI_BUSES {}
-
-// SPI per-device setup, including speeds, etc.
-#define HAL_ESP32_SPI_DEVICES \
-    {.name="mpu9250", .bus=0, .device=0, .cs=GPIO_NUM_34,  .mode = 0, .lspeed=2*MHZ, .hspeed=8*MHZ}
-//#define HAL_ESP32_SPI_DEVICES {}
+// no SPI devices: the IMU is on I2C, and GPIO33-37 belong to the octal PSRAM
+// on N8R8/N16R8 modules
+#define HAL_ESP32_SPI_BUSES {}
+#define HAL_ESP32_SPI_DEVICES {}
 
 //I2C bus list
 #define HAL_ESP32_I2C_BUSES \
@@ -168,25 +159,21 @@
 
 //HARDWARE UARTS
 // entry index = ESP32::UARTDriver(n): 0 console, 1 SERIAL3 (GPS), 2 SERIAL2 (LDROBOT LD14/LD06 LiDAR)
-// the LiDAR only transmits, so only its TX wire goes to GPIO5 (UART2 rx); GPIO21 tx is left unwired
+// the LiDAR only transmits, so only its TX wire goes to GPIO41 (UART2 rx); GPIO42 tx is left unwired
 #define HAL_ESP32_UART_DEVICES \
-  {.port=UART_NUM_0, .rx=GPIO_NUM_44, .tx=GPIO_NUM_43 },{.port=UART_NUM_1, .rx=GPIO_NUM_17, .tx=GPIO_NUM_18 },{.port=UART_NUM_2, .rx=GPIO_NUM_5, .tx=GPIO_NUM_21 }
+  {.port=UART_NUM_0, .rx=GPIO_NUM_44, .tx=GPIO_NUM_43 },{.port=UART_NUM_1, .rx=GPIO_NUM_17, .tx=GPIO_NUM_18 },{.port=UART_NUM_2, .rx=GPIO_NUM_41, .tx=GPIO_NUM_42 }
 
-#define HAVE_FILESYSTEM_SUPPORT 1
-
-// Do u want to use mmc or spi mode for the sd card, this is board specific ,
-//  as mmc uses specific pins but is quicker,
-#define HAL_ESP32_SDMMC 1
-// and spi is more flexible pinouts....  dont forget vspi/hspi should be selected to NOT conflict with SPI_BUSES above
-//#define HAL_ESP32_SDSPI {.host=VSPI_HOST, .dma_ch=2, .mosi=GPIO_NUM_2, .miso=GPIO_NUM_15, .sclk=GPIO_NUM_14, .cs=GPIO_NUM_21}
-
-#define HAL_ESP32_SDCARD 1
-#define LOGGER_MAVLINK_SUPPORT 1
+// no SD card: on the S3 the SDMMC slot takes GPIO14 (CLK), 15 (CMD) and 2 (D0),
+// which are RC input, I2C SCL and analog pin 3 here. Parameters live in the
+// flash "storage" partition, so nothing else needs the card. Same settings as
+// esp32s3empty.
+#define HAL_LOGGING_FILESYSTEM_ENABLED 0
+#define HAL_LOGGING_DATAFLASH_ENABLED 0
+#define AP_FILESYSTEM_ESP32_ENABLED 0
+#define AP_SCRIPTING_ENABLED 0
 #define HAL_BOARD_LOG_DIRECTORY "/SDCARD/APM/LOGS"
 #define HAL_BOARD_TERRAIN_DIRECTORY "/SDCARD/APM/TERRAIN"
 #define HAL_BOARD_STORAGE_DIRECTORY "/SDCARD/APM/STORAGE"
-#define HAL_OS_POSIX_IO 1
 
-// this becomes the default value for the ardupilot param LOG_BACKEND_TYPE, which most ppl want to be 1, for log-to-flash
-// setting to 2 means log-over-mavlink to a companion computer etc.
-#define HAL_LOGGING_BACKENDS_DEFAULT 1
+// LOG_BACKEND_TYPE default: 0 none (no card); 2 = log over MAVLink to a GCS/companion
+#define HAL_LOGGING_BACKENDS_DEFAULT 0

@@ -1,14 +1,49 @@
-# ArduRover 4.6 on esp32s3devkit: LDROBOT LD14 LiDAR + ZED-F9P RTK GPS
+# ArduRover 4.6 on esp32s3devkit: RC car (steering servo + ESC) with
+# MPU9250 IMU, LDROBOT LD14 LiDAR and ZED-F9P RTK GPS
 # RTK corrections from Mission Planner (NTRIP -> MAVLink over WiFi), option A.
 #
 # Load: Mission Planner -> Config -> Full Parameter List -> Load from file
 #       -> Write Params, then reboot the board.
 #
-# Wiring (esp32s3devkit.h, HAL_ESP32_UART_DEVICES):
-#   LD14 TX      -> GPIO5    SERIAL2 (UART2 rx)   LD14 RX unwired
-#   F9P UART1 TX -> GPIO17   SERIAL3 (UART1 rx)
-#   F9P UART1 RX <- GPIO18   SERIAL3 (UART1 tx)
+# Wiring (libraries/AP_HAL_ESP32/boards/esp32s3devkit.h):
+#   steering servo signal <- GPIO11  SERVO1
+#   ESC signal            <- GPIO9   SERVO3
+#   receiver PPM/SBUS out -> GPIO14  RCIN
+#   MPU9250 SDA / SCL     -- GPIO16 / GPIO15  I2C, address 0x68 (AD0 low)
+#   BMP280 (optional)     -- same I2C bus, address 0x77
+#   LD14 TX               -> GPIO41  SERIAL2 (UART2 rx)   LD14 RX unwired
+#   F9P UART1 TX          -> GPIO17  SERIAL3 (UART1 rx)
+#   F9P UART1 RX          <- GPIO18  SERIAL3 (UART1 tx)
 #   all GNDs joined; F9P D_SEL open/high (UART mode, not SPI)
+#   servo/ESC power from the ESC's BEC, never from the ESP32's 3V3 pin
+
+# ---------------------------------------------------------------- RC car
+FRAME_CLASS,1           # Rover
+SERVO1_FUNCTION,26      # GroundSteering, GPIO11
+SERVO1_MIN,1100
+SERVO1_TRIM,1500        # adjust until the wheels point straight in Manual
+SERVO1_MAX,1900
+SERVO1_REVERSED,0       # 1 if steering right on the stick turns the wheels left
+SERVO3_FUNCTION,70      # Throttle (ESC), GPIO9
+SERVO3_MIN,1000
+SERVO3_TRIM,1500        # ESC neutral; forward+reverse ESC
+SERVO3_MAX,2000
+SERVO3_REVERSED,0       # 1 if throttle forward drives the car backwards
+MOT_PWM_TYPE,0          # normal PWM servo/ESC signal
+PILOT_STEER_TYPE,0      # default steering response
+
+# Receiver: PPM or SBUS on GPIO14, protocol detected automatically.
+# Channel 1 steering, channel 3 throttle, channel 8 flight mode switch.
+RCMAP_ROLL,1
+RCMAP_THROTTLE,3
+MODE_CH,8
+MODE1,0                 # Manual
+MODE4,10                # Auto
+MODE6,11                # RTL
+
+# Starting points, tune after the first drives (Rover tuning guide)
+CRUISE_SPEED,2          # m/s
+CRUISE_THROTTLE,40      # % throttle that gives CRUISE_SPEED
 
 # ---------------------------------------------------------------- LD14 LiDAR
 SERIAL2_PROTOCOL,11     # Lidar360
