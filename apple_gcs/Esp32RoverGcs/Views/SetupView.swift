@@ -21,7 +21,9 @@ struct SetupView: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.numbersAndPunctuation)
                     #endif
+                    .onSubmit { m.connect() }
                 TextField("Port", text: $m.port)
+                    .onSubmit { m.connect() }
                 HStack {
                     Button("Connect") { m.connect() }.buttonStyle(.borderedProminent)
                     Button("Disconnect") { m.disconnect() }.buttonStyle(.bordered)

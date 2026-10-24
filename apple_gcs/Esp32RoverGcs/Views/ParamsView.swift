@@ -105,6 +105,7 @@ struct ParamEditor: View {
                     }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Parameter")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
             .onAppear { text = Patrol.fmt(m.staged[param.name] ?? param.value) }

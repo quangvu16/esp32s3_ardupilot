@@ -33,7 +33,8 @@ struct PlanView: View {
                             .background(.regularMaterial, in: Capsule()).padding(8)
                     }
                 }
-                .frame(minHeight: 220)
+                .frame(minHeight: 300)
+                .layoutPriority(1)
 
             if fenceMode { fencePanel } else { waypointPanel }
         }
@@ -115,7 +116,7 @@ struct PlanView: View {
                 .onMove { m.plan.move(fromOffsets: $0, toOffset: $1) }
             }
             .listStyle(.plain)
-            .frame(minHeight: 140)
+            .frame(minHeight: 110, maxHeight: 220)
         }
     }
 
@@ -168,7 +169,7 @@ struct PlanView: View {
                 .onDelete { idx in m.fence.remove(atOffsets: idx); m.fenceZone = nil }
             }
             .listStyle(.plain)
-            .frame(minHeight: 140)
+            .frame(minHeight: 110, maxHeight: 220)
         }
     }
 
@@ -233,6 +234,7 @@ struct ItemEditor: View {
                     Button("Delete", role: .destructive) { m.plan.remove(at: index); done() }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Item \(index + 1)")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { done() } } }
         }
@@ -287,6 +289,7 @@ struct ZigZagSheet: View {
                     }.disabled(m.zigzag.problem() != nil)
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Zig zag")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
         }
@@ -323,6 +326,7 @@ struct PatrolSheet: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Patrol")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
         }

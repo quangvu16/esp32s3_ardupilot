@@ -105,7 +105,7 @@ struct HudView: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing) {
-                        if v.customMode == 10 || v.customMode == 15 || v.customMode == 11 {
+                        if v.customMode == 10 || v.customMode == 15 {
                             Text("WP \(v.missionSeq) · \(v.wpDist) m").font(.headline.monospacedDigit())
                         }
                         Text(String(format: "hAcc %.2f m · HDOP %.1f", v.gpsHAcc, v.gpsHdop)).font(.caption)
