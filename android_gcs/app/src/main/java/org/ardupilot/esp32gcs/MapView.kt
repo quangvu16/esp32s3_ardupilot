@@ -57,12 +57,18 @@ class MapView(context: Context) : View(context) {
     var guidedTarget: Pair<Double, Double>? = null
     var mission: List<MissionItem> = emptyList()
     var currentWp = -1                                      // index into mission (vehicle seq - 1)
+    var fences: List<FenceZone> = emptyList()
+    /** Drag and tap fence corners and circle centres instead of waypoints. */
+    var fenceEditing = false
+    var selectedZone = -1
     private val trail = ArrayList<Pair<Double, Double>>()
 
     var onTap: ((Double, Double) -> Unit)? = null
     var onLongPress: ((Double, Double) -> Unit)? = null
     var onWaypointMoved: ((Int, Double, Double) -> Unit)? = null
     var onWaypointTap: ((Int) -> Unit)? = null
+    var onFenceTap: ((zone: Int, point: Int) -> Unit)? = null
+    var onFenceMoved: ((zone: Int) -> Unit)? = null
 
     private val density = resources.displayMetrics.density
     private val tilePx = 256f * density / 1.5f        // on-screen size of one tile at an integer zoom
@@ -101,6 +107,15 @@ class MapView(context: Context) : View(context) {
     private val targetPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE; strokeWidth = 3 * density; color = Color.rgb(59, 130, 246)
     }
+    private val fenceInLine = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; strokeWidth = 2.5f * density; color = Color.rgb(22, 163, 74)
+    }
+    private val fenceInFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(28, 22, 163, 74) }
+    private val fenceOutLine = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; strokeWidth = 2.5f * density; color = Color.rgb(220, 38, 38)
+    }
+    private val fenceOutFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(70, 220, 38, 38) }
+    private val cornerFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
     private val credit = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(220, 20, 20, 20); textSize = 9 * density; textAlign = Paint.Align.RIGHT
     }
@@ -141,10 +156,11 @@ class MapView(context: Context) : View(context) {
 
     fun clearTrail() { trail.clear(); invalidate() }
 
-    /** Fits the mission, home and vehicle in the view. */
+    /** Fits the mission, fences, home and vehicle in the view. */
     fun fit() {
         val pts = ArrayList<Pair<Double, Double>>()
         mission.filter { it.hasPosition }.forEach { pts.add(Pair(it.lat, it.lon)) }
+        fences.forEach { z -> z.points.forEach { pts.add(Pair(it[0], it[1])) } }
         home?.let { pts.add(it) }
         vehicle?.let { pts.add(Pair(it.first, it.second)) }
         if (pts.isEmpty() || width == 0) return
@@ -162,8 +178,9 @@ class MapView(context: Context) : View(context) {
     }
 
     // --- gestures ---------------------------------------------------------------
-    // -1: none; >= 0: dragging that waypoint; <= -2: finger down on waypoint (-dragWp - 2), not moved yet
-    private var dragWp = -1
+    // The handle under the finger, and whether it has started moving (a tap selects instead).
+    private var dragHandle: Handle? = null
+    private var dragging = false
 
     private val scaler = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(d: ScaleGestureDetector): Boolean {
@@ -181,7 +198,7 @@ class MapView(context: Context) : View(context) {
     private val gestures = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent) = true
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent, dx: Float, dy: Float): Boolean {
-            if (dragWp != -1) return true      // a finger on a waypoint drags it, not the map
+            if (dragHandle != null) return true      // a finger on a waypoint drags it, not the map
             follow = false
             val (lat, lon) = geo(width / 2f + dx, height / 2f + dy)
             centerLat = lat; centerLon = lon
@@ -189,8 +206,9 @@ class MapView(context: Context) : View(context) {
             return true
         }
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            val wp = hitWaypoint(e.x, e.y)
-            if (wp >= 0 && onWaypointTap != null) { onWaypointTap?.invoke(wp); return true }
+            val h = hitHandle(e.x, e.y)
+            if (h != null && h.zone < 0 && onWaypointTap != null) { onWaypointTap?.invoke(h.point); return true }
+            if (h != null && h.zone >= 0 && onFenceTap != null) { onFenceTap?.invoke(h.zone, h.point); return true }
             val (lat, lon) = geo(e.x, e.y)
             onTap?.invoke(lat, lon)
             return true
@@ -203,19 +221,32 @@ class MapView(context: Context) : View(context) {
             return true
         }
         override fun onLongPress(e: MotionEvent) {
-            if (dragWp != -1) return
+            if (dragHandle != null) return
             val (lat, lon) = geo(e.x, e.y)
             onLongPress?.invoke(lat, lon)
         }
     })
 
-    private fun hitWaypoint(x: Float, y: Float): Int {
-        var best = -1; var bestD = 22 * density
-        mission.forEachIndexed { i, it ->
-            if (!it.hasPosition) return@forEachIndexed
-            val (sx, sy) = screen(it.lat, it.lon)
+    /** A draggable point: a waypoint (zone -1, point = mission index) or a fence corner. */
+    private class Handle(val zone: Int, val point: Int, val get: () -> DoubleArray, val set: (Double, Double) -> Unit)
+
+    private fun handles(): List<Handle> {
+        val out = ArrayList<Handle>()
+        if (fenceEditing) fences.forEachIndexed { zi, z ->
+            z.points.forEachIndexed { pi, p -> out += Handle(zi, pi, { p }, { la, lo -> p[0] = la; p[1] = lo }) }
+        } else mission.forEachIndexed { i, it ->
+            if (it.hasPosition) out += Handle(-1, i, { doubleArrayOf(it.lat, it.lon) }, { la, lo -> it.lat = la; it.lon = lo })
+        }
+        return out
+    }
+
+    private fun hitHandle(x: Float, y: Float): Handle? {
+        var best: Handle? = null; var bestD = 22 * density
+        for (h in handles()) {
+            val p = h.get()
+            val (sx, sy) = screen(p[0], p[1])
             val d = hypot(sx - x, sy - y)
-            if (d < bestD) { best = i; bestD = d }
+            if (d < bestD) { best = h; bestD = d }
         }
         return best
     }
@@ -223,26 +254,29 @@ class MapView(context: Context) : View(context) {
     override fun onTouchEvent(e: MotionEvent): Boolean {
         parent?.requestDisallowInterceptTouchEvent(true)
         if (editable) when (e.actionMasked) {
-            MotionEvent.ACTION_DOWN -> dragWp = hitWaypoint(e.x, e.y).let { if (it >= 0) -it - 2 else -1 }
-            MotionEvent.ACTION_MOVE -> if (dragWp != -1 && e.pointerCount == 1) {
+            MotionEvent.ACTION_DOWN -> { dragHandle = hitHandle(e.x, e.y); dragging = false }
+            MotionEvent.ACTION_MOVE -> dragHandle?.let { h ->
+                if (e.pointerCount != 1) return@let
                 // Start dragging only after the finger really moves (taps still select).
-                val i = if (dragWp >= 0) dragWp else -dragWp - 2
-                val (sx, sy) = screen(mission[i].lat, mission[i].lon)
-                if (dragWp >= 0 || hypot(sx - e.x, sy - e.y) > 12 * density) {
-                    dragWp = i
+                val p = h.get()
+                val (sx, sy) = screen(p[0], p[1])
+                if (dragging || hypot(sx - e.x, sy - e.y) > 12 * density) {
+                    dragging = true
                     val (lat, lon) = geo(e.x, e.y)
-                    mission[i].lat = lat; mission[i].lon = lon
+                    h.set(lat, lon)
                     invalidate()
                     return true
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                if (dragWp >= 0) {
-                    val i = dragWp; dragWp = -1
-                    onWaypointMoved?.invoke(i, mission[i].lat, mission[i].lon)
+                val h = dragHandle
+                dragHandle = null
+                if (h != null && dragging) {
+                    dragging = false
+                    val p = h.get()
+                    if (h.zone < 0) onWaypointMoved?.invoke(h.point, p[0], p[1]) else onFenceMoved?.invoke(h.zone)
                     return true
                 }
-                dragWp = -1
             }
         }
         scaler.onTouchEvent(e)
@@ -263,6 +297,8 @@ class MapView(context: Context) : View(context) {
             }
             canvas.drawPath(p, trailPaint)
         }
+
+        drawFences(canvas)
 
         val pts = mission.withIndex().filter { it.value.hasPosition }
         if (pts.isNotEmpty()) {
@@ -319,8 +355,49 @@ class MapView(context: Context) : View(context) {
         canvas.drawText(t, width - 4 * density, height - 4 * density, credit)
     }
 
+    private fun metersPerPixel() = 156543.03392 * cos(Math.toRadians(centerLat)) / 2.0.pow(zoom) * (256 / tilePx)
+
+    private fun drawFences(canvas: Canvas) {
+        fences.forEachIndexed { zi, z ->
+            val line = if (z.kind.inclusion) fenceInLine else fenceOutLine
+            val fill = if (z.kind.inclusion) fenceInFill else fenceOutFill
+            val wide = zi == selectedZone && fenceEditing
+            if (wide) line.strokeWidth = 4.5f * density
+            when {
+                z.kind.polygon && z.points.isNotEmpty() -> {
+                    val path = Path()
+                    z.points.forEachIndexed { i, p ->
+                        val (x, y) = screen(p[0], p[1])
+                        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
+                    if (z.points.size >= 3) path.close()
+                    if (z.points.size >= 3) canvas.drawPath(path, fill)
+                    canvas.drawPath(path, line)
+                }
+                z.isCircle && z.points.isNotEmpty() -> {
+                    val (x, y) = screen(z.points[0][0], z.points[0][1])
+                    val r = (z.radius / metersPerPixel()).toFloat()
+                    canvas.drawCircle(x, y, r, fill)
+                    canvas.drawCircle(x, y, r, line)
+                }
+                z.kind == FenceZone.Kind.RETURN && z.points.isNotEmpty() -> {
+                    val (x, y) = screen(z.points[0][0], z.points[0][1])
+                    canvas.drawCircle(x, y, 9 * density, homeFill)
+                    canvas.drawText("R", x, y + homeText.textSize * 0.36f, homeText)
+                }
+            }
+            line.strokeWidth = 2.5f * density
+            if (fenceEditing) for (p in z.points) {
+                val (x, y) = screen(p[0], p[1])
+                val s = (if (wide) 6f else 4.5f) * density
+                canvas.drawRect(x - s, y - s, x + s, y + s, cornerFill)
+                canvas.drawRect(x - s, y - s, x + s, y + s, line)
+            }
+        }
+    }
+
     private fun drawScale(canvas: Canvas) {
-        val mPerPx = 156543.03392 * cos(Math.toRadians(centerLat)) / 2.0.pow(zoom) * (256 / tilePx)
+        val mPerPx = metersPerPixel()
         val target = 100 * density * mPerPx
         val nice = listOf(1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0,
             10000.0, 20000.0, 50000.0, 100000.0, 200000.0, 500000.0, 1e6).lastOrNull { it <= target } ?: 1.0

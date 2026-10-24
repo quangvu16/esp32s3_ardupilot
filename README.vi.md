@@ -327,7 +327,7 @@ rồi đọc lại tham số để thấy các tham số `OA_BR_` và `OA_DB_`):
 
 ```
 OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
-OA_MARGIN_MAX    = 1.5  # m giữ cách vật cản và hàng rào (mặc định 5 là quá nhiều cho xe nhỏ)
+OA_MARGIN_MAX    = 3    # m giữ cách vật cản và hàng rào (mặc định 5); luôn lớn hơn WP_RADIUS
 OA_BR_LOOKAHEAD  = 5    # m quét phía trước (BendyRuler); nhỏ hơn tầm 8 m của LD14
 OA_DB_DIST_MAX   = 8    # m: bỏ qua điểm LiDAR xa hơn tầm đo của LD14
 ```
@@ -337,10 +337,14 @@ OA_DB_DIST_MAX   = 8    # m: bỏ qua điểm LiDAR xa hơn tầm đo của LD14
   `AVOID_ENABLE` hoặc chọn loại 3.
 - **Dijkstra's with BendyRuler** đi theo đường ngắn nhất quanh hàng rào và chuyển sang BendyRuler
   khi LiDAR thấy vật cản.
+- Đặt `OA_MARGIN_MAX` lớn hơn `WP_RADIUS` (mặc định 2 m). Xe coi như đã tới waypoint sớm `WP_RADIUS`
+  mét và cắt góc, nên khoảng cách nhỏ hơn sẽ làm xe chạm góc hàng rào, vượt rào và dừng ở Hold. Trong
+  SITL, khoảng cách 2 với `WP_RADIUS` 2 chạm vào hộp cấm vào; khoảng cách 3 với `WP_RADIUS` 1 đi vòng qua an toàn.
 
-**4. Hàng rào** (cho Dijkstra's, và cho bit hàng rào của Simple Avoidance). Trong Mission Planner
-vào **Plan → Fence**: vẽ đa giác hoặc vòng tròn cho phép (inclusion) và cấm vào (exclusion), rồi
-tải lên xe. Sau đó cài:
+**4. Hàng rào** (cho Dijkstra's, và cho bit hàng rào của Simple Avoidance). Vẽ đa giác hoặc vòng
+tròn cho phép (inclusion, stay-in) và cấm vào (exclusion, stay-out), rồi tải lên xe: trong
+[ứng dụng Android](android_gcs/README.md#fences), **Plan → Fence**, hoặc trong Mission Planner,
+**Plan → Fence**. Sau đó cài (nút **Enable…** của ứng dụng làm việc này):
 
 ```
 FENCE_ENABLE = 1
@@ -373,8 +377,8 @@ thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4
 - hiệu chuẩn gia tốc kế, la bàn và tay điều khiển, xem LiDAR
 - hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
 
-**Tải về:** [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk) (Android 8.0 trở lên), trong
-[bản phát hành gcs-v1.0](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".
+**Tải về:** [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk) (Android 8.0 trở lên), trong
+[bản phát hành gcs-v1.1](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".
 Cách tự biên dịch (tiếng Anh) xem README của ứng dụng.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)

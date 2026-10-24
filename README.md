@@ -326,7 +326,7 @@ refresh the parameters to see the `OA_BR_` and `OA_DB_` ones):
 
 ```
 OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
-OA_MARGIN_MAX    = 1.5  # m kept from obstacles and fences (default 5 is a lot for a small car)
+OA_MARGIN_MAX    = 3    # m kept from obstacles and fences (default 5); keep it above WP_RADIUS
 OA_BR_LOOKAHEAD  = 5    # m probed ahead (BendyRuler); keep it under the LD14's 8 m range
 OA_DB_DIST_MAX   = 8    # m: ignore LiDAR points further away than the LD14 can measure
 ```
@@ -336,10 +336,15 @@ OA_DB_DIST_MAX   = 8    # m: ignore LiDAR points further away than the LD14 can 
   so pair it with `AVOID_ENABLE` or use type 3.
 - **Dijkstra's with BendyRuler** follows the shortest path around fences and switches to
   BendyRuler while the LiDAR sees an obstacle.
+- Keep `OA_MARGIN_MAX` larger than `WP_RADIUS` (default 2 m). The car counts a waypoint as reached
+  `WP_RADIUS` early and cuts the corner, so a smaller margin lets it clip a fence corner, breach it and
+  stop in Hold. In SITL, margin 2 with `WP_RADIUS` 2 touched a stay-out box; margin 3 with
+  `WP_RADIUS` 1 went cleanly around it.
 
-**4. Fences** (for Dijkstra's, and for simple avoidance's fence bit). In Mission Planner use
-**Plan → Fence**: draw inclusion and exclusion (stay-out) polygons or circles, then upload them.
-Then set:
+**4. Fences** (for Dijkstra's, and for simple avoidance's fence bit). Draw stay-in (inclusion)
+and stay-out (exclusion) polygons or circles, then upload them: in the
+[Android app](android_gcs/README.md#fences), **Plan → Fence**, or in Mission Planner, **Plan → Fence**.
+Then set (the app's **Enable…** button does this):
 
 ```
 FENCE_ENABLE = 1
@@ -373,8 +378,8 @@ the car go around it. If it hesitates or swings, see the BendyRuler page (`OA_BR
 - accelerometer, compass and radio calibration, and the LiDAR proximity view
 - RTK corrections over NTRIP, using the phone's mobile data
 
-**Download:** [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk) (Android 8.0 or newer), from the
-[gcs-v1.0 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). Open it on the phone and allow "install unknown apps".
+**Download:** [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk) (Android 8.0 or newer), from the
+[gcs-v1.1 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). Open it on the phone and allow "install unknown apps".
 To build it yourself, see the app's README.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)

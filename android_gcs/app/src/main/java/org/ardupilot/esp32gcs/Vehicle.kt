@@ -30,8 +30,9 @@ sealed class VehicleEvent {
     data class Link(val text: String) : VehicleEvent()
     data class ParamsDone(val received: Int, val total: Int) : VehicleEvent()
     data class ParamWritten(val name: String, val ok: Boolean, val value: Float) : VehicleEvent()
-    data class MissionUploaded(val ok: Boolean, val text: String) : VehicleEvent()
-    data class MissionDownloaded(val items: List<MissionItem>?, val text: String) : VehicleEvent()
+    /** [type]: [Vehicle.MISSION_TYPE_MISSION] or [Vehicle.MISSION_TYPE_FENCE]. */
+    data class MissionUploaded(val ok: Boolean, val text: String, val type: Int = 0) : VehicleEvent()
+    data class MissionDownloaded(val items: List<MissionItem>?, val text: String, val type: Int = 0) : VehicleEvent()
     data class CommandAck(val command: Int, val result: Int) : VehicleEvent()
     data class AccelCalPos(val position: Int) : VehicleEvent()
     data class MagCalReport(val status: Int, val fitness: Float) : VehicleEvent()
@@ -134,6 +135,7 @@ class Vehicle(private val ctx: Context) {
     private var txNext = 0
     private var txSentAt = 0L
     private var txTries = 0
+    private var txType = MISSION_TYPE_MISSION
     @Volatile var missionProgress = ""
         private set
 
@@ -576,7 +578,8 @@ class Vehicle(private val ctx: Context) {
     }
 
     // =========================================================================
-    // Mission (item 0 is home, as ArduPilot stores it)
+    // Mission and fence transfers: the same protocol, told apart by mission_type.
+    // Waypoint lists start with home (item 0, as ArduPilot stores it); fences don't.
     // =========================================================================
 
     val missionBusy get() = synchronized(this) { tx != Tx.IDLE }
@@ -587,14 +590,29 @@ class Vehicle(private val ctx: Context) {
             lat = if (hasHome) homeLat else if (hasPosition) lat else items.firstOrNull()?.lat ?: 0.0,
             lon = if (hasHome) homeLon else if (hasPosition) lon else items.firstOrNull()?.lon ?: 0.0,
             frame = 0 /* MAV_FRAME_GLOBAL */)
-        txItems = ArrayList(listOf(home) + items.map { it.copy() })
+        startUpload(MISSION_TYPE_MISSION, listOf(home) + items)
+    }
+
+    /** Fence items as [Fence.toItems] makes them; an empty list clears the fence. */
+    fun uploadFence(items: List<MissionItem>) = synchronized(this) {
+        if (tx != Tx.IDLE) return@synchronized
+        startUpload(MISSION_TYPE_FENCE, items)
+    }
+
+    fun downloadMission() = startDownload(MISSION_TYPE_MISSION)
+    fun downloadFence() = startDownload(MISSION_TYPE_FENCE)
+
+    private fun startUpload(type: Int, items: List<MissionItem>) {
+        txItems = ArrayList(items.map { it.copy() })
+        txType = type
         tx = Tx.UPLOAD; txTries = 0
         missionProgress = "Uploading…"
         sendMissionCount()
     }
 
-    fun downloadMission() = synchronized(this) {
+    private fun startDownload(type: Int) = synchronized(this) {
         if (tx != Tx.IDLE) return@synchronized
+        txType = type
         tx = Tx.DOWNLOAD; txTries = 0; txCount = -1; txNext = 0
         txItems = ArrayList()
         missionProgress = "Downloading…"
@@ -603,20 +621,21 @@ class Vehicle(private val ctx: Context) {
 
     fun clearMission() {
         val b = Mav.payload(Mav.MISSION_CLEAR_ALL)
-        b.put(0, sysId.toByte()); b.put(1, compId.toByte())
+        b.put(0, sysId.toByte()); b.put(1, compId.toByte()); b.put(2, MISSION_TYPE_MISSION.toByte())
         send(Mav.MISSION_CLEAR_ALL, b)
     }
 
     private fun sendMissionCount() {
         val b = Mav.payload(Mav.MISSION_COUNT)
         b.putShort(0, txItems.size.toShort()); b.put(2, sysId.toByte()); b.put(3, compId.toByte())
+        b.put(4, txType.toByte())
         send(Mav.MISSION_COUNT, b)
         txSentAt = SystemClock.elapsedRealtime()
     }
 
     private fun sendMissionRequestList() {
         val b = Mav.payload(Mav.MISSION_REQUEST_LIST)
-        b.put(0, sysId.toByte()); b.put(1, compId.toByte())
+        b.put(0, sysId.toByte()); b.put(1, compId.toByte()); b.put(2, txType.toByte())
         send(Mav.MISSION_REQUEST_LIST, b)
         txSentAt = SystemClock.elapsedRealtime()
     }
@@ -624,6 +643,7 @@ class Vehicle(private val ctx: Context) {
     private fun sendMissionRequest(seq: Int) {
         val b = Mav.payload(Mav.MISSION_REQUEST_INT)
         b.putShort(0, seq.toShort()); b.put(2, sysId.toByte()); b.put(3, compId.toByte())
+        b.put(4, txType.toByte())
         send(Mav.MISSION_REQUEST_INT, b)
         txSentAt = SystemClock.elapsedRealtime()
     }
@@ -635,18 +655,30 @@ class Vehicle(private val ctx: Context) {
         b.putInt(16, (it.lat * 1e7).toInt()); b.putInt(20, (it.lon * 1e7).toInt()); b.putFloat(24, it.alt)
         b.putShort(28, seq.toShort()); b.putShort(30, it.command.toShort())
         b.put(32, sysId.toByte()); b.put(33, compId.toByte())
-        b.put(34, it.frame.toByte()); b.put(35, if (seq == 0) 1 else 0); b.put(36, it.autocontinue.toByte())
+        b.put(34, it.frame.toByte()); b.put(35, if (seq == 0 && txType == MISSION_TYPE_MISSION) 1 else 0)
+        b.put(36, it.autocontinue.toByte()); b.put(37, txType.toByte())
         send(Mav.MISSION_ITEM_INT, b)
         txSentAt = SystemClock.elapsedRealtime()
     }
 
-    private fun sendMissionAck(type: Int) {
+    private fun sendMissionAck(result: Int) {
         val b = Mav.payload(Mav.MISSION_ACK)
-        b.put(0, sysId.toByte()); b.put(1, compId.toByte()); b.put(2, type.toByte())
+        b.put(0, sysId.toByte()); b.put(1, compId.toByte()); b.put(2, result.toByte()); b.put(3, txType.toByte())
         send(Mav.MISSION_ACK, b)
     }
 
     private fun onMission(m: MavPacket) {
+        if (tx == Tx.IDLE) return
+        // mission_type sits after the fields every version has; ignore the other list's traffic.
+        val type = when (m.msgId) {
+            Mav.MISSION_REQUEST_INT, Mav.MISSION_REQUEST, Mav.MISSION_COUNT -> m.u8(4)
+            Mav.MISSION_ITEM_INT -> m.u8(37)
+            Mav.MISSION_ACK -> m.u8(3)
+            else -> return
+        }
+        if (type != txType) return
+        val fence = txType == MISSION_TYPE_FENCE
+        val what = if (fence) "Fence" else "Mission"
         when (tx) {
             Tx.UPLOAD -> when (m.msgId) {
                 Mav.MISSION_REQUEST_INT, Mav.MISSION_REQUEST -> {
@@ -658,11 +690,12 @@ class Vehicle(private val ctx: Context) {
                     }
                 }
                 Mav.MISSION_ACK -> {
-                    val type = m.u8(2)
+                    val result = m.u8(2)
                     tx = Tx.IDLE
                     missionProgress = ""
-                    post(VehicleEvent.MissionUploaded(type == 0,
-                        if (type == 0) "Mission uploaded: ${txItems.size - 1} items" else "Upload refused: ${missionResult(type)}"))
+                    val n = if (fence) txItems.size else txItems.size - 1
+                    post(VehicleEvent.MissionUploaded(result == 0,
+                        if (result == 0) "$what uploaded: $n items" else "$what upload refused: ${missionResult(result)}", txType))
                 }
             }
             Tx.DOWNLOAD -> when (m.msgId) {
@@ -671,7 +704,7 @@ class Vehicle(private val ctx: Context) {
                     if (txCount == 0) {
                         tx = Tx.IDLE; missionProgress = ""
                         sendMissionAck(0)
-                        post(VehicleEvent.MissionDownloaded(emptyList(), "No mission on the vehicle"))
+                        post(VehicleEvent.MissionDownloaded(emptyList(), "No ${what.lowercase()} on the vehicle", txType))
                     } else sendMissionRequest(0)
                 }
                 Mav.MISSION_ITEM_INT -> {
@@ -687,8 +720,9 @@ class Vehicle(private val ctx: Context) {
                     else {
                         tx = Tx.IDLE; missionProgress = ""
                         sendMissionAck(0)
-                        // Item 0 is home: report the rest.
-                        post(VehicleEvent.MissionDownloaded(txItems.drop(1), "Mission downloaded: ${txCount - 1} items"))
+                        // A mission's item 0 is home: report the rest.
+                        val items = if (fence) txItems.toList() else txItems.drop(1)
+                        post(VehicleEvent.MissionDownloaded(items, "$what downloaded: ${items.size} items", txType))
                     }
                 }
             }
@@ -701,8 +735,9 @@ class Vehicle(private val ctx: Context) {
         if (++txTries > 5) {
             val up = tx == Tx.UPLOAD
             tx = Tx.IDLE; missionProgress = ""
-            if (up) post(VehicleEvent.MissionUploaded(false, "Upload timed out"))
-            else post(VehicleEvent.MissionDownloaded(null, "Download timed out"))
+            val what = if (txType == MISSION_TYPE_FENCE) "Fence" else "Mission"
+            if (up) post(VehicleEvent.MissionUploaded(false, "$what upload timed out", txType))
+            else post(VehicleEvent.MissionDownloaded(null, "$what download timed out", txType))
             return
         }
         when (tx) {
@@ -713,8 +748,8 @@ class Vehicle(private val ctx: Context) {
     }
 
     private fun missionResult(t: Int) = when (t) {
-        1 -> "error"; 2 -> "unsupported frame"; 3 -> "unsupported command"; 4 -> "no space"
-        5 -> "invalid"; 13 -> "invalid sequence"; 14 -> "cancelled"; 15 -> "denied"
+        1 -> "error (see the Log tab)"; 2 -> "unsupported frame"; 3 -> "unsupported command"; 4 -> "no space"
+        5 -> "invalid"; in 6..12 -> "invalid param${t - 5}"; 13 -> "invalid sequence"; 14 -> "denied"; 15 -> "cancelled"
         else -> "code $t"
     }
 
@@ -724,6 +759,9 @@ class Vehicle(private val ctx: Context) {
     }
 
     companion object {
+        const val MISSION_TYPE_MISSION = 0
+        const val MISSION_TYPE_FENCE = 1
+
         val ROVER_MODES = linkedMapOf(
             0 to "Manual", 1 to "Acro", 3 to "Steering", 4 to "Hold", 5 to "Loiter",
             6 to "Follow", 7 to "Simple", 8 to "Dock", 9 to "Circle", 10 to "Auto",

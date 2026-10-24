@@ -74,6 +74,12 @@ class MainActivity : Activity() {
     private lateinit var planStatus: TextView
     private var planAddMode = true
     private var planSpeed = 0f
+    private var planFence = false                       // the Plan tab edits the fence, not the mission
+    private val fence = ArrayList<FenceZone>()
+    private var fenceZone = -1                          // zone that map taps add corners to
+    private lateinit var missionTools: View
+    private lateinit var fenceTools: View
+    private lateinit var planModeBtn: Button
 
     // params page
     private lateinit var paramList: ListView
@@ -395,7 +401,20 @@ class MainActivity : Activity() {
     private fun planPage(): View {
         val v = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val addBtn = button("Tap adds: on") { b -> planAddMode = !planAddMode; b.text = "Tap adds: " + if (planAddMode) "on" else "off" }
-        v.addView(scrollRow(
+        planModeBtn = button("Fence", accent = false) { setPlanFence(!planFence) }
+        fenceTools = scrollRow(
+            button("Mission") { setPlanFence(false) },
+            button("Read") { if (requireLink()) vehicle.downloadFence() },
+            button("Write", accent = true) { writeFence() },
+            button("+ Stay-in") { addZone(FenceZone.Kind.POLYGON_IN) },
+            button("+ Stay-out") { addZone(FenceZone.Kind.POLYGON_OUT) },
+            button("+ Circle") { addZone(FenceZone.Kind.CIRCLE_OUT) },
+            button("Enable…") { enableFence() },
+            button("Clear") { confirm("Clear fence", "Remove all zones from the fence on the phone? Write afterwards to clear the vehicle's fence too.") { fence.clear(); fenceZone = -1; fenceChanged() } },
+        ).apply { visibility = View.GONE }
+        v.addView(fenceTools)
+        missionTools = scrollRow(
+            planModeBtn,
             button("Read") { if (requireLink()) vehicle.downloadMission() },
             button("Write", accent = true) { writeMission() },
             addBtn,
@@ -404,7 +423,8 @@ class MainActivity : Activity() {
             button("Start Auto") { startAuto() },
             button("Load") { openFile(REQ_LOAD_MISSION) },
             button("Save") { saveFile(REQ_SAVE_MISSION, "mission.waypoints") },
-        ))
+        )
+        v.addView(missionTools)
         planStatus = text("Tap the map to add a waypoint, drag one to move it, tap it to edit.", 12f, R.color.muted).apply {
             setPadding(dp(10), dp(2), dp(10), dp(4))
         }
@@ -412,9 +432,14 @@ class MainActivity : Activity() {
         planMap = MapView(this).apply {
             editable = true
             mission = plan
-            onTap = { lat, lon -> if (planAddMode) { plan.add(newWaypoint(lat, lon)); planChanged() } }
+            onTap = { lat, lon ->
+                if (planFence) fenceTap(lat, lon)
+                else if (planAddMode) { plan.add(newWaypoint(lat, lon)); planChanged() }
+            }
             onWaypointTap = { i -> editItem(i) }
             onWaypointMoved = { _, _, _ -> planChanged() }
+            onFenceTap = { zone, point -> editZone(zone, point) }
+            onFenceMoved = { zone -> fenceZone = zone; fenceChanged() }
         }
         v.addView(planMap, lp(-1, 0, 1f))
         planList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(10), dp(4), dp(10), dp(4)) }
@@ -424,6 +449,122 @@ class MainActivity : Activity() {
     }
 
     private fun newWaypoint(lat: Double, lon: Double) = MissionItem(lat = lat, lon = lon)
+
+    // --- fence ------------------------------------------------------------------------
+
+    private fun setPlanFence(on: Boolean) {
+        planFence = on
+        fenceTools.visibility = if (on) View.VISIBLE else View.GONE
+        missionTools.visibility = if (on) View.GONE else View.VISIBLE
+        planMap.fenceEditing = on
+        if (on) fenceChanged() else planChanged()
+    }
+
+    private fun addZone(kind: FenceZone.Kind) {
+        fence.add(FenceZone(kind, radius = if (kind == FenceZone.Kind.CIRCLE_OUT) 3f else 0f))
+        fenceZone = fence.size - 1
+        fenceChanged()
+        planStatus.text = if (kind.polygon) "Tap the map to place the corners of ${kind.label.lowercase()} ${fenceZone + 1} (3 or more)."
+            else "Tap the map to place the centre of the circle."
+    }
+
+    /** A map tap in fence mode: a corner for the zone being drawn, or a circle's centre. */
+    private fun fenceTap(lat: Double, lon: Double) {
+        val z = fence.getOrNull(fenceZone)
+        if (z == null) { toast("Add a zone first: + Stay-in, + Stay-out or + Circle"); return }
+        when {
+            z.kind.polygon -> z.points.add(doubleArrayOf(lat, lon))
+            z.points.isEmpty() -> { z.points.add(doubleArrayOf(lat, lon)); if (z.isCircle) askRadius(z) }
+            else -> { z.points[0][0] = lat; z.points[0][1] = lon }
+        }
+        fenceChanged()
+    }
+
+    private fun askRadius(z: FenceZone) {
+        val e = edit("metres", fmt(z.radius), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        AlertDialog.Builder(this).setTitle("${z.kind.label} radius")
+            .setView(FrameLayout(this).apply { setPadding(dp(20), 0, dp(20), 0); addView(e) })
+            .setPositiveButton("OK") { _, _ -> z.radius = e.text.toString().toFloatOrNull()?.takeIf { it > 0 } ?: z.radius; fenceChanged() }
+            .setNegativeButton("Cancel", null).show()
+    }
+
+    private fun editZone(zi: Int, point: Int) {
+        val z = fence[zi]
+        fenceZone = zi
+        fenceChanged()
+        val acts = ArrayList<Pair<String, () -> Unit>>()
+        acts += "Add corners to this zone" to { planStatus.text = "Tapping the map adds corners to ${z.kind.label.lowercase()} ${zi + 1}." }
+        if (z.kind.polygon && point >= 0) acts += "Delete this corner" to { z.points.removeAt(point); fenceChanged() }
+        if (z.isCircle) acts += "Change radius (now ${fmt(z.radius)} m)" to { askRadius(z) }
+        if (z.kind.polygon || z.isCircle) {
+            val other = when (z.kind) {
+                FenceZone.Kind.POLYGON_IN -> FenceZone.Kind.POLYGON_OUT; FenceZone.Kind.POLYGON_OUT -> FenceZone.Kind.POLYGON_IN
+                FenceZone.Kind.CIRCLE_IN -> FenceZone.Kind.CIRCLE_OUT; else -> FenceZone.Kind.CIRCLE_IN
+            }
+            acts += "Make it ${other.label.lowercase()}" to { z.kind = other; fenceChanged() }
+        }
+        acts += "Delete the whole zone" to { fence.removeAt(zi); fenceZone = -1; fenceChanged() }
+        AlertDialog.Builder(this).setTitle("${zi + 1}. ${z.kind.label}")
+            .setItems(acts.map { it.first }.toTypedArray()) { _, w -> acts[w].second() }.show()
+    }
+
+    private fun fenceChanged() {
+        planMap.fences = fence; flyMap.fences = fence
+        planMap.selectedZone = fenceZone
+        planMap.invalidate(); flyMap.invalidate()
+        if (!planFence) return
+        planList.removeAllViews()
+        fence.forEachIndexed { i, z ->
+            val what = when {
+                z.kind.polygon -> "${z.points.size} corners"
+                z.isCircle -> "radius ${fmt(z.radius)} m" + if (z.points.isEmpty()) ", no centre yet" else ""
+                else -> ""
+            }
+            planList.addView(text("${i + 1}. ${z.kind.label}, $what" + if (i == fenceZone) "  ◀ adding" else "", 13f,
+                if (z.kind.inclusion) R.color.ok else R.color.bad).apply {
+                setPadding(0, dp(5), 0, dp(5)); setOnClickListener { editZone(i, -1) }
+            })
+        }
+        if (fence.isEmpty()) planList.addView(text("No fence zones. Stay-in: the car must stay inside. Stay-out: it must keep out.", 13f, R.color.muted))
+        else {
+            val bytes = Fence.storageBytes(fence)
+            planList.addView(text("Uses $bytes of the board's ${Fence.BOARD_STORAGE_BYTES} bytes of fence storage" +
+                (Fence.problem(fence)?.let { "\n⚠ $it" } ?: ""), 12f,
+                if (bytes > Fence.BOARD_STORAGE_BYTES || Fence.problem(fence) != null) R.color.warn else R.color.muted))
+        }
+    }
+
+    private fun writeFence() {
+        if (!requireLink()) return
+        Fence.problem(fence)?.let { toast(it); return }
+        val bytes = Fence.storageBytes(fence)
+        val send = { vehicle.uploadFence(Fence.toItems(fence)) }
+        when {
+            fence.isEmpty() -> confirm("Clear the vehicle's fence", "Write an empty fence? This deletes all fence zones on the vehicle.", "Clear") { send() }
+            bytes > Fence.BOARD_STORAGE_BYTES -> confirm("Fence may not fit",
+                "This fence needs $bytes bytes; the ESP32-S3 board stores ${Fence.BOARD_STORAGE_BYTES}. It will refuse it (\"Fence exceeds storage size\"). Write anyway?", "Write") { send() }
+            else -> send()
+        }
+    }
+
+    /** Turns the fence on: polygons and circles in FENCE_TYPE, Hold on a breach unless an action is already set. */
+    private fun enableFence() {
+        if (!requireLink()) return
+        val en = vehicle.paramValue("FENCE_ENABLE")
+        val type = vehicle.paramValue("FENCE_TYPE")?.toInt()
+        val action = vehicle.paramValue("FENCE_ACTION")?.toInt()
+        if (en == null || type == null) { toast("Read the parameters first (Params → Refresh)"); return }
+        val newType = type or 4                   // bit 2: inclusion/exclusion circles + polygons
+        val newAction = if (action == null || action == 0) 2 else action
+        confirm("Enable the fence",
+            "FENCE_ENABLE ${en.toInt()} → 1\nFENCE_TYPE $type → $newType (adds polygons and circles)\n" +
+                "FENCE_ACTION ${action ?: "?"} → $newAction (${if (newAction == 2) "Hold" else "unchanged"})\n\n" +
+                "The car will not arm while it is outside a stay-in zone or inside a stay-out zone.", "Enable") {
+            vehicle.setParam("FENCE_TYPE", newType.toFloat())
+            vehicle.setParam("FENCE_ACTION", newAction.toFloat())
+            vehicle.setParam("FENCE_ENABLE", 1f)
+        }
+    }
 
     private fun itemLabel(it: MissionItem) = when (it.command) {
         Mav.CMD_NAV_WAYPOINT -> "Waypoint" + if (it.p1 > 0) ", wait ${it.p1.toInt()} s" else ""
@@ -438,6 +579,7 @@ class MainActivity : Activity() {
     private fun planChanged() {
         planMap.mission = plan; flyMap.mission = plan
         planMap.invalidate(); flyMap.invalidate()
+        if (planFence) return                     // the list shows fence zones
         planList.removeAllViews()
         var total = 0.0
         var prev: Pair<Double, Double>? = if (vehicle.hasHome) Pair(vehicle.homeLat, vehicle.homeLon) else null
@@ -853,7 +995,9 @@ class MainActivity : Activity() {
             is VehicleEvent.MissionUploaded -> { planStatus.text = e.text; toast(e.text) }
             is VehicleEvent.MissionDownloaded -> {
                 planStatus.text = e.text; toast(e.text)
-                if (e.items != null) { plan.clear(); plan.addAll(e.items); planChanged(); planMap.fit() }
+                if (e.items != null && e.type == Vehicle.MISSION_TYPE_FENCE) {
+                    fence.clear(); fence.addAll(Fence.fromItems(e.items)); fenceZone = -1; fenceChanged(); planMap.fit()
+                } else if (e.items != null) { plan.clear(); plan.addAll(e.items); planChanged(); planMap.fit() }
             }
             is VehicleEvent.CommandAck -> {
                 val what = when (e.command) {

@@ -78,6 +78,6 @@ SERIAL1_PROTOCOL,2      # MAVLink2
 # Path planning in Auto/Guided/RTL (reboot after setting OA_TYPE):
 # 1 BendyRuler (LiDAR + fences), 2 Dijkstra's (fences only), 3 Dijkstra's with BendyRuler
 #OA_TYPE,1
-#OA_MARGIN_MAX,1.5       # m kept from obstacles and fences
+#OA_MARGIN_MAX,3         # m kept from obstacles and fences; keep it above WP_RADIUS
 #OA_BR_LOOKAHEAD,5       # m probed ahead, under the LD14's 8 m range
 #OA_DB_DIST_MAX,8        # m, the LD14's range

@@ -5,7 +5,7 @@ this repository's ArduRover on the ESP32-S3. It speaks MAVLink 2 to the board ov
 (TCP `192.168.4.1:5760`), and also works with any other ArduRover or with SITL.
 
 Native Kotlin, no libraries: the MAVLink code, the map and the NTRIP client are part of the app.
-Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0)).
+Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1)).
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](docs/screens.svg)
 
@@ -26,7 +26,7 @@ and NTRIP corrections over mobile data.
 | Tab | What it does | Mission Planner equivalent |
 | --- | --- | --- |
 | **Data** | HUD (horizon, heading, speed, mode, armed, GPS, battery, waypoint distance). **Arm** (long press: force arm), mode buttons, and a map with the car, its trail, home and the mission. Tap the map in Guided mode to drive there. Long press for *Drive here*, *Set home here* or *Add waypoint*. **Drive** opens a phone stick (RC override over MAVLink, power limit 10-100%). | Flight Data |
-| **Plan** | Tap the map to add waypoints, drag them to move, tap one to edit it (waypoint, loiter time, RTL, speed change, order, delete). **Read** / **Write** to the vehicle, **Start Auto**, mission speed. Load and save Mission Planner `.waypoints` files. | Flight Plan |
+| **Plan** | Tap the map to add waypoints, drag them to move, tap one to edit it (waypoint, loiter time, RTL, speed change, order, delete). **Read** / **Write** to the vehicle, **Start Auto**, mission speed. Load and save Mission Planner `.waypoints` files. **Fence** switches to [fence editing](#fences). | Flight Plan |
 | **Params** | Full parameter list with search. Tap to edit: **Write now**, or **Stage** several and write them together. **Load file** stages only the values that differ from the vehicle (e.g. [`esp32s3_rover_ld14_f9p.parm`](../esp32s3_rover_ld14_f9p.parm)). **Save file**, **Reboot**. | Config → Full Parameter List |
 | **Setup** | Connection (TCP / UDP). 6-position accelerometer calibration, or level only. Compass calibration. Radio bars and calibration (writes `RCn_MIN/MAX/TRIM`). LiDAR proximity view. RTK over NTRIP. Set home, reboot, clear the mission. | Initial Setup, Optional Hardware |
 | **Log** | Every message from the autopilot (`STATUSTEXT`), newest first. | Messages tab |
@@ -38,6 +38,27 @@ The app pulls RTCM3 from the caster over mobile data. It checks each frame's CRC
 ZED-F9P as `GPS_RTCM_DATA`, splitting frames over 180 bytes. Every 10 s it sends the car's
 position to the caster as GGA, which VRS casters need. The status line lists the RTCM message
 types received. The GPS pill goes `3D fix` → `RTK Float` → `RTK Fixed`.
+
+### Fences
+
+Plan → **Fence** edits the geofence instead of the mission. It's needed for Dijkstra's path
+planning (`OA_TYPE` 2 or 3) and the fence part of `AVOID_ENABLE`; see the main README's
+[obstacle avoidance step](../README.md#8-obstacle-avoidance-with-the-lidar-last).
+
+1. **+ Stay-in** or **+ Stay-out**, then tap the map at each corner (3 or more). **+ Circle** asks for
+   a radius after you tap its centre. Stay-in zones are green; the car must stay inside them.
+   Stay-out zones are red; it must keep out.
+2. Drag a corner to move it. Tap a corner or a zone in the list to delete it, add more corners,
+   change a circle's radius, or switch it between stay-in and stay-out.
+3. **Write** sends the fence to the vehicle; **Read** fetches the vehicle's. Writing an empty fence
+   clears the vehicle's.
+4. **Enable…** sets `FENCE_ENABLE` 1, adds polygons and circles to `FENCE_TYPE`, and sets
+   `FENCE_ACTION` to Hold if no action was set. The car then won't arm outside a stay-in zone or
+   inside a stay-out zone.
+
+The list shows how much fence storage the zones use. The ESP32-S3 board stores 672 bytes, about
+80 corners. The app refuses polygons with fewer than 3 corners and circles without a radius before
+sending, the same checks ArduPilot makes. Fences are drawn on the Data map too.
 
 ### Driving from the phone
 
@@ -66,11 +87,11 @@ Create `local.properties` with `sdk.dir=<path to the Android SDK>`, or set `ANDR
 
 ## Install
 
-Download the ready-built APK, [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk), from the
-[gcs-v1.0 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). `SHA256SUMS` there has its checksum.
+Download the ready-built APK, [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk), from the
+[gcs-v1.1 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). `SHA256SUMS` there has its checksum.
 
 - **On the phone:** open the link, open the downloaded file, and allow "install unknown apps".
-- **USB:** turn on Developer options → USB debugging, then `adb install -r esp32-rover-gcs-1.0.apk`
+- **USB:** turn on Developer options → USB debugging, then `adb install -r esp32-rover-gcs-1.1.apk`
   (or `app/build/outputs/apk/release/app-release.apk` for your own build).
 
 The release APK is signed with an Android debug key. To install your own build over it,
@@ -91,6 +112,14 @@ uses, and run against ArduRover 4.6.3 SITL built from this tree. These worked ov
 - both calibration flows: the accel position prompts, and compass progress
 - splitting and fragmenting RTCM3
 
+Fences were tested the same way:
+- a fence with every zone type (stay-in and stay-out polygons and circles, a return point)
+  uploaded and read back identical
+- a 2-corner polygon refused by both the app and ArduPilot, with the previous fence kept
+- waypoint missions and fences transferred one after the other without touching each other
+- with `OA_TYPE` 2 (Dijkstra's) and a 10 m stay-out box uploaded by the app between the car and a
+  point 40 m ahead, the car drove around the box in Guided and reached the point without entering it
+
 UDP listen mode on 14550 was also tested: heartbeat, all parameters, and a mode change.
 The screens were not tested in that run; they need a phone or an emulator.
 
@@ -100,8 +129,9 @@ The screens were not tested in that run; they need a phone or an emulator.
 | --- | --- |
 | `Mavlink.kt` | v1/v2 parser, v2 encoder, X.25 CRC, message ids, CRC extras and lengths (from ArduPilot 4.6's generated headers) |
 | `Link.kt` | TCP and UDP links. The socket is bound to the WiFi network so it does not go out over mobile data |
-| `Vehicle.kt` | Telemetry state, parameter / mission / command protocols with retries, calibrations, RTCM injection |
+| `Vehicle.kt` | Telemetry state, parameter / mission / fence / command protocols with retries, calibrations, RTCM injection |
+| `Fence.kt` | Fence zones ↔ fence mission items, ArduPilot's fence checks, storage estimate |
 | `Ntrip.kt` | NTRIP 1.0 client, RTCM3 frame splitter (CRC-24Q), GGA sentence |
-| `MapView.kt` | OpenStreetMap / Esri satellite tiles (disk cache), vehicle, trail, home, mission, waypoint dragging |
+| `MapView.kt` | OpenStreetMap / Esri satellite tiles (disk cache), vehicle, trail, home, mission, fences, waypoint and fence-corner dragging |
 | `HudView.kt`, `RadarView.kt`, `JoystickView.kt` | HUD, LiDAR proximity view, drive stick |
 | `MainActivity.kt` | The five tabs |
