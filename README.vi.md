@@ -388,7 +388,10 @@ thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4
 - hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
 
 [Phiên bản Windows](android_gcs/desktop/README.md) có cùng bản đồ, lộ trình, zig-zag, tuần tra,
-hàng rào, tab LiDAR và tham số (hiệu chuẩn và RTK vẫn dùng Mission Planner trên máy tính).
+hàng rào, tab LiDAR và tham số (hiệu chuẩn và RTK vẫn dùng Mission Planner trên máy tính), dạng file
+`.exe` có sẵn Java bên trong. [Ứng dụng iPhone, iPad và Mac](apple_gcs/README.md) (SwiftUI) có đủ các
+tab của bản Android, kể cả hiệu chuẩn và RTK. Hình minh họa: [Windows](android_gcs/desktop/docs/screens.svg),
+[iPhone](apple_gcs/docs/screens-ios.svg), [Mac](apple_gcs/docs/screens-mac.svg).
 **Cách sử dụng tất cả: xem [hướng dẫn](docs/GUIDE.vi.md).**
 
 **Tải về:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 trở lên), trong

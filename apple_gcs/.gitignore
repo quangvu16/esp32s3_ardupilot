@@ -1,0 +1,5 @@
+build/
+DerivedData/
+build.log
+xcuserdata/
+!Esp32RoverGcs.xcodeproj/project.xcworkspace/xcuserdata/

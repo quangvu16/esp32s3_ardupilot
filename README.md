@@ -389,7 +389,10 @@ the car go around it. If it hesitates or swings, see the BendyRuler page (`OA_BR
 - RTK corrections over NTRIP, using the phone's mobile data
 
 A [Windows version](android_gcs/desktop/README.md) has the same map, missions, zig-zag, patrol,
-fences, LiDAR tab and parameters (calibration and RTK stay with Mission Planner on a PC).
+fences, LiDAR tab and parameters (calibration and RTK stay with Mission Planner on a PC), as an
+`.exe` with Java inside. An [iPhone, iPad and Mac app](apple_gcs/README.md) (SwiftUI) has all the
+Android tabs, calibration and RTK included. Drawings of both: [Windows](android_gcs/desktop/docs/screens.svg),
+[iPhone](apple_gcs/docs/screens-ios.svg), [Mac](apple_gcs/docs/screens-mac.svg).
 **How to use all of it: the [guide](docs/GUIDE.md).**
 
 **Download:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 or newer), from the

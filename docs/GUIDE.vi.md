@@ -7,7 +7,19 @@ LiDAR. Biên dịch, nạp firmware, đấu dây và toàn bộ tham số nằm 
 hướng dẫn này nói về việc điều khiển xe. Tên nút và tham số được giữ bằng tiếng Anh, đúng như trên
 màn hình ứng dụng.
 
-![Màn hình ứng dụng](../android_gcs/docs/screens.svg)
+Có bốn ứng dụng trạm mặt đất dùng chung một lõi: Android, Windows, iPhone/iPad và Mac.
+
+![Ứng dụng Android](../android_gcs/docs/screens.svg)
+
+<details><summary>Ứng dụng Windows, iPhone và Mac</summary>
+
+![Ứng dụng Windows](../android_gcs/desktop/docs/screens.svg)
+
+![Ứng dụng iPhone](../apple_gcs/docs/screens-ios.svg)
+
+![Ứng dụng Mac](../apple_gcs/docs/screens-mac.svg)
+
+</details>
 
 ## Mục lục
 
@@ -22,6 +34,7 @@ màn hình ứng dụng.
 9. [GPS RTK](#9-gps-rtk)
 10. [Xử lý sự cố](#10-xử-lý-sự-cố)
 11. [Trước mỗi lần chạy](#11-trước-mỗi-lần-chạy)
+12. [Tập luyện không cần xe](#12-tập-luyện-không-cần-xe)
 
 ## 1. Bạn có gì
 
@@ -29,10 +42,22 @@ màn hình ứng dụng.
 | --- | --- | --- |
 | Firmware | ArduRover 4.6.3 cho ESP32-S3 với LiDAR LD14, RTK ZED-F9P, tránh vật cản và hàng rào | [Releases](https://github.com/quangvu16/esp32s3_ardupilot/releases), README.vi.md [Nạp firmware](../README.vi.md#nạp-firmware) |
 | Ứng dụng Android | Trạm mặt đất trên điện thoại: bản đồ, lộ trình, zig-zag, tuần tra, hàng rào, LiDAR, tham số, hiệu chuẩn, RTK | [android_gcs](../android_gcs/README.md), APK trong các bản phát hành `gcs-v…` |
-| Ứng dụng Windows | Như trên, chạy trên máy tính (không có hiệu chuẩn và RTK: dùng Mission Planner) | [android_gcs/desktop](../android_gcs/desktop/README.md) |
+| Ứng dụng Windows | Như trên, chạy trên máy tính (không có hiệu chuẩn và RTK: dùng Mission Planner). `Esp32RoverGcs.exe` có sẵn Java bên trong | [android_gcs/desktop](../android_gcs/desktop/README.md), workflow *Windows app (exe)* / bản phát hành |
+| Ứng dụng iPhone, iPad và Mac | Một ứng dụng SwiftUI: các tab như ứng dụng Android, có cả hiệu chuẩn và RTK; trên Mac lái bằng phím mũi tên | [apple_gcs](../apple_gcs/README.md), biên dịch bằng Xcode |
 | Mission Planner | Vẫn dùng được: TCP `192.168.4.1:5760` | [ardupilot.org](https://ardupilot.org/planner/) |
 
 WiFi của board chỉ phục vụ tốt một trạm mặt đất mỗi lúc. Hãy đóng các trạm khác trước khi chạy xe.
+
+### Cài các ứng dụng
+
+| Ứng dụng | Cách cài |
+| --- | --- |
+| Android | Tải APK từ bản phát hành `gcs-v…` mới nhất, mở trên điện thoại và cho phép *cài ứng dụng không rõ nguồn*. |
+| Windows | `Esp32RoverGcs-<phiên bản>.exe` cài cho người dùng hiện tại (menu Start *ESP32 Rover* và lối tắt trên desktop); hoặc giải nén `…-windows-portable.zip` rồi chạy `Esp32RoverGcs\Esp32RoverGcs.exe`. Không cần cài Java. Lần đầu: SmartScreen chọn *More info → Run anyway*; tường lửa: cho phép *Private networks*. |
+| Mac | Mở `apple_gcs/Esp32RoverGcs.xcodeproj` bằng Xcode, chọn **My Mac**, **Product → Run**. Không cần tài khoản Apple. Lần đầu macOS có thể chặn: System Settings → Privacy & Security → **Open Anyway**. |
+| iPhone / iPad | Xcode → Settings → Accounts: thêm Apple ID. Project → Signing & Capabilities → Team: *tên bạn (Personal Team)*. Cắm iPhone bằng cáp, bật Settings → Privacy & Security → **Developer Mode**, chọn iPhone trong Xcode rồi **Run**. Trên iPhone: Settings → General → VPN & Device Management → Apple ID của bạn → **Trust**. Với Apple ID miễn phí, cứ 7 ngày phải chạy lại từ Xcode. |
+
+Chi tiết: [apple_gcs/README](../apple_gcs/README.md), [README ứng dụng Windows](../android_gcs/desktop/README.md).
 
 ## 2. Kết nối
 
@@ -40,7 +65,10 @@ WiFi của board chỉ phục vụ tốt một trạm mặt đất mỗi lúc. H
 2. Cho điện thoại hoặc máy tính vào mạng đó.
    - **Android** báo mạng không có internet: chọn *vẫn kết nối*. Dữ liệu di động vẫn bật cho bản đồ
      và RTK; ứng dụng tự gửi MAVLink qua WiFi.
-   - **Windows**: WiFi này cũng không có internet, đó là bình thường.
+   - **Windows** và **Mac**: WiFi này cũng không có internet, đó là bình thường.
+   - **iPhone / iPad**: vẫn ở lại mạng khi iOS báo không có internet. Lần đầu mở ứng dụng, cho phép
+     **Local Network** (mạng cục bộ); nếu không, ứng dụng không tới được `192.168.4.1` (đổi lại trong
+     Settings → Privacy & Security → Local Network). Dữ liệu di động vẫn bật cho bản đồ và RTK.
 3. Mở ứng dụng. Nó tự kết nối tới TCP `192.168.4.1:5760`. Mục đầu tiên trên thanh trạng thái chuyển
    sang màu xanh.
 
@@ -54,11 +82,14 @@ Mission Planner). Thứ tự và cách kiểm tra xem phần [Cài đặt tham s
   2 giây). Disarm cũng vậy, hoặc lái hết bên trái.
 - **Chế độ**: Manual (cần điều khiển trực tiếp), Acro (cần = tốc độ và tốc độ quay; về 0 là phanh),
   Hold (dừng), Auto (chạy lộ trình), Guided (tới một điểm), RTL (về home).
-- **Không có tay điều khiển**: cần **Drive** của ứng dụng Android, hoặc **Drive with arrow keys**
-  (phím mũi tên) của ứng dụng Windows. Cả hai gửi lệnh ghi đè cần điều khiển, có tác dụng ở Manual,
-  Acro và Steering; *Power* giới hạn mức tối đa. Nếu ứng dụng ngừng gửi, sau `RC_OVERRIDE_TIME` (3 giây)
+- **Không có tay điều khiển**: cần **Drive** của ứng dụng Android và iPhone (tab Data → Drive), hoặc
+  phím mũi tên / W A S D của ứng dụng Windows (tích *Drive with arrow keys*) và ứng dụng Mac (mở
+  **Drive**). Tất cả gửi lệnh ghi đè cần điều khiển, có tác dụng ở Manual, Acro và Steering; *Power*
+  giới hạn mức tối đa. Thả tay là gửi lệnh về 0; trên máy tính và Mac, phím đang giữ bị bỏ khi cửa sổ
+  mất focus. Nếu ứng dụng ngừng gửi, sau `RC_OVERRIDE_TIME` (3 giây)
   xe quay lại nghe tay điều khiển.
-- **Guided**: chuyển sang Guided, rồi chạm (bấm) lên bản đồ ở chỗ muốn xe tới.
+- **Guided**: chuyển sang Guided, rồi chạm (bấm) lên bản đồ ở chỗ muốn xe tới. (iPhone và Mac: menu
+  *Tap* trên bản đồ chọn việc mỗi lần chạm: tới đây, thêm waypoint, hoặc dời home.)
 
 Lần chạy đầu tiên hãy nhấc bánh xe khỏi mặt đất.
 
@@ -178,7 +209,9 @@ Các hành vi này do ứng dụng lái. Để tránh vật cản khi chạy l�
 
 ## 9. GPS RTK
 
-Android: Setup → **RTK / NTRIP**: caster, cổng (2101), mountpoint, user, mật khẩu → **Start NTRIP**.
+Android, iPhone và Mac: Setup → **RTK / NTRIP**: caster, cổng (2101), mountpoint, user, mật khẩu →
+**Start NTRIP**. Trên iPhone giữ *Over mobile data* bật khi điện thoại đang ở WiFi của xe (WiFi đó
+không có internet).
 Trên máy tính: Mission Planner → Setup → Optional Hardware → RTK/GPS Inject. Trạng thái GPS đi từ 3D fix
 → RTK Float → RTK Fixed. Khi RTK Fixed, `WP_RADIUS` 0,5 m là hợp lý.
 
@@ -186,7 +219,9 @@ Trên máy tính: Mission Planner → Setup → Optional Hardware → RTK/GPS In
 
 | Hiện tượng | Kiểm tra |
 | --- | --- |
-| Ứng dụng không kết nối | Điện thoại hoặc máy tính đang ở WiFi `ardupilot123`; địa chỉ là TCP `192.168.4.1:5760`; không có trạm mặt đất nào khác đang kết nối |
+| Ứng dụng không kết nối | Điện thoại hoặc máy tính đang ở WiFi `ardupilot123`; địa chỉ là TCP `192.168.4.1:5760`; không có trạm mặt đất nào khác đang kết nối. iPhone: đã cho phép *Local Network*. Khi không tới được board, trạng thái ghi *no answer: is this device on the car's WiFi?* |
+| Ứng dụng iPhone không mở sau một tuần | Ứng dụng ký bằng Apple ID miễn phí hết hạn sau 7 ngày: chạy lại từ Xcode |
+| Windows: "Windows protected your PC" | File exe không ký bằng chứng chỉ trả phí: **More info → Run anyway** |
 | Không arm được | Tab Log ghi lý do (`PreArm: …`). Hàng rào: xe phải ở trong vùng stay-in |
 | Cần / phím mũi tên không có tác dụng | Chế độ phải là Manual, Acro hoặc Steering; `SYSID_MYGCS` phải là 255; xe phải được arm |
 | Tab LiDAR không có vòng quét | Firmware v4.6.3-esp32s3-3 trở lên, `PRX1_TYPE` 19, `SERIAL2_PROTOCOL` 11, chân TX của LD14 nối GPIO41 |
@@ -201,3 +236,18 @@ Trên máy tính: Mission Planner → Setup → Optional Hardware → RTK/GPS In
 - [ ] Đã thử failsafe của tay điều khiển
 - [ ] LiDAR: cái hộp phía trước hiện ở phía trên của vòng quét
 - [ ] Lần đầu chạy bất cứ thứ gì mới: nhấc bánh xe lên, rồi chạy chậm dưới đất
+
+## 12. Tập luyện không cần xe
+
+[`apple_gcs/tools/fake_rover.py`](../apple_gcs/tools/fake_rover.py) là một ArduRover giả để thử bất
+kỳ ứng dụng nào ngay tại bàn. Chỉ cần Python 3:
+
+```bash
+python3 apple_gcs/tools/fake_rover.py
+```
+
+Rồi cho ứng dụng kết nối tới TCP **`127.0.0.1:5760`** (tab Setup, hoặc ô địa chỉ của ứng dụng
+Windows). Nó gửi vị trí trong một công viên với RTK Fixed, vòng quét LiDAR có bốn cột quanh home,
+23 tham số, và trả lời arm, chế độ, cần Drive, Guided, lộ trình và hàng rào: ở Auto xe chạy qua các
+waypoint rồi dừng ở Hold. Đây chỉ là mô hình đơn giản, không phải mô phỏng xe thật; muốn vậy hãy dùng
+ArduPilot SITL.

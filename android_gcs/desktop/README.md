@@ -1,5 +1,9 @@
 # ESP32 Rover GCS for Windows
 
+![Windows app: Fly, Plan and LiDAR tabs](docs/screens.svg)
+
+The drawing is made by `python3 docs/gen_app_screens.py` (from the repository root) from the app's layout.
+
 The desktop version of the [Android app](../README.md), for a Windows PC (or any computer with
 Java 17). It has the same core as the phone app: the same MAVLink, missions, zig-zag, patrol,
 fences and LiDAR behaviours, so they work the same way. Calibration and RTK/NTRIP are not here:
