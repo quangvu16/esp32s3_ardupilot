@@ -72,8 +72,9 @@ private:
 
     void update_input();  // in the form of PWM (uninplemented)
     void update_output(const Location &location);
+    void send_packet(const Location &location, uint32_t sample_count, float degrees_per_s, float degrees_per_sample);
 
-    uint32_t last_scan_output_time_ms;
+    uint32_t last_scan_output_time_us;
 
     float last_degrees_bf;
 

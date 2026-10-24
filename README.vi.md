@@ -7,6 +7,8 @@ ArduPilot (ArduRover 4.6.3) cho **ESP32-S3** (board `esp32s3devkit`) điều khi
 
 - **LiDAR 360° LDROBOT LD14 / LD14P** làm cảm biến tiệm cận — kiểu mới `PRX1_TYPE = 19` (LD14)
 - **GPS RTK u-blox ZED-F9P**, nhận dữ liệu hiệu chỉnh NTRIP do Mission Planner gửi qua WiFi
+- **LiDAR SLAM** chạy trên ESP32-S3: LD14 vẽ bản đồ căn phòng và cung cấp vị trí, hướng cho EKF,
+  nên xe tự hành được cả **trong nhà không cần GPS** ([hướng dẫn kết hợp cảm biến](docs/SENSOR_FUSION.vi.md))
 
 Dựa trên nhánh `ArduPilot-4.6` của [ArduPilot](https://github.com/ArduPilot/ardupilot) gốc,
 tại commit `913e171eca7a37549d9f02e442698edfd4490435`. README gốc của ArduPilot được giữ
@@ -22,6 +24,10 @@ lại trong [README_ArduPilot.md](README_ArduPilot.md).
 | `libraries/AP_HAL/board/esp32.h` | Các mặc định ESP32 bỏ hàng rào, tránh vật cản và lập đường đi có thể được board header ghi đè |
 | `esp32s3_rover_ld14_f9p.parm` | Tham số cho xe RC (servo, ESC, bộ thu, chế độ lái), LiDAR, F9P và truyền dữ liệu RTK |
 | `esp32s3-env.sh` | Môi trường ESP-IDF cho bộ công cụ chỉ cài riêng cho S3 |
+| `libraries/AP_Proximity/LidarSlam.{h,cpp}`, `AP_Proximity_LD06.{h,cpp}`, `AP_Proximity_Params.{h,cpp}` | **LiDAR SLAM** (`PRX1_SLAM`): mỗi vòng quét LD06/LD14 được nắn thẳng bằng con quay, khớp với bản đồ lưới (Gauss-Newton kiểu Hector, 3 độ phân giải) trong một luồng riêng, rồi tư thế được đưa cho EKF3 dưới dạng external navigation, để xe tự hành trong nhà không cần GPS hay la bàn. Xem [docs/SENSOR_FUSION.vi.md](docs/SENSOR_FUSION.vi.md) |
+| `libraries/SITL/SITL.cpp`, `SIM_PS_LD06.{h,cpp}` | Trình mô phỏng: căn phòng trong nhà cho các LiDAR mô phỏng (`SIM_ROOM=1`); LD06 mô phỏng gửi gói đúng tốc độ thật |
+| `Tools/lidar_slam_test/` | Bài thử SLAM offline, bài thử SITL trong nhà không GPS, script vẽ đồ thị |
+| `esp32s3_rover_ld14_indoor.parm` | Trong nhà không GPS: bật SLAM, tắt GPS và la bàn, nguồn EKF3 là ExternalNav (nạp sau file ở trên) |
 
 ## Đấu dây
 

@@ -1664,8 +1664,58 @@ float SIM::get_rangefinder(uint8_t instance) {
     return nanf("");
 };
 
+/*
+  An indoor room for the LiDAR simulators, chosen with the environment
+  variable SIM_ROOM=1 (instead of the field of posts below). It is placed
+  around the first location asked about, which is where the vehicle starts:
+  a 10 m x 8 m room (start 2.5 m from the south wall, 1.8 m from the west
+  wall, x north, y east), a box, a cupboard, a chair and a short wall.
+  Tools/lidar_slam_test uses the same room.
+*/
+static float room_distance(const Location &location, float bearing_deg)
+{
+    static Location start;
+    static bool have_start;
+    if (!have_start) {
+        start = location;
+        have_start = true;
+    }
+    struct Seg { float x1, y1, x2, y2; };
+    static const Seg walls[] = {
+#define BOX(x0, y0, x1, y1) {x0, y0, x1, y0}, {x1, y0, x1, y1}, {x1, y1, x0, y1}, {x0, y1, x0, y0}
+        BOX(-2.5f, -1.8f, 7.5f, 6.2f),      // the room
+        BOX(2.0f, 1.8f, 2.8f, 2.6f),        // a box in the middle
+        BOX(6.1f, -1.4f, 7.1f, -0.6f),      // a cupboard in a corner
+        BOX(-2.1f, 5.0f, -1.3f, 5.8f),      // a chair
+#undef BOX
+        {4.0f, 6.2f, 4.0f, 5.0f},           // a short wall sticking out
+    };
+    const Vector2f o = start.get_distance_NE(location);
+    const float dx = cosf(radians(bearing_deg)), dy = sinf(radians(bearing_deg));
+    float best = 1.0e6f;
+    for (const Seg &w : walls) {
+        const float ex = w.x2 - w.x1, ey = w.y2 - w.y1;
+        const float den = dx * ey - dy * ex;
+        if (fabsf(den) < 1.0e-9f) {
+            continue;
+        }
+        const float t = ((w.x1 - o.x) * ey - (w.y1 - o.y) * ex) / den;
+        const float u = ((w.x1 - o.x) * dy - (w.y1 - o.y) * dx) / den;
+        if (t > 0 && u >= 0 && u <= 1 && t < best) {
+            best = t;
+        }
+    }
+    // range noise like a small LiDAR: about 1 cm, more further away
+    return best + rand_float() * (0.01f + 0.005f * best);
+}
+
 float SIM::measure_distance_at_angle_bf(const Location &location, float angle) const
 {
+    static const bool room = getenv("SIM_ROOM") != nullptr && atoi(getenv("SIM_ROOM")) == 1;
+    if (room) {
+        return room_distance(location, wrap_360(angle + state.yawDeg));
+    }
+
     // should we populate state.rangefinder_m[...] from this?
     Vector2f vehicle_pos_cm;
     if (!location.get_vector_xy_from_origin_NE(vehicle_pos_cm)) {
