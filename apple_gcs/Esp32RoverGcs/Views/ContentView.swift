@@ -33,9 +33,16 @@ struct ContentView: View {
             TabView {
                 DataView().tabItem { Label("Data", systemImage: "gauge.with.dots.needle.33percent") }
                 PlanView().tabItem { Label("Plan", systemImage: "map") }
+                #if os(iOS)
+                // An iPhone shows four tabs and "More": keep the ones used while driving in front.
+                LidarView().tabItem { Label("LiDAR", systemImage: "dot.radiowaves.left.and.right") }
+                SetupView().tabItem { Label("Setup", systemImage: "wrench.and.screwdriver") }
+                ParamsView().tabItem { Label("Params", systemImage: "slider.horizontal.3") }
+                #else
                 ParamsView().tabItem { Label("Params", systemImage: "slider.horizontal.3") }
                 SetupView().tabItem { Label("Setup", systemImage: "wrench.and.screwdriver") }
                 LidarView().tabItem { Label("LiDAR", systemImage: "dot.radiowaves.left.and.right") }
+                #endif
                 LogView().tabItem { Label("Log", systemImage: "text.alignleft") }
             }
         }

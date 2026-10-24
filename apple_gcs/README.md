@@ -7,6 +7,14 @@ WiFi (TCP `192.168.4.1:5760`), and also works with SITL or any other ArduRover.
 No libraries: the MAVLink code, the NTRIP client and the LiDAR behaviours are Swift ports of the
 Android app's shared core (`android_gcs/core`), the map is Apple's MapKit.
 
+![iPhone app: Data, Plan, LiDAR and Setup tabs](docs/screens-ios.svg)
+
+![Mac app: Data, Plan and LiDAR tabs](docs/screens-mac.svg)
+
+The drawings are made by `python3 docs/gen_app_screens.py` (from the repository root) from the app's
+layout. On an iPhone the tab bar shows Data, Plan, LiDAR, Setup and **More** (Params, Log); iPad and
+Mac show all six.
+
 | Tab | What it does |
 | --- | --- |
 | **Data** | HUD (horizon, heading, speed, mode, GPS accuracy, waypoint distance), **Arm** (with *Force arm*), mode buttons, map with the car, its trail, home, mission and fence. Tapping the map drives there in Guided (or adds a waypoint, or moves home: *Tap* menu). **Drive** opens a stick (RC override with `MANUAL_CONTROL`, power limit). On the Mac the arrow keys / WASD drive too. |
@@ -80,3 +88,5 @@ Notes:
 | `AppModel.swift` | App state, settings, events, files |
 | `Views/` | The six tabs, the map, HUD and stick |
 | `tools/gen_xcodeproj.py` | Writes `Esp32RoverGcs.xcodeproj` |
+| `tools/build.sh` | Builds for the Mac and the iOS Simulator into `build.log`; `--watch` rebuilds on changes |
+| `tools/fake_rover.py` | A pretend ArduRover on TCP `127.0.0.1:5760` for trying the apps without the car ([guide §12](../docs/GUIDE.md#12-practise-without-the-car)) |

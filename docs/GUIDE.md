@@ -6,7 +6,19 @@ How to use this repository's ArduRover on an RC car, from the first connection t
 and the LiDAR. Building, flashing, wiring and the full parameter list are in the
 [README](../README.md); this guide is about driving.
 
-![App screens](../android_gcs/docs/screens.svg)
+There are four ground station apps with the same core: Android, Windows, iPhone/iPad and Mac.
+
+![Android app](../android_gcs/docs/screens.svg)
+
+<details><summary>Windows, iPhone and Mac apps</summary>
+
+![Windows app](../android_gcs/desktop/docs/screens.svg)
+
+![iPhone app](../apple_gcs/docs/screens-ios.svg)
+
+![Mac app](../apple_gcs/docs/screens-mac.svg)
+
+</details>
 
 ## Contents
 
@@ -21,6 +33,7 @@ and the LiDAR. Building, flashing, wiring and the full parameter list are in the
 9. [RTK GPS](#9-rtk-gps)
 10. [Troubleshooting](#10-troubleshooting)
 11. [Before every drive](#11-before-every-drive)
+12. [Practise without the car](#12-practise-without-the-car)
 
 ## 1. What you have
 
@@ -28,10 +41,22 @@ and the LiDAR. Building, flashing, wiring and the full parameter list are in the
 | --- | --- | --- |
 | Firmware | ArduRover 4.6.3 for the ESP32-S3 with the LD14 LiDAR, ZED-F9P RTK, object avoidance and fences | [Releases](https://github.com/quangvu16/esp32s3_ardupilot/releases), README [Flash](../README.md#flash) |
 | Android app | Phone ground station: map, missions, zig-zag, patrol, fences, LiDAR, parameters, calibration, RTK | [android_gcs](../android_gcs/README.md), APK in the `gcs-v…` releases |
-| Windows app | The same on a PC (no calibration or RTK: use Mission Planner for those) | [android_gcs/desktop](../android_gcs/desktop/README.md) |
+| Windows app | The same on a PC (no calibration or RTK: use Mission Planner for those). `Esp32RoverGcs.exe` with Java inside | [android_gcs/desktop](../android_gcs/desktop/README.md), *Windows app (exe)* workflow / releases |
+| iPhone, iPad and Mac app | One SwiftUI app: the Android app's tabs, calibration and RTK included; arrow keys drive on the Mac | [apple_gcs](../apple_gcs/README.md), built with Xcode |
 | Mission Planner | Still works: TCP `192.168.4.1:5760` | [ardupilot.org](https://ardupilot.org/planner/) |
 
 The board's WiFi takes one ground station at a time comfortably. Close the others before driving.
+
+### Install the apps
+
+| App | How |
+| --- | --- |
+| Android | Download the APK from the latest `gcs-v…` release, open it on the phone and allow *install unknown apps*. |
+| Windows | `Esp32RoverGcs-<version>.exe` installs for your user (Start menu *ESP32 Rover* and a desktop shortcut); or unzip `…-windows-portable.zip` and run `Esp32RoverGcs\Esp32RoverGcs.exe`. No Java needed. First run: SmartScreen *More info → Run anyway*; firewall: allow *Private networks*. |
+| Mac | Open `apple_gcs/Esp32RoverGcs.xcodeproj` in Xcode, choose **My Mac**, **Product → Run**. No Apple account needed. The first time, macOS may block it: System Settings → Privacy & Security → **Open Anyway**. |
+| iPhone / iPad | Xcode → Settings → Accounts: add your Apple ID. Project → Signing & Capabilities → Team: *your name (Personal Team)*. Connect the iPhone by cable, turn on Settings → Privacy & Security → **Developer Mode**, choose it in Xcode and **Run**. On the iPhone: Settings → General → VPN & Device Management → your Apple ID → **Trust**. With a free Apple ID, run it from Xcode again every 7 days. |
+
+Details: [apple_gcs/README](../apple_gcs/README.md), [desktop README](../android_gcs/desktop/README.md).
 
 ## 2. Connect
 
@@ -40,7 +65,10 @@ The board's WiFi takes one ground station at a time comfortably. Close the other
 2. Join it from the phone or the PC.
    - **Android** says the network has no internet: choose *stay connected*. Mobile data stays on
      for maps and RTK; the app sends MAVLink over the WiFi by itself.
-   - **Windows**: the WiFi has no internet either; that's normal.
+   - **Windows** and **Mac**: the WiFi has no internet either; that's normal.
+   - **iPhone / iPad**: stay on the network when iOS says it has no internet. The first time the app
+     opens, allow **Local Network**; without it the app can't reach `192.168.4.1` (Settings → Privacy
+     & Security → Local Network to change it later). Mobile data stays on for the map and RTK.
 3. Open the app. It connects to TCP `192.168.4.1:5760` by itself. The first item in the status bar
    turns green.
 
@@ -54,10 +82,13 @@ tab; or Mission Planner). The order and the checks are in the README's [Set up](
   steering full right for 2 s). Disarm the same way, or full left.
 - **Modes**: Manual (raw sticks), Acro (sticks = speed and turn rate; zero brakes), Hold (stop),
   Auto (mission), Guided (go to a point), RTL (back home).
-- **Without a transmitter**: the Android app's **Drive** stick, or the Windows app's **Drive with
-  arrow keys**. Both send stick overrides that work in Manual, Acro and Steering; *Power* caps them.
+- **Without a transmitter**: the **Drive** stick of the Android and iPhone apps (Data tab → Drive), or
+  the arrow keys / W A S D of the Windows app (tick *Drive with arrow keys*) and the Mac app (open
+  **Drive**). All send stick overrides that work in Manual, Acro and Steering; *Power* caps them.
+  Letting go sends zero; on a PC or Mac, held keys are dropped when the window loses the focus.
   If the app stops sending, the car falls back to the transmitter after `RC_OVERRIDE_TIME` (3 s).
-- **Guided**: switch to Guided, then tap (click) the map where the car should go.
+- **Guided**: switch to Guided, then tap (click) the map where the car should go. (iPhone and Mac:
+  the map's *Tap* menu chooses what a tap does: drive here, add a waypoint, or move home.)
 
 Do the first drive with the wheels off the ground.
 
@@ -176,15 +207,19 @@ These behaviours drive from the app. For avoiding obstacles on a mission, use Be
 
 ## 9. RTK GPS
 
-Android: Setup → **RTK / NTRIP**: caster, port (2101), mountpoint, user, password → **Start
-NTRIP**. On a PC: Mission Planner → Setup → Optional Hardware → RTK/GPS Inject. The GPS status goes
+Android, iPhone and Mac: Setup → **RTK / NTRIP**: caster, port (2101), mountpoint, user,
+password → **Start NTRIP**. On an iPhone keep *Over mobile data* on while the phone is on the car's
+WiFi (that WiFi has no internet).
+ On a PC: Mission Planner → Setup → Optional Hardware → RTK/GPS Inject. The GPS status goes
 3D fix → RTK Float → RTK Fixed. With RTK Fixed, `WP_RADIUS` 0.5 m is realistic.
 
 ## 10. Troubleshooting
 
 | Problem | What to check |
 | --- | --- |
-| The app doesn't connect | The phone or PC is on `ardupilot123`; the address is TCP `192.168.4.1:5760`; no other ground station is connected |
+| The app doesn't connect | The phone or PC is on `ardupilot123`; the address is TCP `192.168.4.1:5760`; no other ground station is connected. iPhone: *Local Network* allowed for the app. The status says *no answer: is this device on the car's WiFi?* when it can't reach the board |
+| iPhone app won't open after a week | Apps signed with a free Apple ID expire after 7 days: run it from Xcode again |
+| Windows: "Windows protected your PC" | The exe isn't signed with a paid certificate: **More info → Run anyway** |
 | Arming refused | The Log tab shows the reason (`PreArm: …`). Fences: the car must be inside its stay-in zones |
 | Stick / arrow keys do nothing | Mode must be Manual, Acro or Steering; `SYSID_MYGCS` must be 255; the car must be armed |
 | LiDAR tab shows no scan | Firmware v4.6.3-esp32s3-3 or newer, `PRX1_TYPE` 19, `SERIAL2_PROTOCOL` 11, LD14 TX on GPIO41 |
@@ -199,3 +234,17 @@ NTRIP**. On a PC: Mission Planner → Setup → Optional Hardware → RTK/GPS In
 - [ ] Transmitter failsafe tested
 - [ ] LiDAR: a box in front shows at the top of the scan
 - [ ] First run of anything new: wheels off the ground, then slowly on the ground
+
+## 12. Practise without the car
+
+[`apple_gcs/tools/fake_rover.py`](../apple_gcs/tools/fake_rover.py) is a pretend ArduRover for
+trying any of the apps at the desk. It needs only Python 3:
+
+```bash
+python3 apple_gcs/tools/fake_rover.py
+```
+
+Then point the app at TCP **`127.0.0.1:5760`** (Setup, or the Windows app's address box). It sends a
+position in a park with RTK Fixed, a LiDAR scan with four posts around home, 23 parameters, and
+answers arm, modes, the Drive stick, Guided, missions and fences: Auto drives the waypoints and stops
+in Hold. It is a toy model, not a simulator of the real car; for that use ArduPilot SITL.
