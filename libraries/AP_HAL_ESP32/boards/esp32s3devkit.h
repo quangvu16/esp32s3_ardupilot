@@ -177,3 +177,11 @@
 
 // LOG_BACKEND_TYPE default: 0 none (no card); 2 = log over MAVLink to a GCS/companion
 #define HAL_LOGGING_BACKENDS_DEFAULT 0
+
+// Object avoidance with the LD14 LiDAR: fences, simple avoidance (AVOID_ENABLE)
+// and path planning (OA_TYPE: BendyRuler, Dijkstra, Dijkstra with BendyRuler).
+// The ESP32 HAL leaves these out; the S3 has the flash and the second core for them.
+// Follow mode stays off.
+#define AP_FENCE_ENABLED 1
+#define AP_AVOIDANCE_ENABLED 1
+#define AP_OAPATHPLANNER_ENABLED 1

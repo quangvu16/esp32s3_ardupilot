@@ -107,10 +107,19 @@
 #define AP_LANDINGGEAR_ENABLED 0
 
 // disable avoid-fence-follow in copter, these all kinda need each other, so its all or none.
+// A board header can turn avoidance, fence and path planning back on (esp32s3devkit does).
+#ifndef AP_AVOIDANCE_ENABLED
 #define AP_AVOIDANCE_ENABLED 0
+#endif
+#ifndef AP_FENCE_ENABLED
 #define AP_FENCE_ENABLED 0
+#endif
+#ifndef MODE_FOLLOW_ENABLED
 #define MODE_FOLLOW_ENABLED 0
+#endif
+#ifndef AP_OAPATHPLANNER_ENABLED
 #define AP_OAPATHPLANNER_ENABLED 0
+#endif
 
 
 // other big things..

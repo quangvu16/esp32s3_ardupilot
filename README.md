@@ -18,7 +18,8 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 | --- | --- |
 | `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | LD14 model: the LD06 packet parser plus the LDROBOT SDK ranging-centre angle correction (the LD14 is a triangulation sensor, its raw angles are off by up to ~7°), 8 m max range, no confidence filter |
 | `libraries/AP_Proximity/AP_Proximity.{h,cpp}`, `AP_Proximity_Params.cpp` | `PRX_TYPE` 19 = LD14 |
-| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | UART2 (RX GPIO41, TX GPIO42) added so SERIAL2 exists; MPU9250 IMU moved from SPI to I2C (0x68) and SPI removed, since GPIO33-37 belong to the octal PSRAM on N8R8/N16R8 modules; SD card disabled, since on the S3 it takes GPIO14/15/2 (RC input, I2C SCL, analog pin 3); ADC channel names updated for ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), without which the board does not compile |
+| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | UART2 (RX GPIO41, TX GPIO42) added so SERIAL2 exists; MPU9250 IMU moved from SPI to I2C (0x68) and SPI removed, since GPIO33-37 belong to the octal PSRAM on N8R8/N16R8 modules; SD card disabled, since on the S3 it takes GPIO14/15/2 (RC input, I2C SCL, analog pin 3); ADC channel names updated for ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), without which the board does not compile; fences, object avoidance and path planning (BendyRuler, Dijkstra's) turned on |
+| `libraries/AP_HAL/board/esp32.h` | The ESP32 defaults that leave out fences, avoidance and path planning can be overridden by a board header |
 | `esp32s3_rover_ld14_f9p.parm` | Parameters for the RC car (servo, ESC, receiver, modes), the LiDAR, the F9P and RTK injection |
 | `esp32s3-env.sh` | ESP-IDF environment for an S3-only toolchain install |
 
@@ -291,15 +292,68 @@ Work in this order. Mission Planner's **Config → Tuning** page and the live gr
 
 ### 8. Obstacle avoidance with the LiDAR (last)
 
-1. Put an object in front of the car. In the proximity view (Ctrl-F → Proximity), set
-   `PRX1_YAW_CORR` so the object shows at 0°.
-2. Then:
-   ```
-   AVOID_ENABLE = 3     # fence + proximity: stop or slow before obstacles
-   AVOID_MARGIN = 0.5   # m
-   OA_TYPE      = 1     # BendyRuler: drive around obstacles in Auto (optional)
-   ```
-3. Test slowly in Manual first: the car should refuse to drive into a box.
+ArduPilot has four ways to avoid obstacles. They are described in its
+[Object Avoidance](https://ardupilot.org/rover/docs/common-object-avoidance-landing-page.html#avoidance-strategies) pages.
+This firmware includes all four. Upstream ArduPilot leaves fences and avoidance out of ESP32
+builds; `esp32s3devkit.h` turns them back on.
+
+| Strategy | Avoids | Works in | Main setting |
+| --- | --- | --- | --- |
+| [Simple Object Avoidance](https://ardupilot.org/rover/docs/common-simple-object-avoidance.html) | LiDAR obstacles and fences, by **stopping** | Acro, Steering, Loiter, Simple, Circle | `AVOID_ENABLE` |
+| [BendyRuler](https://ardupilot.org/rover/docs/common-oa-bendyruler.html) | LiDAR obstacles and fences, by **driving around** them | Auto, Guided, RTL | `OA_TYPE = 1` |
+| [Dijkstra's](https://ardupilot.org/rover/docs/common-oa-dijkstras.html) | **Fences only**: plans the shortest path around them (ignores the LiDAR) | Auto, Guided, RTL | `OA_TYPE = 2` |
+| [Dijkstra's with BendyRuler](https://ardupilot.org/rover/docs/common-oa-dijkstrabendyruler.html) | Both: Dijkstra's around fences, BendyRuler when the LiDAR sees something | Auto, Guided, RTL | `OA_TYPE = 3` |
+
+None of them works in **Manual** or **Hold**.
+
+**1. Point the LiDAR the right way.** Put an object in front of the car. In the proximity view
+(Ctrl-F → Proximity, or the app's Setup tab), set `PRX1_YAW_CORR` so that the object shows at
+0°. Otherwise the car avoids obstacles where they aren't.
+
+**2. Simple Object Avoidance.** The car stops before an obstacle or a fence. Use it on its own,
+or together with one of the planners.
+
+```
+AVOID_ENABLE = 3     # bit 0 fence + bit 1 proximity (LiDAR)
+AVOID_MARGIN = 0.5   # m kept from obstacles
+AVOID_BEHAVE = 1     # Stop (the Rover default)
+```
+
+Test it in **Acro** or **Steering**, slowly: the car should refuse to drive into a box.
+
+**3. Choose a path planner** for Auto, Guided and RTL (reboot after changing `OA_TYPE`, then
+refresh the parameters to see the `OA_BR_` and `OA_DB_` ones):
+
+```
+OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
+OA_MARGIN_MAX    = 1.5  # m kept from obstacles and fences (default 5 is a lot for a small car)
+OA_BR_LOOKAHEAD  = 5    # m probed ahead (BendyRuler); keep it under the LD14's 8 m range
+OA_DB_DIST_MAX   = 8    # m: ignore LiDAR points further away than the LD14 can measure
+```
+
+- **BendyRuler** is the one to start with: it only needs the LiDAR.
+- **Dijkstra's** only knows about fences. Draw them first (step 4). It does not see the LiDAR,
+  so pair it with `AVOID_ENABLE` or use type 3.
+- **Dijkstra's with BendyRuler** follows the shortest path around fences and switches to
+  BendyRuler while the LiDAR sees an obstacle.
+
+**4. Fences** (for Dijkstra's, and for simple avoidance's fence bit). In Mission Planner use
+**Plan → Fence**: draw inclusion and exclusion (stay-out) polygons or circles, then upload them.
+Then set:
+
+```
+FENCE_ENABLE = 1
+FENCE_TYPE   = 6     # circle around home + polygons
+FENCE_RADIUS = 50    # m, circle around home
+FENCE_ACTION = 2     # Hold on a breach
+```
+
+The board's parameter storage holds about 80 fence points. Keep waypoints a few metres away from
+fence edges.
+
+**5. Try it** on an open field at a low `WP_SPEED`, in Auto: put a box on the route and watch
+the car go around it. If it hesitates or swings, see the BendyRuler page (`OA_BR_CONT_RATIO`,
+`OA_BR_CONT_ANGLE`).
 
 ### Checklist before every drive
 

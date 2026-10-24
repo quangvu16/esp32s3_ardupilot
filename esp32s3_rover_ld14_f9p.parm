@@ -71,5 +71,13 @@ SERIAL1_PROTOCOL,2      # MAVLink2
 # ---------------------------------------------------------------- avoidance
 # Use the LiDAR for Rover's obstacle avoidance; uncomment once PRX1_YAW_CORR is
 # verified, or the robot will avoid obstacles that are not where it thinks.
+# README "Set up" step 8 explains the four strategies.
+# Simple avoidance: stop before obstacles (Acro, Steering, Loiter...)
 #AVOID_ENABLE,3          # fence + proximity
 #AVOID_MARGIN,0.5        # m kept from obstacles
+# Path planning in Auto/Guided/RTL (reboot after setting OA_TYPE):
+# 1 BendyRuler (LiDAR + fences), 2 Dijkstra's (fences only), 3 Dijkstra's with BendyRuler
+#OA_TYPE,1
+#OA_MARGIN_MAX,1.5       # m kept from obstacles and fences
+#OA_BR_LOOKAHEAD,5       # m probed ahead, under the LD14's 8 m range
+#OA_DB_DIST_MAX,8        # m, the LD14's range

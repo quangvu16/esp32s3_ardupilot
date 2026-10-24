@@ -18,7 +18,8 @@ lại trong [README_ArduPilot.md](README_ArduPilot.md).
 | --- | --- |
 | `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | Kiểu LD14: dùng bộ giải mã gói tin của LD06, cộng thêm phép hiệu chỉnh góc theo tâm đo của SDK LDROBOT (LD14 là cảm biến tam giác lượng, góc thô lệch tới ~7°), tầm xa tối đa 8 m, không lọc theo độ tin cậy |
 | `libraries/AP_Proximity/AP_Proximity.{h,cpp}`, `AP_Proximity_Params.cpp` | `PRX_TYPE` 19 = LD14 |
-| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | Thêm UART2 (RX GPIO41, TX GPIO42) để có SERIAL2; IMU MPU9250 chuyển từ SPI sang I2C (0x68) và bỏ SPI, vì GPIO33-37 thuộc về PSRAM octal trên module N8R8/N16R8; tắt thẻ SD, vì trên S3 thẻ SD chiếm GPIO14/15/2 (đầu vào RC, I2C SCL, chân analog 3); đổi tên kênh ADC cho ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), nếu không board sẽ không biên dịch được |
+| `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | Thêm UART2 (RX GPIO41, TX GPIO42) để có SERIAL2; IMU MPU9250 chuyển từ SPI sang I2C (0x68) và bỏ SPI, vì GPIO33-37 thuộc về PSRAM octal trên module N8R8/N16R8; tắt thẻ SD, vì trên S3 thẻ SD chiếm GPIO14/15/2 (đầu vào RC, I2C SCL, chân analog 3); đổi tên kênh ADC cho ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), nếu không board sẽ không biên dịch được; bật hàng rào (fence), tránh vật cản và lập đường đi (BendyRuler, Dijkstra's) |
+| `libraries/AP_HAL/board/esp32.h` | Các mặc định ESP32 bỏ hàng rào, tránh vật cản và lập đường đi có thể được board header ghi đè |
 | `esp32s3_rover_ld14_f9p.parm` | Tham số cho xe RC (servo, ESC, bộ thu, chế độ lái), LiDAR, F9P và truyền dữ liệu RTK |
 | `esp32s3-env.sh` | Môi trường ESP-IDF cho bộ công cụ chỉ cài riêng cho S3 |
 
@@ -292,15 +293,67 @@ Mission Planner cho thấy giá trị yêu cầu so với giá trị thực tế
 
 ### 8. Tránh vật cản bằng LiDAR (làm sau cùng)
 
-1. Đặt một vật phía trước xe. Trong màn hình tiệm cận (Ctrl-F → Proximity), chỉnh
-   `PRX1_YAW_CORR` sao cho vật hiển thị ở 0°.
-2. Sau đó:
-   ```
-   AVOID_ENABLE = 3     # hàng rào + tiệm cận: dừng hoặc giảm tốc trước vật cản
-   AVOID_MARGIN = 0.5   # m
-   OA_TYPE      = 1     # BendyRuler: lái vòng qua vật cản ở chế độ Auto (tùy chọn)
-   ```
-3. Thử chậm ở chế độ Manual trước: xe phải từ chối lao vào một cái hộp.
+ArduPilot có bốn cách tránh vật cản, mô tả trong các trang
+[Object Avoidance](https://ardupilot.org/rover/docs/common-object-avoidance-landing-page.html#avoidance-strategies) (tiếng Anh).
+Firmware này có đủ cả bốn. Bản ArduPilot gốc bỏ hàng rào (fence) và tránh vật cản khỏi các bản
+build ESP32; `esp32s3devkit.h` bật lại chúng.
+
+| Cách | Tránh gì | Chế độ | Tham số chính |
+| --- | --- | --- | --- |
+| [Simple Object Avoidance](https://ardupilot.org/rover/docs/common-simple-object-avoidance.html) | Vật cản LiDAR và hàng rào, bằng cách **dừng lại** | Acro, Steering, Loiter, Simple, Circle | `AVOID_ENABLE` |
+| [BendyRuler](https://ardupilot.org/rover/docs/common-oa-bendyruler.html) | Vật cản LiDAR và hàng rào, bằng cách **lái vòng qua** | Auto, Guided, RTL | `OA_TYPE = 1` |
+| [Dijkstra's](https://ardupilot.org/rover/docs/common-oa-dijkstras.html) | **Chỉ hàng rào**: tìm đường ngắn nhất vòng qua (không dùng LiDAR) | Auto, Guided, RTL | `OA_TYPE = 2` |
+| [Dijkstra's with BendyRuler](https://ardupilot.org/rover/docs/common-oa-dijkstrabendyruler.html) | Cả hai: Dijkstra's quanh hàng rào, BendyRuler khi LiDAR thấy vật cản | Auto, Guided, RTL | `OA_TYPE = 3` |
+
+Không cách nào hoạt động ở **Manual** hoặc **Hold**.
+
+**1. Chỉnh hướng LiDAR.** Đặt một vật phía trước xe. Trong màn hình tiệm cận (Ctrl-F → Proximity,
+hoặc tab Setup của ứng dụng Android), chỉnh `PRX1_YAW_CORR` sao cho vật hiển thị ở 0°. Nếu không,
+xe sẽ tránh những vật cản không có thật ở đó.
+
+**2. Simple Object Avoidance.** Xe dừng lại trước vật cản hoặc hàng rào. Dùng riêng, hoặc cùng với
+một bộ lập đường đi.
+
+```
+AVOID_ENABLE = 3     # bit 0 hàng rào + bit 1 cảm biến tiệm cận (LiDAR)
+AVOID_MARGIN = 0.5   # m giữ khoảng cách với vật cản
+AVOID_BEHAVE = 1     # Dừng (mặc định của Rover)
+```
+
+Thử ở chế độ **Acro** hoặc **Steering**, chạy chậm: xe phải từ chối lao vào một cái hộp.
+
+**3. Chọn bộ lập đường đi** cho Auto, Guided và RTL (khởi động lại board sau khi đổi `OA_TYPE`,
+rồi đọc lại tham số để thấy các tham số `OA_BR_` và `OA_DB_`):
+
+```
+OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
+OA_MARGIN_MAX    = 1.5  # m giữ cách vật cản và hàng rào (mặc định 5 là quá nhiều cho xe nhỏ)
+OA_BR_LOOKAHEAD  = 5    # m quét phía trước (BendyRuler); nhỏ hơn tầm 8 m của LD14
+OA_DB_DIST_MAX   = 8    # m: bỏ qua điểm LiDAR xa hơn tầm đo của LD14
+```
+
+- **BendyRuler** nên dùng trước tiên: chỉ cần LiDAR.
+- **Dijkstra's** chỉ biết hàng rào. Vẽ hàng rào trước (bước 4). Nó không thấy LiDAR, nên dùng kèm
+  `AVOID_ENABLE` hoặc chọn loại 3.
+- **Dijkstra's with BendyRuler** đi theo đường ngắn nhất quanh hàng rào và chuyển sang BendyRuler
+  khi LiDAR thấy vật cản.
+
+**4. Hàng rào** (cho Dijkstra's, và cho bit hàng rào của Simple Avoidance). Trong Mission Planner
+vào **Plan → Fence**: vẽ đa giác hoặc vòng tròn cho phép (inclusion) và cấm vào (exclusion), rồi
+tải lên xe. Sau đó cài:
+
+```
+FENCE_ENABLE = 1
+FENCE_TYPE   = 6     # vòng tròn quanh home + đa giác
+FENCE_RADIUS = 50    # m, vòng tròn quanh home
+FENCE_ACTION = 2     # Hold khi vượt hàng rào
+```
+
+Bộ nhớ tham số của board chứa được khoảng 80 điểm hàng rào. Đặt waypoint cách mép hàng rào vài mét.
+
+**5. Chạy thử** trên bãi trống, `WP_SPEED` thấp, chế độ Auto: đặt một cái hộp trên đường đi và xem
+xe vòng qua. Nếu xe chần chừ hoặc lắc qua lại, xem trang BendyRuler (`OA_BR_CONT_RATIO`,
+`OA_BR_CONT_ANGLE`).
 
 ### Danh sách kiểm tra trước mỗi lần chạy
 
