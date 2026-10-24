@@ -1,0 +1,451 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1412" height="800" viewBox="0 0 1412 800" font-family="Roboto, Segoe UI, Helvetica, Arial, sans-serif" font-size="14">
+<rect width="1412" height="800" fill="#ffffff"/>
+<text x="40.0" y="46.0" font-size="24" fill="#1f2328" font-weight="600">ESP32 Rover GCS — Android app</text>
+<text x="40.0" y="72.0" font-size="14" fill="#59636e">MAVLink over the board's WiFi (TCP 192.168.4.1:5760) · drawn from the app's layout, shown with a car in Auto and RTK Fixed</text>
+<g transform="translate(40 96)">
+<rect x="-4.5" y="9" width="309" height="640" rx="42.5" fill="#000" opacity="0.04"/>
+<rect x="-3.0" y="6" width="306" height="640" rx="41.0" fill="#000" opacity="0.05"/>
+<rect x="-1.5" y="3" width="303" height="640" rx="39.5" fill="#000" opacity="0.07"/>
+<rect width="300" height="640" rx="38" fill="#1B1F23"/>
+<g transform="translate(10 10)">
+<clipPath id="scr1"><rect width="280" height="620" rx="29"/></clipPath><g clip-path="url(#scr1)">
+<rect width="280" height="620" fill="#EEF1EE"/>
+<rect width="280" height="54" fill="#FFFFFF"/>
+<text x="14.0" y="15.0" font-size="10" fill="#17201C" font-weight="600">9:41</text>
+<rect x="240" y="11" width="3" height="4" rx="0.6" fill="#17201C"/>
+<rect x="245" y="9" width="3" height="6" rx="0.6" fill="#17201C"/>
+<rect x="250" y="7" width="3" height="8" rx="0.6" fill="#17201C"/>
+<rect x="258" y="6" width="14" height="8" rx="2" fill="none" stroke="#17201C" stroke-width="1"/><rect x="259.5" y="7.5" width="9" height="5" rx="1" fill="#17201C"/>
+<rect x="6.0" y="29" width="137.8" height="18" rx="9" fill="#DCEFE2"/>
+<text x="13.5" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">● TCP 192.168.4.1:5760</text>
+<rect x="148.3" y="29" width="82.0" height="18" rx="9" fill="#FBE7DC"/>
+<text x="155.8" y="41.6" font-size="9" fill="#C2410C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">Auto · ARMED</text>
+<rect x="234.7" y="29" width="121.0" height="18" rx="9" fill="#DCEFE2"/>
+<text x="242.2" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">RTK Fixed · 28 sats</text>
+<rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
+<text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
+<rect y="580" width="280" height="40" fill="#FFFFFF"/>
+<rect x="3.0" y="584" width="52.8" height="32" rx="6" fill="#DFE8FA"/>
+<text x="29.4" y="604.0" font-size="10.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Data</text>
+<rect x="58.3" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="84.7" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="113.6" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="168.9" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="195.3" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="224.2" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="250.6" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Log</text>
+<clipPath id="hud2"><rect y="54" width="280" height="174"/></clipPath><g clip-path="url(#hud2)">
+<g transform="rotate(7 140.0 141.0)">
+<rect x="-300" y="-246" width="880" height="397.44" fill="#2E74C4"/>
+<rect x="-300" y="151.44" width="880" height="400" fill="#7A562C"/>
+<line x1="-300" y1="151.44" x2="580" y2="151.44" stroke="#FFF" stroke-width="1.2"/>
+<line x1="106.4" y1="221.0" x2="173.6" y2="221.0" stroke="#FFF" stroke-width="1.1"/>
+<text x="176.6" y="224.0" font-size="8" fill="#FFF">-20</text>
+<line x1="120.4" y1="186.2" x2="159.6" y2="186.2" stroke="#FFF" stroke-width="1.1"/>
+<text x="162.6" y="189.2" font-size="8" fill="#FFF">-10</text>
+<line x1="120.4" y1="116.6" x2="159.6" y2="116.6" stroke="#FFF" stroke-width="1.1"/>
+<text x="162.6" y="119.6" font-size="8" fill="#FFF">10</text>
+<line x1="106.4" y1="81.8" x2="173.6" y2="81.8" stroke="#FFF" stroke-width="1.1"/>
+<text x="176.6" y="84.8" font-size="8" fill="#FFF">20</text>
+</g>
+<line transform="rotate(-45 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(-30 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="60.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(-20 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(-10 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(0 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="60.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(10 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(20 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(30 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="60.92" stroke="#FFF" stroke-width="1.1"/>
+<line transform="rotate(45 140.0 141.0)" x1="140.0" y1="67.92" x2="140.0" y2="63.92" stroke="#FFF" stroke-width="1.1"/>
+<path transform="rotate(7 140.0 141.0)" d="M140.0 68.92 l-4.5 8 h9 z" fill="#FACC15"/>
+<polyline points="102.0,141.0 128.0,141.0 134.0,147.0 140.0,141.0 146.0,147.0 152.0,141.0 178.0,141.0" fill="none" stroke="#FACC15" stroke-width="2.3" stroke-linejoin="round"/>
+<rect y="54" width="280" height="20" fill="#000" opacity="0.43"/>
+<line x1="-6.2" y1="74" x2="-6.2" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="9.3" y1="74" x2="9.3" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="9.3" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">300</text>
+<line x1="24.9" y1="74" x2="24.9" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="40.4" y1="74" x2="40.4" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="56.0" y1="74" x2="56.0" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="56.0" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">NW</text>
+<line x1="71.6" y1="74" x2="71.6" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="87.1" y1="74" x2="87.1" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="102.7" y1="74" x2="102.7" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="102.7" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">330</text>
+<line x1="118.2" y1="74" x2="118.2" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="133.8" y1="74" x2="133.8" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="149.3" y1="74" x2="149.3" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="149.3" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">345</text>
+<line x1="164.9" y1="74" x2="164.9" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="180.4" y1="74" x2="180.4" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="196.0" y1="74" x2="196.0" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="196.0" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">N</text>
+<line x1="211.6" y1="74" x2="211.6" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="227.1" y1="74" x2="227.1" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="242.7" y1="74" x2="242.7" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="242.7" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">15</text>
+<line x1="258.2" y1="74" x2="258.2" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="273.8" y1="74" x2="273.8" y2="71" stroke="#FFF" stroke-width="1"/>
+<line x1="289.3" y1="74" x2="289.3" y2="68" stroke="#FFF" stroke-width="1"/>
+<text x="289.3" y="63.5" font-size="8" fill="#FFF" text-anchor="middle">30</text>
+<rect x="121.0" y="74" width="38" height="16" fill="#000" opacity="0.43"/>
+<text x="140.0" y="86.5" font-size="11" fill="#FFF" font-weight="700" text-anchor="middle">342°</text>
+<text x="6.0" y="138.0" font-size="11.5" fill="#FFF" font-weight="700" style="paint-order:stroke" stroke="#000" stroke-width="2" stroke-opacity="0.45">1.6 m/s</text>
+<text x="6.0" y="152.0" font-size="9" fill="#FFF" style="paint-order:stroke" stroke="#000" stroke-width="2" stroke-opacity="0.45">thr 34%</text>
+<text x="274.0" y="138.0" font-size="11.5" fill="#FFF" font-weight="700" text-anchor="end" style="paint-order:stroke" stroke="#000" stroke-width="2" stroke-opacity="0.45">Auto</text>
+<text x="274.0" y="153.0" font-size="11.5" fill="#F87171" font-weight="700" text-anchor="end" style="paint-order:stroke" stroke="#000" stroke-width="2" stroke-opacity="0.45">ARMED</text>
+<rect y="202" width="280" height="26" fill="#000" opacity="0.43"/>
+<text x="6.0" y="213.0" font-size="9" fill="#FFF">GPS RTK Fixed  28 sats  hdop 0.52  ±0.01 m</text>
+<text x="6.0" y="224.0" font-size="9" fill="#FFF">WP 2  12 m  xtrack 0.1 m</text>
+<text x="274.0" y="213.0" font-size="9" fill="#FFF" text-anchor="end">12.42 V  1.8 A</text>
+</g>
+<text x="8.0" y="241.0" font-size="9" fill="#5A6861">Mission: 2 WP</text>
+<rect x="6.0" y="252.2" width="55.3" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="6.0" y="251.0" width="55.3" height="28" rx="6" fill="#1F5FD1"/>
+<text x="33.6" y="268.8" font-size="10.5" fill="#FFFFFF" text-anchor="middle">Disarm</text>
+<rect x="65.8" y="252.2" width="55.3" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="65.8" y="251.0" width="55.3" height="28" rx="6" fill="#FFFFFF"/>
+<text x="93.4" y="268.8" font-size="10.5" fill="#17201C" text-anchor="middle">Manual</text>
+<rect x="125.6" y="252.2" width="43.5" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="125.6" y="251.0" width="43.5" height="28" rx="6" fill="#FFFFFF"/>
+<text x="147.3" y="268.8" font-size="10.5" fill="#17201C" text-anchor="middle">Hold</text>
+<rect x="173.6" y="252.2" width="43.5" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="173.6" y="251.0" width="43.5" height="28" rx="6" fill="#FFFFFF"/>
+<text x="195.3" y="268.8" font-size="10.5" fill="#17201C" text-anchor="middle">Auto</text>
+<rect x="221.6" y="252.2" width="37.6" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="221.6" y="251.0" width="37.6" height="28" rx="6" fill="#FFFFFF"/>
+<text x="240.4" y="268.8" font-size="10.5" fill="#17201C" text-anchor="middle">RTL</text>
+<rect x="263.7" y="252.2" width="55.3" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="263.7" y="251.0" width="55.3" height="28" rx="6" fill="#FFFFFF"/>
+<text x="291.4" y="268.8" font-size="10.5" fill="#17201C" text-anchor="middle">Guided</text>
+<clipPath id="map3"><rect x="0" y="284" width="280" height="296"/></clipPath><g clip-path="url(#map3)">
+<rect x="0" y="284" width="280" height="296" fill="#F2EFE9"/>
+<path d="M145.6 307.68 l117.6 14.8 l-14.0 97.68 l-112.0 -11.84 z" fill="#CDEBB0"/>
+<ellipse cx="210.0" cy="349.12" rx="28.0" ry="17.759999999999998" fill="#AAD3DF"/>
+<path d="M-10 514.88 l300 -14.8 l0 88.8 l-300 0 z" fill="#E0DFDF" opacity="0.55"/>
+<line x1="-10.0" y1="455.7" x2="290.0" y2="437.9" stroke="#CFC8BE" stroke-width="11" stroke-linecap="round"/>
+<line x1="84.0" y1="274.0" x2="100.8" y2="590.0" stroke="#CFC8BE" stroke-width="9" stroke-linecap="round"/>
+<line x1="218.4" y1="432.0" x2="232.4" y2="590.0" stroke="#CFC8BE" stroke-width="8" stroke-linecap="round"/>
+<line x1="-10.0" y1="343.2" x2="140.0" y2="328.4" stroke="#CFC8BE" stroke-width="7" stroke-linecap="round"/>
+<line x1="100.8" y1="526.7" x2="290.0" y2="544.5" stroke="#CFC8BE" stroke-width="7" stroke-linecap="round"/>
+<line x1="-10.0" y1="455.7" x2="290.0" y2="437.9" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+<line x1="84.0" y1="274.0" x2="100.8" y2="590.0" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+<line x1="218.4" y1="432.0" x2="232.4" y2="590.0" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+<line x1="-10.0" y1="343.2" x2="140.0" y2="328.4" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+<line x1="100.8" y1="526.7" x2="290.0" y2="544.5" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+<rect x="14.0" y="363.9" width="44.8" height="35.5" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="16.8" y="479.4" width="39.2" height="26.6" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="123.2" y="467.5" width="56.0" height="29.6" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="246.4" y="461.6" width="28.0" height="41.4" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<polyline points="59.0,530.6 71.6,402.8 73.6,378.8 127.2,367.9" fill="none" stroke="#EC4899" stroke-width="1.6" opacity="0.85" stroke-linejoin="round"/>
+<polyline points="56.0,532.6 75.6,372.8 184.8,355.0 201.6,491.2" fill="none" stroke="#FACC15" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="75.6" cy="372.8" r="8.5" fill="#22C55E" stroke="#000" stroke-width="1.1"/>
+<text x="75.6" y="376.2" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">2</text>
+<circle cx="184.8" cy="355.0" r="8.5" fill="#FACC15" stroke="#000" stroke-width="1.1"/>
+<text x="184.8" y="358.4" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">3</text>
+<circle cx="201.6" cy="491.2" r="8.5" fill="#FACC15" stroke="#000" stroke-width="1.1"/>
+<text x="201.6" y="494.6" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">4</text>
+<rect x="48.5" y="525.1" width="15" height="15" fill="#EF4444" stroke="#000" stroke-width="1.1"/>
+<text x="56.0" y="536.0" font-size="8.5" fill="#FFF" font-weight="700" text-anchor="middle">H</text>
+<path transform="rotate(74 123.2 363.9)" d="M123.2 352.9 L130.9 372.7 L123.2 368.3 L115.5 372.7 Z" fill="#EF4444" stroke="#FFF" stroke-width="1.6" stroke-linejoin="round"/>
+<rect x="6" y="552" width="70" height="15" fill="#FFF" opacity="0.67"/>
+<line x1="9" y1="564" x2="66" y2="564" stroke="#000" stroke-width="1.6"/>
+<text x="9.0" y="561.0" font-size="7.5" fill="#000">20 m</text>
+<rect x="162.2" y="569" width="117.8" height="11" fill="#FFF" opacity="0.67"/>
+<text x="277.0" y="577.0" font-size="7" fill="#141414" text-anchor="end">© OpenStreetMap contributors</text>
+<rect x="219.7" y="290.2" width="55.3" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="219.7" y="289.0" width="55.3" height="28" rx="6" fill="#FFFFFF"/>
+<text x="247.4" y="306.8" font-size="10.5" fill="#17201C" text-anchor="middle">Follow</text>
+<rect x="237.4" y="323.2" width="37.6" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="237.4" y="322.0" width="37.6" height="28" rx="6" fill="#FFFFFF"/>
+<text x="256.2" y="339.8" font-size="10.5" fill="#17201C" text-anchor="middle">Fit</text>
+<rect x="202.1" y="356.2" width="72.9" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="202.1" y="355.0" width="72.9" height="28" rx="6" fill="#FFFFFF"/>
+<text x="238.5" y="372.8" font-size="10.5" fill="#17201C" text-anchor="middle">Satellite</text>
+<rect x="225.6" y="389.2" width="49.4" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="225.6" y="388.0" width="49.4" height="28" rx="6" fill="#FFFFFF"/>
+<text x="250.3" y="405.8" font-size="10.5" fill="#17201C" text-anchor="middle">Drive</text>
+</g>
+</g></g>
+<rect x="110.0" y="633" width="80" height="3" rx="1.5" fill="#666"/>
+</g>
+<text x="190.0" y="766.0" font-size="17" fill="#1f2328" font-weight="600" text-anchor="middle">Data</text>
+<text x="190.0" y="786.0" font-size="12.5" fill="#59636e" text-anchor="middle">HUD, modes and arm, map with mission and trail</text>
+<g transform="translate(384 96)">
+<rect x="-4.5" y="9" width="309" height="640" rx="42.5" fill="#000" opacity="0.04"/>
+<rect x="-3.0" y="6" width="306" height="640" rx="41.0" fill="#000" opacity="0.05"/>
+<rect x="-1.5" y="3" width="303" height="640" rx="39.5" fill="#000" opacity="0.07"/>
+<rect width="300" height="640" rx="38" fill="#1B1F23"/>
+<g transform="translate(10 10)">
+<clipPath id="scr4"><rect width="280" height="620" rx="29"/></clipPath><g clip-path="url(#scr4)">
+<rect width="280" height="620" fill="#EEF1EE"/>
+<rect width="280" height="54" fill="#FFFFFF"/>
+<text x="14.0" y="15.0" font-size="10" fill="#17201C" font-weight="600">9:41</text>
+<rect x="240" y="11" width="3" height="4" rx="0.6" fill="#17201C"/>
+<rect x="245" y="9" width="3" height="6" rx="0.6" fill="#17201C"/>
+<rect x="250" y="7" width="3" height="8" rx="0.6" fill="#17201C"/>
+<rect x="258" y="6" width="14" height="8" rx="2" fill="none" stroke="#17201C" stroke-width="1"/><rect x="259.5" y="7.5" width="9" height="5" rx="1" fill="#17201C"/>
+<rect x="6.0" y="29" width="137.8" height="18" rx="9" fill="#DCEFE2"/>
+<text x="13.5" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">● TCP 192.168.4.1:5760</text>
+<rect x="148.3" y="29" width="82.0" height="18" rx="9" fill="#FBE7DC"/>
+<text x="155.8" y="41.6" font-size="9" fill="#C2410C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">Auto · ARMED</text>
+<rect x="234.7" y="29" width="121.0" height="18" rx="9" fill="#DCEFE2"/>
+<text x="242.2" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">RTK Fixed · 28 sats</text>
+<rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
+<text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
+<rect y="580" width="280" height="40" fill="#FFFFFF"/>
+<rect x="3.0" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="29.4" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="58.3" y="584" width="52.8" height="32" rx="6" fill="#DFE8FA"/>
+<text x="84.7" y="604.0" font-size="10.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Plan</text>
+<rect x="113.6" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="168.9" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="195.3" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="224.2" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="250.6" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="6.0" y="61.2" width="43.5" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="6.0" y="60.0" width="43.5" height="28" rx="6" fill="#FFFFFF"/>
+<text x="27.8" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Read</text>
+<rect x="54.0" y="61.2" width="49.4" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="54.0" y="60.0" width="49.4" height="28" rx="6" fill="#1F5FD1"/>
+<text x="78.7" y="77.8" font-size="10.5" fill="#FFFFFF" text-anchor="middle">Write</text>
+<rect x="107.9" y="61.2" width="90.6" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="107.9" y="60.0" width="90.6" height="28" rx="6" fill="#FFFFFF"/>
+<text x="153.2" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Tap adds: on</text>
+<rect x="203.0" y="61.2" width="55.3" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="203.0" y="60.0" width="55.3" height="28" rx="6" fill="#FFFFFF"/>
+<text x="230.6" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Speed…</text>
+<rect x="262.8" y="61.2" width="49.4" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="262.8" y="60.0" width="49.4" height="28" rx="6" fill="#FFFFFF"/>
+<text x="287.5" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Clear</text>
+<text x="8.0" y="101.0" font-size="9" fill="#5A6861">Mission uploaded: 5 items</text>
+<clipPath id="map5"><rect x="0" y="107" width="280" height="361"/></clipPath><g clip-path="url(#map5)">
+<rect x="0" y="107" width="280" height="361" fill="#F2EFE9"/>
+<path d="M145.6 135.88 l117.6 18.05 l-14.0 119.13000000000001 l-112.0 -14.44 z" fill="#CDEBB0"/>
+<ellipse cx="210.0" cy="186.42000000000002" rx="28.0" ry="21.66" fill="#AAD3DF"/>
+<path d="M-10 388.58 l300 -18.05 l0 108.3 l-300 0 z" fill="#E0DFDF" opacity="0.55"/>
+<line x1="-10.0" y1="316.4" x2="290.0" y2="294.7" stroke="#CFC8BE" stroke-width="11" stroke-linecap="round"/>
+<line x1="84.0" y1="97.0" x2="100.8" y2="478.0" stroke="#CFC8BE" stroke-width="9" stroke-linecap="round"/>
+<line x1="218.4" y1="287.5" x2="232.4" y2="478.0" stroke="#CFC8BE" stroke-width="8" stroke-linecap="round"/>
+<line x1="-10.0" y1="179.2" x2="140.0" y2="161.2" stroke="#CFC8BE" stroke-width="7" stroke-linecap="round"/>
+<line x1="100.8" y1="403.0" x2="290.0" y2="424.7" stroke="#CFC8BE" stroke-width="7" stroke-linecap="round"/>
+<line x1="-10.0" y1="316.4" x2="290.0" y2="294.7" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+<line x1="84.0" y1="97.0" x2="100.8" y2="478.0" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+<line x1="218.4" y1="287.5" x2="232.4" y2="478.0" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+<line x1="-10.0" y1="179.2" x2="140.0" y2="161.2" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+<line x1="100.8" y1="403.0" x2="290.0" y2="424.7" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+<rect x="14.0" y="204.5" width="44.8" height="43.3" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="16.8" y="345.3" width="39.2" height="32.5" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="123.2" y="330.8" width="56.0" height="36.1" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<rect x="246.4" y="323.6" width="28.0" height="50.5" fill="#D9D0C9" stroke="#C4B6AB" stroke-width="0.6"/>
+<polyline points="59.0,408.2 71.6,245.3 73.6,221.3 127.2,208.5" fill="none" stroke="#EC4899" stroke-width="1.6" opacity="0.85" stroke-linejoin="round"/>
+<polyline points="56.0,410.2 75.6,215.3 184.8,193.6 201.6,359.7" fill="none" stroke="#FACC15" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="75.6" cy="215.3" r="8.5" fill="#22C55E" stroke="#000" stroke-width="1.1"/>
+<text x="75.6" y="218.7" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">2</text>
+<circle cx="184.8" cy="193.6" r="8.5" fill="#FACC15" stroke="#000" stroke-width="1.1"/>
+<text x="184.8" y="197.0" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">3</text>
+<circle cx="201.6" cy="359.7" r="8.5" fill="#FACC15" stroke="#000" stroke-width="1.1"/>
+<text x="201.6" y="363.1" font-size="8.5" fill="#000" font-weight="700" text-anchor="middle">4</text>
+<rect x="48.5" y="402.7" width="15" height="15" fill="#EF4444" stroke="#000" stroke-width="1.1"/>
+<text x="56.0" y="413.6" font-size="8.5" fill="#FFF" font-weight="700" text-anchor="middle">H</text>
+<path transform="rotate(74 123.2 204.5)" d="M123.2 193.5 L130.9 213.3 L123.2 208.9 L115.5 213.3 Z" fill="#EF4444" stroke="#FFF" stroke-width="1.6" stroke-linejoin="round"/>
+<rect x="6" y="440" width="70" height="15" fill="#FFF" opacity="0.67"/>
+<line x1="9" y1="452" x2="66" y2="452" stroke="#000" stroke-width="1.6"/>
+<text x="9.0" y="449.0" font-size="7.5" fill="#000">20 m</text>
+<rect x="162.2" y="457" width="117.8" height="11" fill="#FFF" opacity="0.67"/>
+<text x="277.0" y="465.0" font-size="7" fill="#141414" text-anchor="end">© OpenStreetMap contributors</text>
+</g>
+<rect y="468" width="280" height="112" fill="#EEF1EE"/>
+<text x="8.0" y="483.0" font-size="10" fill="#17201C">1. Speed 3.0 m/s</text>
+<text x="8.0" y="501.0" font-size="10" fill="#17201C">2. Waypoint  48 m</text>
+<text x="8.0" y="519.0" font-size="10" fill="#17201C">3. Waypoint, wait 2 s  61 m</text>
+<text x="8.0" y="537.0" font-size="10" fill="#17201C">4. Waypoint  55 m</text>
+<text x="8.0" y="555.0" font-size="10" fill="#17201C">5. Return to launch</text>
+<text x="8.0" y="573.0" font-size="9" fill="#5A6861">Total 164 m</text>
+</g></g>
+<rect x="110.0" y="633" width="80" height="3" rx="1.5" fill="#666"/>
+</g>
+<text x="534.0" y="766.0" font-size="17" fill="#1f2328" font-weight="600" text-anchor="middle">Plan</text>
+<text x="534.0" y="786.0" font-size="12.5" fill="#59636e" text-anchor="middle">Tap to add, drag to move, Write to the car</text>
+<g transform="translate(728 96)">
+<rect x="-4.5" y="9" width="309" height="640" rx="42.5" fill="#000" opacity="0.04"/>
+<rect x="-3.0" y="6" width="306" height="640" rx="41.0" fill="#000" opacity="0.05"/>
+<rect x="-1.5" y="3" width="303" height="640" rx="39.5" fill="#000" opacity="0.07"/>
+<rect width="300" height="640" rx="38" fill="#1B1F23"/>
+<g transform="translate(10 10)">
+<clipPath id="scr6"><rect width="280" height="620" rx="29"/></clipPath><g clip-path="url(#scr6)">
+<rect width="280" height="620" fill="#EEF1EE"/>
+<rect width="280" height="54" fill="#FFFFFF"/>
+<text x="14.0" y="15.0" font-size="10" fill="#17201C" font-weight="600">9:41</text>
+<rect x="240" y="11" width="3" height="4" rx="0.6" fill="#17201C"/>
+<rect x="245" y="9" width="3" height="6" rx="0.6" fill="#17201C"/>
+<rect x="250" y="7" width="3" height="8" rx="0.6" fill="#17201C"/>
+<rect x="258" y="6" width="14" height="8" rx="2" fill="none" stroke="#17201C" stroke-width="1"/><rect x="259.5" y="7.5" width="9" height="5" rx="1" fill="#17201C"/>
+<rect x="6.0" y="29" width="137.8" height="18" rx="9" fill="#DCEFE2"/>
+<text x="13.5" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">● TCP 192.168.4.1:5760</text>
+<rect x="148.3" y="29" width="82.0" height="18" rx="9" fill="#FBE7DC"/>
+<text x="155.8" y="41.6" font-size="9" fill="#C2410C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">Auto · ARMED</text>
+<rect x="234.7" y="29" width="121.0" height="18" rx="9" fill="#DCEFE2"/>
+<text x="242.2" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">RTK Fixed · 28 sats</text>
+<rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
+<text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
+<rect y="580" width="280" height="40" fill="#FFFFFF"/>
+<rect x="3.0" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="29.4" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="58.3" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="84.7" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="113.6" y="584" width="52.8" height="32" rx="6" fill="#DFE8FA"/>
+<text x="140.0" y="604.0" font-size="10.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Params</text>
+<rect x="168.9" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="195.3" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="224.2" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="250.6" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="6.0" y="61.2" width="61.2" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="6.0" y="60.0" width="61.2" height="28" rx="6" fill="#FFFFFF"/>
+<text x="36.6" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Refresh</text>
+<rect x="71.7" y="61.2" width="61.2" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="71.7" y="60.0" width="61.2" height="28" rx="6" fill="#1F5FD1"/>
+<text x="102.2" y="77.8" font-size="10.5" fill="#FFFFFF" text-anchor="middle">Write 2</text>
+<rect x="137.3" y="61.2" width="72.9" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="137.3" y="60.0" width="72.9" height="28" rx="6" fill="#FFFFFF"/>
+<text x="173.8" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Load file</text>
+<rect x="214.7" y="61.2" width="72.9" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="214.7" y="60.0" width="72.9" height="28" rx="6" fill="#FFFFFF"/>
+<text x="251.2" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Save file</text>
+<text x="10.0" y="108.0" font-size="11" fill="#17201C">WP_</text>
+<line x1="8" y1="115" x2="272" y2="115" stroke="#1F5FD1" stroke-width="1.5"/>
+<line x1="29.5" y1="98" x2="29.5" y2="111" stroke="#1F5FD1" stroke-width="1"/>
+<text x="9.0" y="132.0" font-size="9" fill="#5A6861">Loaded: 2 values differ from the vehicle. Press Write.</text>
+<text x="9.0" y="156.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_ACCEL</text>
+<text x="271.0" y="156.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">0</text>
+<line x1="0" y1="166" x2="280" y2="166" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="183.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_JERK</text>
+<text x="271.0" y="183.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">0</text>
+<line x1="0" y1="193" x2="280" y2="193" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="210.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_OVERSHOOT</text>
+<text x="271.0" y="210.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">2</text>
+<line x1="0" y1="220" x2="280" y2="220" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="237.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_PIVOT_ANGLE</text>
+<text x="271.0" y="237.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">60</text>
+<line x1="0" y1="247" x2="280" y2="247" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="264.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_PIVOT_DELAY</text>
+<text x="271.0" y="264.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">0</text>
+<line x1="0" y1="274" x2="280" y2="274" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="291.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_PIVOT_RATE</text>
+<text x="271.0" y="291.0" font-size="10.5" fill="#17201C" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">90</text>
+<line x1="0" y1="301" x2="280" y2="301" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="318.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_RADIUS</text>
+<text x="271.0" y="318.0" font-size="10.5" fill="#A16207" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">2 → 1</text>
+<line x1="0" y1="328" x2="280" y2="328" stroke="#CFD7D1" stroke-width="0.6"/>
+<text x="9.0" y="345.0" font-size="10.5" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">WP_SPEED</text>
+<text x="271.0" y="345.0" font-size="10.5" fill="#A16207" font-weight="700" text-anchor="end" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">2 → 2.5</text>
+<line x1="0" y1="355" x2="280" y2="355" stroke="#CFD7D1" stroke-width="0.6"/>
+</g></g>
+<rect x="110.0" y="633" width="80" height="3" rx="1.5" fill="#666"/>
+</g>
+<text x="878.0" y="766.0" font-size="17" fill="#1f2328" font-weight="600" text-anchor="middle">Params</text>
+<text x="878.0" y="786.0" font-size="12.5" fill="#59636e" text-anchor="middle">Search, edit, load a .parm: only changes staged</text>
+<g transform="translate(1072 96)">
+<rect x="-4.5" y="9" width="309" height="640" rx="42.5" fill="#000" opacity="0.04"/>
+<rect x="-3.0" y="6" width="306" height="640" rx="41.0" fill="#000" opacity="0.05"/>
+<rect x="-1.5" y="3" width="303" height="640" rx="39.5" fill="#000" opacity="0.07"/>
+<rect width="300" height="640" rx="38" fill="#1B1F23"/>
+<g transform="translate(10 10)">
+<clipPath id="scr7"><rect width="280" height="620" rx="29"/></clipPath><g clip-path="url(#scr7)">
+<rect width="280" height="620" fill="#EEF1EE"/>
+<rect width="280" height="54" fill="#FFFFFF"/>
+<text x="14.0" y="15.0" font-size="10" fill="#17201C" font-weight="600">9:41</text>
+<rect x="240" y="11" width="3" height="4" rx="0.6" fill="#17201C"/>
+<rect x="245" y="9" width="3" height="6" rx="0.6" fill="#17201C"/>
+<rect x="250" y="7" width="3" height="8" rx="0.6" fill="#17201C"/>
+<rect x="258" y="6" width="14" height="8" rx="2" fill="none" stroke="#17201C" stroke-width="1"/><rect x="259.5" y="7.5" width="9" height="5" rx="1" fill="#17201C"/>
+<rect x="6.0" y="29" width="137.8" height="18" rx="9" fill="#DCEFE2"/>
+<text x="13.5" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">● TCP 192.168.4.1:5760</text>
+<rect x="148.3" y="29" width="82.0" height="18" rx="9" fill="#FBE7DC"/>
+<text x="155.8" y="41.6" font-size="9" fill="#C2410C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">Auto · ARMED</text>
+<rect x="234.7" y="29" width="121.0" height="18" rx="9" fill="#DCEFE2"/>
+<text x="242.2" y="41.6" font-size="9" fill="#2F7D4F" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">RTK Fixed · 28 sats</text>
+<rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
+<text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
+<rect y="580" width="280" height="40" fill="#FFFFFF"/>
+<rect x="3.0" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="29.4" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="58.3" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="84.7" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="113.6" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="168.9" y="584" width="52.8" height="32" rx="6" fill="#DFE8FA"/>
+<text x="195.3" y="604.0" font-size="10.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Setup</text>
+<rect x="224.2" y="584" width="52.8" height="32" rx="6" fill="#FFFFFF"/>
+<text x="250.6" y="604.0" font-size="10.5" fill="#17201C" text-anchor="middle">Log</text>
+<clipPath id="setup8"><rect y="54" width="280" height="526"/></clipPath><g clip-path="url(#setup8)">
+<text x="11.0" y="81.0" font-size="9" fill="#5A6861" font-weight="700" letter-spacing="0.7">RADIO</text>
+<text x="11.0" y="96.0" font-size="9" fill="#5A6861">Ch 1 steering, ch 3 throttle, ch 8 mode switch.</text>
+<rect x="11" y="107" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="107" width="73.2" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="112.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">1: 1502</text>
+<rect x="11" y="121" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="121" width="73.0" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="126.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">2: 1500</text>
+<rect x="11" y="135" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="135" width="73.0" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="140.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">3: 1500</text>
+<rect x="11" y="149" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="149" width="73.0" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="154.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">4: 1500</text>
+<rect x="11" y="163" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="163" width="24.3" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="168.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">5: 1100</text>
+<rect x="11" y="177" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="177" width="24.3" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="182.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">6: 1100</text>
+<rect x="11" y="191" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="191" width="24.3" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="196.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">7: 1100</text>
+<rect x="11" y="205" width="146" height="4" rx="2" fill="#DFE8FA"/>
+<rect x="11" y="205" width="121.7" height="4" rx="2" fill="#1F5FD1"/>
+<text x="163.0" y="210.5" font-size="9" fill="#17201C" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">8: 1900</text>
+<rect x="11.0" y="220.2" width="108.2" height="28" rx="6" fill="#000" opacity="0.10"/>
+<rect x="11.0" y="219.0" width="108.2" height="28" rx="6" fill="#FFFFFF"/>
+<text x="65.1" y="236.8" font-size="10.5" fill="#17201C" text-anchor="middle">Calibrate radio</text>
+<text x="11.0" y="276.0" font-size="9" fill="#5A6861" font-weight="700" letter-spacing="0.7">LIDAR PROXIMITY</text>
+<circle cx="140.0" cy="367.0" r="18.5" fill="none" stroke="#CFD7D1" stroke-width="0.8"/>
+<text x="142.5" y="357.0" font-size="7.5" fill="#5A6861">2 m</text>
+<circle cx="140.0" cy="367.0" r="37.0" fill="none" stroke="#CFD7D1" stroke-width="0.8"/>
+<text x="142.5" y="338.5" font-size="7.5" fill="#5A6861">4 m</text>
+<circle cx="140.0" cy="367.0" r="55.5" fill="none" stroke="#CFD7D1" stroke-width="0.8"/>
+<text x="142.5" y="320.0" font-size="7.5" fill="#5A6861">6 m</text>
+<circle cx="140.0" cy="367.0" r="74.0" fill="none" stroke="#CFD7D1" stroke-width="0.8"/>
+<text x="142.5" y="301.5" font-size="7.5" fill="#5A6861">8 m</text>
+<path d="M153.0 338.4 A31.4 31.4 0 0 1 168.6 354.0" fill="none" stroke="rgb(34,197,94)" stroke-width="5" opacity="0.8"/>
+<text x="169.3" y="340.7" font-size="8.5" fill="#17201C" font-weight="700" text-anchor="middle">3.4</text>
+<path d="M183.8 386.9 A48.1 48.1 0 0 1 159.9 410.8" fill="none" stroke="rgb(34,197,94)" stroke-width="5" opacity="0.8"/>
+<text x="181.1" y="411.1" font-size="8.5" fill="#17201C" font-weight="700" text-anchor="middle">5.2</text>
+<path d="M125.4 399.0 A35.1 35.1 0 0 1 108.0 381.6" fill="none" stroke="rgb(34,197,94)" stroke-width="5" opacity="0.8"/>
+<text x="108.1" y="401.9" font-size="8.5" fill="#17201C" font-weight="700" text-anchor="middle">3.8</text>
+<path d="M84.5 387.7 A59.2 59.2 0 0 1 84.5 346.3" fill="none" stroke="rgb(34,197,94)" stroke-width="5" opacity="0.8"/>
+<text x="70.8" y="370.0" font-size="8.5" fill="#17201C" font-weight="700" text-anchor="middle">6.4</text>
+<path d="M125.7 360.5 A15.7 15.7 0 0 1 133.5 352.7" fill="none" stroke="rgb(64,177,90)" stroke-width="5" opacity="0.8"/>
+<text x="121.8" y="351.8" font-size="8.5" fill="#17201C" font-weight="700" text-anchor="middle">1.7</text>
+<rect x="134.5" y="358.0" width="11" height="18" fill="#1F5FD1"/>
+<text x="140.0" y="356.0" font-size="8" fill="#17201C" text-anchor="middle">▲</text>
+<text x="11.0" y="463.0" font-size="8.5" fill="#5A6861">Needs PRX1_TYPE=19 (LD14). Put a box in front: it</text>
+<text x="11.0" y="474.0" font-size="8.5" fill="#5A6861">should show at the top; else set PRX1_YAW_CORR.</text>
+<text x="11.0" y="503.0" font-size="9" fill="#5A6861" font-weight="700" letter-spacing="0.7">RTK / NTRIP</text>
+<text x="11.0" y="522.0" font-size="9.5" fill="#5A6861">Host</text>
+<text x="85.0" y="522.0" font-size="10.5" fill="#17201C">rtk2go.com</text>
+<line x1="83" y1="529" x2="269" y2="529" stroke="#5A6861" stroke-width="0.8"/>
+<text x="11.0" y="548.0" font-size="9.5" fill="#5A6861">Port</text>
+<text x="85.0" y="548.0" font-size="10.5" fill="#17201C">2101</text>
+<line x1="83" y1="555" x2="269" y2="555" stroke="#5A6861" stroke-width="0.8"/>
+<text x="11.0" y="574.0" font-size="9.5" fill="#5A6861">Mount</text>
+<text x="85.0" y="574.0" font-size="10.5" fill="#17201C">HCM_BASE</text>
+<line x1="83" y1="581" x2="269" y2="581" stroke="#5A6861" stroke-width="0.8"/>
+</g>
+</g></g>
+<rect x="110.0" y="633" width="80" height="3" rx="1.5" fill="#666"/>
+</g>
+<text x="1222.0" y="766.0" font-size="17" fill="#1f2328" font-weight="600" text-anchor="middle">Setup</text>
+<text x="1222.0" y="786.0" font-size="12.5" fill="#59636e" text-anchor="middle">Radio, LiDAR proximity, RTK over NTRIP, calibration</text>
+</svg>

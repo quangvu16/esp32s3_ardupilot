@@ -321,6 +321,8 @@ Work in this order. Mission Planner's **Config → Tuning** page and the live gr
 
 Build and install instructions are in its README.
 
+![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)
+
 ## License
 
 GPLv3, the same as ArduPilot — see [LICENSE](LICENSE).

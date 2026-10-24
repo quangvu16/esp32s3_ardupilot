@@ -322,6 +322,8 @@ thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4
 
 Cách biên dịch và cài đặt (tiếng Anh) xem README của ứng dụng.
 
+![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)
+
 ## Giấy phép
 
 GPLv3, giống ArduPilot — xem [LICENSE](LICENSE).
