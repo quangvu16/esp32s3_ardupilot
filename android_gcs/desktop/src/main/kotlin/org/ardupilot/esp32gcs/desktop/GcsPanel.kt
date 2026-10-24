@@ -260,6 +260,10 @@ class GcsPanel : JPanel(BorderLayout()) {
             when (e.id) { KeyEvent.KEY_PRESSED -> keysDown.add(k); KeyEvent.KEY_RELEASED -> keysDown.remove(k) }
             true
         }
+        // A key let go while another window has the focus (a dialog, Alt-Tab to another app)
+        // never sends KEY_RELEASED here, and the car would keep driving: forget the held keys
+        // whenever the active window changes.
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("activeWindow") { keysDown.clear() }
     }
 
     private val keysHeld get() = keyDrive.isSelected && keysDown.isNotEmpty()

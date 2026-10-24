@@ -228,7 +228,7 @@ Disarm bằng cách gạt hết sang trái. Lần arm đầu tiên hãy nhấc b
 | --- | --- | --- |
 | `FS_THR_ENABLE` | `1` | Phản ứng khi mất tín hiệu RC |
 | `FS_THR_VALUE` | `910` | Cài **failsafe của chính bộ thu** sao cho kênh 3 xuống dưới mức này (ví dụ 900 µs) khi tắt tay điều khiển |
-| `FS_GCS_ENABLE` | `1` | Phản ứng khi mất kết nối WiFi với Mission Planner |
+| `FS_GCS_ENABLE` | `2` | Phản ứng khi mất kết nối WiFi với trạm mặt đất, trừ chế độ Auto, để tuần tra hoặc zig-zag tiếp tục chạy. `1` thì dừng cả Auto |
 | `FS_ACTION` | `2` (Hold) | Dừng xe. `1` = RTL (quay về), chỉ dùng khi GPS đã hoạt động tốt |
 | `FS_TIMEOUT` | `1.5` | Số giây trước khi failsafe kích hoạt |
 | `FS_CRASH_CHECK` | `2` | Dừng và disarm nếu xe bị kẹt vào vật cản |

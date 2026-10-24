@@ -225,7 +225,7 @@ full left. Do your first arm with the wheels in the air.
 | --- | --- | --- |
 | `FS_THR_ENABLE` | `1` | React when the RC signal is lost |
 | `FS_THR_VALUE` | `910` | Set your **receiver's own failsafe** so channel 3 drops below this (e.g. 900 µs) when the transmitter is off |
-| `FS_GCS_ENABLE` | `1` | React when the WiFi link to Mission Planner drops |
+| `FS_GCS_ENABLE` | `2` | React when the WiFi link to the ground station drops, except in Auto, so a patrol or zig-zag carries on. `1` also stops Auto |
 | `FS_ACTION` | `2` (Hold) | Stop. `1` = RTL, but only use that after GPS works well |
 | `FS_TIMEOUT` | `1.5` | Seconds before the failsafe triggers |
 | `FS_CRASH_CHECK` | `2` | Hold and disarm if the car is stuck against something |

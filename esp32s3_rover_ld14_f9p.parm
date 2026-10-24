@@ -41,6 +41,15 @@ MODE1,0                 # Manual
 MODE4,10                # Auto
 MODE6,11                # RTL
 
+# Failsafes (README "Set up" step 3). Set the receiver's own failsafe so
+# channel 3 drops below FS_THR_VALUE when the transmitter is off.
+FS_THR_ENABLE,1         # RC signal lost
+FS_GCS_ENABLE,2         # WiFi/GCS link lost, except in Auto (a patrol carries on);
+                        # this also stops the car when the phone/PC stick or a
+                        # LiDAR behaviour was driving it and the link drops
+FS_ACTION,2             # Hold
+FS_TIMEOUT,1.5          # s
+
 # Starting points, tune after the first drives (Rover tuning guide)
 CRUISE_SPEED,2          # m/s
 CRUISE_THROTTLE,40      # % throttle that gives CRUISE_SPEED
@@ -69,11 +78,12 @@ GPS_INJECT_TO,127       # pass RTCM from Mission Planner to all GPSes (the only 
 SERIAL1_PROTOCOL,2      # MAVLink2
 
 # ---------------------------------------------------------------- avoidance
-# Use the LiDAR for Rover's obstacle avoidance; uncomment once PRX1_YAW_CORR is
-# verified, or the robot will avoid obstacles that are not where it thinks.
+# Use the LiDAR for Rover's obstacle avoidance once PRX1_YAW_CORR is verified,
+# or the robot will avoid obstacles that are not where it thinks.
 # README "Set up" step 8 explains the four strategies.
-# Simple avoidance: stop before obstacles (Acro, Steering, Loiter...)
-#AVOID_ENABLE,3          # fence + proximity
+# Simple avoidance: stop before obstacles (Acro, Steering, Loiter...).
+# Rover's default is 3 (fence + proximity), so it is turned off here until then.
+AVOID_ENABLE,0          # set 3 (fence + proximity) once PRX1_YAW_CORR is right
 #AVOID_MARGIN,0.5        # m kept from obstacles
 # Path planning in Auto/Guided/RTL (reboot after setting OA_TYPE):
 # 1 BendyRuler (LiDAR + fences), 2 Dijkstra's (fences only), 3 Dijkstra's with BendyRuler
