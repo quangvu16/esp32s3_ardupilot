@@ -48,8 +48,8 @@ final class TcpLink: Link {
             guard let self = self else { return }
             switch st {
             case .ready: self.setOpen(true); self.receive()
-            case .failed(let e): self.fail(e.localizedDescription); c.cancel()
-            case .waiting(let e): self.fail(e.localizedDescription); c.cancel()
+            case .failed(let e): self.fail(describe(e)); c.cancel()
+            case .waiting(let e): self.fail(describe(e)); c.cancel()
             case .cancelled: self.fail("closed")
             default: break
             }
@@ -61,7 +61,7 @@ final class TcpLink: Link {
         conn?.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] data, _, done, err in
             guard let self = self, !self.stopping else { return }
             if let d = data, !d.isEmpty { self.onBytes?(d) }
-            if let e = err { self.fail(e.localizedDescription); return }
+            if let e = err { self.fail(describe(e)); return }
             if done { self.fail("closed by the board"); return }
             self.receive()
         }
@@ -155,6 +155,20 @@ final class UdpLink: Link {
         // UDP sends are immediate; give the last frames a moment before cancelling.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { c?.cancel(); l?.cancel() }
     }
+}
+
+/// A network error in words: the usual cause is not being on the car's WiFi.
+func describe(_ e: NWError) -> String {
+    if case .posix(let c) = e {
+        switch c {
+        case .ETIMEDOUT: return "no answer: is this device on the car's WiFi (ardupilot123)?"
+        case .EHOSTUNREACH, .ENETUNREACH, .ENETDOWN: return "unreachable: is this device on the car's WiFi (ardupilot123)?"
+        case .ECONNREFUSED: return "refused: wrong port, or another app holds the board's only TCP connection"
+        case .ECONNRESET: return "closed by the board"
+        default: break
+        }
+    }
+    return e.localizedDescription
 }
 
 /// Private, link-local or loopback IPv4 literal: an address on the board's WiFi, not on the internet.

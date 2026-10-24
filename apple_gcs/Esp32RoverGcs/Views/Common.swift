@@ -16,6 +16,7 @@ struct Pill: View {
         Text(text)
             .font(.caption.weight(.semibold))
             .lineLimit(1)
+            .fixedSize()
             .padding(.horizontal, 8).padding(.vertical, 4)
             .background(color.opacity(0.18), in: Capsule())
             .overlay(Capsule().stroke(color.opacity(0.6), lineWidth: 1))
@@ -31,7 +32,7 @@ struct StatusBar: View {
         _ = m.tick
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
-                Pill(text: v.connected ? v.linkText : v.linkText, color: v.connected ? .good : .bad)
+                Pill(text: v.linkShort, color: v.connected ? .good : .bad)
                 Pill(text: v.modeName, color: .accentColor)
                 Pill(text: v.armed ? "ARMED" : "Disarmed", color: v.armed ? .bad : .muted)
                 Pill(text: "\(Vehicle.GPS_FIX[min(v.gpsFix, Vehicle.GPS_FIX.count - 1)]) · \(v.gpsSats) sats",

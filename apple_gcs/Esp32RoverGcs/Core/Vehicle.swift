@@ -65,6 +65,15 @@ final class Vehicle {
     private var wantLink: (() -> Link)?
     private var reconnectAt: Int64 = 0
     private(set) var linkText = "Not connected"
+    /// One failed attempt is reported; the retries every few seconds are not.
+    private var failureShown = false
+
+    /// A few words for the status pill (linkText has the details).
+    var linkShort: String {
+        if connected, let l = link { return l.name }
+        if let l = link { return l.open ? "Waiting for heartbeat" : "Connecting…" }
+        return wantLink == nil ? "Not connected" : "No link · retrying"
+    }
 
     // --- telemetry
     var sysId = 0
@@ -167,6 +176,7 @@ final class Vehicle {
         disconnect()
         wantLink = make
         reconnectAt = 0
+        failureShown = false
     }
 
     func disconnect() {
@@ -187,9 +197,13 @@ final class Vehicle {
         }
         l.onClosed = { [weak self, weak l] why in
             guard let self = self, let l = l, self.link === l else { return }
+            let wasConnected = self.connected
             self.link = nil
-            self.linkText = "Lost \(l.name): \(why)"
-            self.post(.link(self.linkText))
+            self.lastHeartbeat = 0
+            self.linkText = (wasConnected ? "Lost \(l.name): " : "\(l.name): ") + why
+            // Say it when a working link drops, and once for a link that never came up.
+            if wasConnected || !self.failureShown { self.post(.link(self.linkText)) }
+            self.failureShown = true
             self.reconnectAt = clockMs() + 2000
         }
         link = l
@@ -276,7 +290,7 @@ final class Vehicle {
             armed = p.u8(6) & 0x80 != 0
             systemStatus = p.u8(7)
             lastHeartbeat = clockMs()
-            if first { post(.link("Connected to system \(sysId)")) }
+            if first { post(.link("Connected to system \(sysId)")); failureShown = false }
             return
         }
         if m.sysId != sysId { return }
