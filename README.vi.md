@@ -16,7 +16,7 @@ lại trong [README_ArduPilot.md](README_ArduPilot.md).
 
 | Tệp | Thay đổi |
 | --- | --- |
-| `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | Kiểu LD14: dùng bộ giải mã gói tin của LD06, cộng thêm phép hiệu chỉnh góc theo tâm đo của SDK LDROBOT (LD14 là cảm biến tam giác lượng, góc thô lệch tới ~7°), tầm xa tối đa 8 m, không lọc theo độ tin cậy |
+| `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | Kiểu LD14: dùng bộ giải mã gói tin của LD06, cộng thêm phép hiệu chỉnh góc theo tâm đo của SDK LDROBOT (LD14 là cảm biến tam giác lượng, góc thô lệch tới ~7°), tầm xa tối đa 8 m, không lọc theo độ tin cậy; mỗi vòng quét còn được gửi về trạm mặt đất dưới dạng `OBSTACLE_DISTANCE` (72 ô 5°, khoảng 5 Hz) cho tab LiDAR của ứng dụng Android |
 | `libraries/AP_Proximity/AP_Proximity.{h,cpp}`, `AP_Proximity_Params.cpp` | `PRX_TYPE` 19 = LD14 |
 | `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | Thêm UART2 (RX GPIO41, TX GPIO42) để có SERIAL2; IMU MPU9250 chuyển từ SPI sang I2C (0x68) và bỏ SPI, vì GPIO33-37 thuộc về PSRAM octal trên module N8R8/N16R8; tắt thẻ SD, vì trên S3 thẻ SD chiếm GPIO14/15/2 (đầu vào RC, I2C SCL, chân analog 3); đổi tên kênh ADC cho ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), nếu không board sẽ không biên dịch được; bật hàng rào (fence), tránh vật cản và lập đường đi (BendyRuler, Dijkstra's) |
 | `libraries/AP_HAL/board/esp32.h` | Các mặc định ESP32 bỏ hàng rào, tránh vật cản và lập đường đi có thể được board header ghi đè |
@@ -374,11 +374,12 @@ thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4
 - HUD, bản đồ, nút chuyển chế độ, arm, và cần lái trên màn hình để điều khiển xe
 - lập lộ trình waypoint, đọc/ghi file `.waypoints` của Mission Planner
 - toàn bộ danh sách tham số, nạp và lưu file `.parm`
-- hiệu chuẩn gia tốc kế, la bàn và tay điều khiển, xem LiDAR
+- hiệu chuẩn gia tốc kế, la bàn và tay điều khiển
+- xem vòng quét LiDAR, và các hành vi `hoverboard_laser` của robot hoverboard cho xe: Avoid (tránh), Follow (bám theo), Warn (cảnh báo)
 - hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
 
-**Tải về:** [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk) (Android 8.0 trở lên), trong
-[bản phát hành gcs-v1.1](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".
+**Tải về:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 trở lên), trong
+[bản phát hành gcs-v1.2](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".
 Cách tự biên dịch (tiếng Anh) xem README của ứng dụng.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)

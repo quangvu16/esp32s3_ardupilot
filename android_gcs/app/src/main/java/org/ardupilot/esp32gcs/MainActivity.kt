@@ -111,6 +111,19 @@ class MainActivity : Activity() {
     private lateinit var ntripBtn: Button
     private val ntripFields = HashMap<String, EditText>()
 
+    // lidar page
+    private val lidarBehaviours = LidarBehaviours()
+    private lateinit var lidarDriver: LidarDriver
+    private lateinit var lidarView: LidarView
+    private lateinit var lidarStatus: TextView
+    private lateinit var lidarStart: Button
+    private lateinit var lidarHint: TextView
+    private val lidarModeBtns = HashMap<LidarBehaviours.Mode, Button>()
+    private val lidarParamRows = HashMap<LidarBehaviours.Mode, LinearLayout>()
+    private var tone: android.media.ToneGenerator? = null
+    private var lastBeepMs = 0L
+    private var lidarSound = true
+
     // log page
     private lateinit var logText: TextView
     private var logShown = -1
@@ -128,23 +141,27 @@ class MainActivity : Activity() {
         content = FrameLayout(this)
         root.addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
         root.addView(tabBar())
-        pages += dataPage(); pages += planPage(); pages += paramsPage(); pages += setupPage(); pages += logPage()
+        pages += dataPage(); pages += planPage(); pages += paramsPage(); pages += setupPage(); pages += lidarPage(); pages += logPage()
         pages.forEach { content.addView(it, FrameLayout.LayoutParams(-1, -1)); it.visibility = View.GONE }
         setContentView(root)
         showPage(0)
 
         if (prefs.getBoolean("autoconnect", true)) connect()
         ui.post(refresh)
+        ui.post(lidarLoop)
     }
 
     override fun onPause() {
         super.onPause()
+        stopLidar()
         stick.release()
     }
 
     override fun onDestroy() {
         ui.removeCallbacksAndMessages(null)
         ntrip?.stop()
+        lidarDriver.stop()
+        tone?.release()
         vehicle.close()
         super.onDestroy()
     }
@@ -245,7 +262,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL; setBackgroundColor(col(R.color.surface))
             setPadding(dp(4), dp(4), dp(4), dp(4))
         }
-        listOf("Data", "Plan", "Params", "Setup", "Log").forEachIndexed { i, s ->
+        listOf("Data", "Plan", "Params", "Setup", "LiDAR", "Log").forEachIndexed { i, s ->
             val b = Button(this, null, 0, R.style.ToolButton).apply {
                 text = s; elevation = 0f
                 setOnClickListener { showPage(i) }
@@ -265,7 +282,7 @@ class MainActivity : Activity() {
         }
         if (i == 1) planMap.invalidate()
         if (i == 2) refreshParamList()
-        if (i == 4) logShown = -1
+        if (i == PAGE_LOG) logShown = -1
     }
 
     // =========================================================================
@@ -277,7 +294,7 @@ class MainActivity : Activity() {
         hud = HudView(this)
         v.addView(hud, lp(-1, -2))
         lastMsg = text("", 12f, R.color.muted).apply {
-            setPadding(dp(10), dp(4), dp(10), dp(4)); maxLines = 1; setOnClickListener { showPage(4) }
+            setPadding(dp(10), dp(4), dp(10), dp(4)); maxLines = 1; setOnClickListener { showPage(PAGE_LOG) }
         }
         v.addView(lastMsg)
 
@@ -949,6 +966,202 @@ class MainActivity : Activity() {
     }
 
     // =========================================================================
+    // LiDAR page: hoverboard_laser's Avoid / Follow / Warn on the LD14 scan
+    // =========================================================================
+
+    private fun lidarPage(): View {
+        loadLidarParams()
+        lidarDriver = LidarDriver(vehicle, lidarBehaviours)
+        val v = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(14), dp(8), dp(14), dp(30)) }
+        lidarView = LidarView(this)
+        v.addView(lidarView, lp(-1, -2))
+        lidarStatus = text("Off", 15f, bold = true).apply { setPadding(0, dp(8), 0, dp(4)) }
+        v.addView(lidarStatus)
+
+        val modes = LidarBehaviours.Mode.values().map { m ->
+            button(m.label) { setLidarMode(m) }.also { lidarModeBtns[m] = it }
+        }
+        lidarStart = button("Start", accent = true) { if (lidarDriver.running) stopLidar() else startLidar() }
+        v.addView(flow(*modes.toTypedArray(), lidarStart))
+        lidarHint = text("", 12f, R.color.muted)
+        v.addView(lidarHint)
+
+        v.addView(section("Settings"))
+        val skid = button(if (lidarBehaviours.p.skidSteer) "Vehicle: skid steer" else "Vehicle: RC car") { b ->
+            lidarBehaviours.p.skidSteer = !lidarBehaviours.p.skidSteer
+            b.text = if (lidarBehaviours.p.skidSteer) "Vehicle: skid steer" else "Vehicle: RC car"
+            saveLidarParams()
+        }
+        val sound = button(if (lidarSound) "Warn sound: on" else "Warn sound: off") { b ->
+            lidarSound = !lidarSound; b.text = if (lidarSound) "Warn sound: on" else "Warn sound: off"; saveLidarParams()
+        }
+        v.addView(flow(skid, sound))
+        v.addView(text("RC car: turns that the hoverboard makes on the spot become backing up with the wheels the other " +
+            "way, only while the rear is clear. Skid steer: on the spot, as in hoverboard_laser.", 11f, R.color.muted))
+        val pp = lidarBehaviours.p
+        lidarParamRows[LidarBehaviours.Mode.AVOID] = paramGroup(
+            Triple("Speed (stick, 0-1)", { pp.linear }, { x: Float -> pp.linear = x.coerceIn(0f, 1f) }),
+            Triple("Steering (stick, 0-1)", { pp.angular }, { x: Float -> pp.angular = x.coerceIn(0f, 1f) }),
+            Triple("Response dist (m)", { pp.responseDist }, { x: Float -> pp.responseDist = x.coerceIn(0.2f, 5f) }),
+            Triple("Side sector to (deg)", { pp.laserAngle }, { x: Float -> pp.laserAngle = x.coerceIn(25f, 90f) }),
+            Triple("Bins to block", { pp.minPoints.toFloat() }, { x: Float -> pp.minPoints = x.toInt().coerceIn(1, 10) }),
+        )
+        lidarParamRows[LidarBehaviours.Mode.FOLLOW] = paramGroup(
+            Triple("Keep distance (m)", { pp.followDist }, { x: Float -> pp.followDist = x.coerceIn(0.3f, 5f) }),
+            Triple("Max speed (stick)", { pp.maxLinear }, { x: Float -> pp.maxLinear = x.coerceIn(0f, 1f) }),
+            Triple("Max steering (stick)", { pp.maxAngular }, { x: Float -> pp.maxAngular = x.coerceIn(0f, 1f) }),
+            Triple("Priority angle (deg)", { pp.priorityAngle }, { x: Float -> pp.priorityAngle = x.coerceIn(0f, 90f) }),
+            Triple("Search angle (deg)", { pp.trackAngle }, { x: Float -> pp.trackAngle = x.coerceIn(5f, 180f) }),
+        )
+        lidarParamRows[LidarBehaviours.Mode.WARN] = paramGroup(
+            Triple("Warn distance (m)", { pp.warnDist }, { x: Float -> pp.warnDist = x.coerceIn(0.1f, 8f) }),
+            Triple("Warn angle (deg)", { pp.warnAngle }, { x: Float -> pp.warnAngle = x.coerceIn(5f, 180f) }),
+        )
+        lidarParamRows.values.forEach { v.addView(it) }
+        v.addView(paramGroup(Triple("Ignore closer than (m)", { pp.minRange }, { x: Float -> pp.minRange = x.coerceIn(0f, 2f) })))
+        setLidarMode(lidarBehaviours.mode)
+        return ScrollView(this).apply { addView(v) }
+    }
+
+    private fun paramGroup(vararg rows: Triple<String, () -> Float, (Float) -> Unit>) = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        for ((label, get, set) in rows) {
+            val e = edit("", fmt(get()), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL).apply {
+                addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(t: Editable?) { t.toString().toFloatOrNull()?.let { set(it); saveLidarParams() } }
+                    override fun beforeTextChanged(t: CharSequence?, a: Int, b: Int, c: Int) {}
+                    override fun onTextChanged(t: CharSequence?, a: Int, b: Int, c: Int) {}
+                })
+            }
+            addView(labeled(label, e))
+        }
+    }
+
+    private fun setLidarMode(m: LidarBehaviours.Mode) {
+        val wasRunning = lidarDriver.running
+        lidarBehaviours.mode = m
+        lidarModeBtns.forEach { (k, b) ->
+            b.backgroundTintList = android.content.res.ColorStateList.valueOf(col(if (k == m) R.color.accent_soft else R.color.surface))
+            b.setTextColor(col(if (k == m) R.color.accent else R.color.fg))
+        }
+        lidarParamRows.forEach { (k, row) -> row.visibility = if (k == m) View.VISIBLE else View.GONE }
+        lidarHint.text = when (m) {
+            LidarBehaviours.Mode.OFF -> "Shows the scan only. Choose a behaviour from hoverboard_laser."
+            LidarBehaviours.Mode.AVOID -> "laser_Avoidance: drives forward and steers away from obstacles in the front, left and right sectors."
+            LidarBehaviours.Mode.FOLLOW -> "laser_Tracker: follows the nearest object ahead and keeps the set distance from it."
+            LidarBehaviours.Mode.WARN -> "laser_Warning: beeps and vibrates the phone when something ahead is too close. Doesn't drive."
+        } + if (m == LidarBehaviours.Mode.AVOID || m == LidarBehaviours.Mode.FOLLOW)
+            " Drives with stick overrides (Manual, Acro or Steering mode); touching the Drive stick pauses it, Stop or leaving the app stops the car." else ""
+        prefs.edit().putString("lidar_mode", m.name).apply()
+        if (m == LidarBehaviours.Mode.OFF) stopLidar()
+        else if (wasRunning) lidarDriver.start()          // switch behaviour on the fly, cancelling the old one's sticks
+    }
+
+    private fun startLidar() {
+        val m = lidarBehaviours.mode
+        if (m == LidarBehaviours.Mode.OFF) { toast("Choose Avoid, Follow or Warn first"); return }
+        if (vehicle.scan == null) { toast("No LiDAR scan from the vehicle yet"); return }
+        if (lidarDriver.drives) {
+            if (!requireLink()) return
+            if (vehicle.customMode !in listOf(0, 1, 3)) {
+                confirm("Mode", "Stick overrides only drive in Manual, Acro or Steering. Switch to Manual and start?", "Manual") {
+                    vehicle.setMode(0); lidarDriver.start(); lidarStart.text = "Stop"
+                }
+                return
+            }
+            if (!vehicle.armed) toast("The car is disarmed: arm it on the Data tab to drive")
+        }
+        lidarDriver.start()
+        lidarStart.text = "Stop"
+    }
+
+    private fun stopLidar() {
+        if (!this::lidarDriver.isInitialized) return
+        lidarDriver.stop()
+        lidarStart.text = "Start"
+    }
+
+    private val lidarLoop = object : Runnable {
+        override fun run() {
+            try { lidarTick() } catch (e: Exception) { android.util.Log.e("Gcs", "lidar", e) }
+            ui.postDelayed(this, 100)
+        }
+    }
+
+    private fun lidarTick() {
+        val now = SystemClock.elapsedRealtime()
+        val cmd = lidarDriver.tick(now, stick.held, driveLimit)
+        if (lidarDriver.running && cmd.alarm && lidarSound && now - lastBeepMs > 450) {
+            lastBeepMs = now
+            if (tone == null) tone = android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 80)
+            tone?.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150)
+            getSystemService(android.os.Vibrator::class.java)
+                ?.vibrate(android.os.VibrationEffect.createOneShot(120, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+        }
+        if (page != PAGE_LIDAR) return
+        val s = vehicle.scan
+        val p = lidarBehaviours.p
+        lidarView.scan = s
+        lidarView.minRange = p.minRange
+        lidarView.info = s?.let { sc ->
+            val n = sc.nearest(0f, 180f, p.minRange)
+            "${vehicle.scanCount} scans" + (n?.let { "  ·  nearest %.2f m at %+.0f°".format(it.second, it.first) } ?: "  ·  nothing in range")
+        } ?: ""
+        lidarView.wedges = lidarWedges(s)
+        lidarView.target = if (lidarBehaviours.mode == LidarBehaviours.Mode.FOLLOW && s != null)
+            s.nearest(0f, p.trackAngle, p.minRange) else null
+        lidarView.invalidate()
+        lidarStatus.text = if (lidarDriver.running) cmd.why.replaceFirstChar { it.uppercase() } +
+            (if (lidarDriver.drives) "   thr %+.2f  steer %+.2f".format(cmd.throttle, cmd.steer) else "")
+            else "${lidarBehaviours.mode.label}: not running"
+        lidarStatus.setTextColor(col(if (cmd.alarm) R.color.bad else R.color.fg))
+    }
+
+    /** The sectors the current behaviour looks at, red where it sees something. */
+    private fun lidarWedges(s: LidarScan?): List<LidarView.Wedge> {
+        val p = lidarBehaviours.p
+        fun hot(from: Float, to: Float, r: Float) = s?.points(p.minRange)?.let { (a, d) ->
+            var n = 0; for (i in a.indices) if (a[i] > from && a[i] < to && d[i] < r) n++; n
+        } ?: 0
+        return when (lidarBehaviours.mode) {
+            LidarBehaviours.Mode.AVOID -> {
+                val r = p.responseDist * 1.5f
+                listOf(LidarView.Wedge(-20f, 20f, r, hot(-20f, 20f, r) >= p.minPoints),
+                    LidarView.Wedge(20f, p.laserAngle, r, hot(20f, p.laserAngle, r) >= p.minPoints),
+                    LidarView.Wedge(-p.laserAngle, -20f, r, hot(-p.laserAngle, -20f, r) >= p.minPoints))
+            }
+            LidarBehaviours.Mode.FOLLOW -> listOf(LidarView.Wedge(-p.trackAngle, p.trackAngle, p.followDist, false))
+            LidarBehaviours.Mode.WARN -> listOf(LidarView.Wedge(-p.warnAngle, p.warnAngle, p.warnDist, hot(-p.warnAngle, p.warnAngle, p.warnDist) > 0))
+            LidarBehaviours.Mode.OFF -> emptyList()
+        }
+    }
+
+    private fun loadLidarParams() {
+        val p = lidarBehaviours.p
+        fun f(k: String, d: Float) = prefs.getFloat("lidar_$k", d)
+        p.linear = f("linear", p.linear); p.angular = f("angular", p.angular); p.responseDist = f("responseDist", p.responseDist)
+        p.laserAngle = f("laserAngle", p.laserAngle); p.minPoints = f("minPoints", p.minPoints.toFloat()).toInt()
+        p.followDist = f("followDist", p.followDist); p.maxLinear = f("maxLinear", p.maxLinear); p.maxAngular = f("maxAngular", p.maxAngular)
+        p.priorityAngle = f("priorityAngle", p.priorityAngle); p.trackAngle = f("trackAngle", p.trackAngle)
+        p.warnDist = f("warnDist", p.warnDist); p.warnAngle = f("warnAngle", p.warnAngle); p.minRange = f("minRange", p.minRange)
+        p.skidSteer = prefs.getBoolean("lidar_skidSteer", false)
+        lidarSound = prefs.getBoolean("lidar_sound", true)
+        lidarBehaviours.mode = runCatching { LidarBehaviours.Mode.valueOf(prefs.getString("lidar_mode", "OFF")!!) }.getOrDefault(LidarBehaviours.Mode.OFF)
+    }
+
+    private fun saveLidarParams() {
+        val p = lidarBehaviours.p
+        prefs.edit().apply {
+            mapOf("linear" to p.linear, "angular" to p.angular, "responseDist" to p.responseDist, "laserAngle" to p.laserAngle,
+                "minPoints" to p.minPoints.toFloat(), "followDist" to p.followDist, "maxLinear" to p.maxLinear,
+                "maxAngular" to p.maxAngular, "priorityAngle" to p.priorityAngle, "trackAngle" to p.trackAngle,
+                "warnDist" to p.warnDist, "warnAngle" to p.warnAngle, "minRange" to p.minRange).forEach { (k, x) -> putFloat("lidar_$k", x) }
+            putBoolean("lidar_skidSteer", p.skidSteer)
+            putBoolean("lidar_sound", lidarSound)
+        }.apply()
+    }
+
+    // =========================================================================
     // Log page
     // =========================================================================
 
@@ -1076,6 +1289,7 @@ class MainActivity : Activity() {
             m.currentWp = if (v.customMode == 10) v.missionSeq - 1 else -1
         }
         if (pos != null && conn) flyMap.addTrail(pos.first, pos.second)
+        flyMap.scan = v.scan
         if (v.customMode != 15) flyMap.guidedTarget = null
         if (page == 0) flyMap.invalidate() else if (page == 1) planMap.invalidate()
         if (v.missionBusy) planStatus.text = v.missionProgress
@@ -1102,7 +1316,7 @@ class MainActivity : Activity() {
                 ntripStatus.text = "${n.status}\n${n.bytes / 1024} kB, ${n.frames} frames${if (types.isNotEmpty()) "\nRTCM: $types" else ""}"
             }
         }
-        if (page == 4) refreshLog()
+        if (page == PAGE_LOG) refreshLog()
     }
 
     // =========================================================================
@@ -1171,6 +1385,8 @@ class MainActivity : Activity() {
     }
 
     companion object {
+        const val PAGE_LIDAR = 4
+        const val PAGE_LOG = 5
         const val REQ_LOAD_PARAMS = 1
         const val REQ_SAVE_PARAMS = 2
         const val REQ_LOAD_MISSION = 3

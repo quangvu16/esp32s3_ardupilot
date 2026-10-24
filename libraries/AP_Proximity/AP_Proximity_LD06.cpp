@@ -27,6 +27,7 @@
 
 #if AP_PROXIMITY_LD06_ENABLED
 #include "AP_Proximity_LD06.h"
+#include <GCS_MAVLink/GCS.h>
 
 #define LD_START_CHAR       0x54
 #define PROXIMITY_LD06_TIMEOUT_MS 50
@@ -187,13 +188,23 @@ void AP_Proximity_LD06::parse_response_data()
         // The LD14's intensity is not a confidence, so it is not filtered on
         if (distance_m < distance_min() || distance_m > distance_max() ||
             (_model == Model::LD06 && confidence < CONFIDENCE_THRESHOLD)) {
+#if AP_PROXIMITY_LD06_SEND_SCAN
+            scan_point(angle_deg, distance_m, false);
+#endif
             continue;
         }
 
         // ignore distances that are out-of-range (based on user parameters) or within ignore areas
         if (ignore_reading(angle_deg, distance_m)) {
+#if AP_PROXIMITY_LD06_SEND_SCAN
+            scan_point(angle_deg, distance_m, false);
+#endif
             continue;
         }
+
+#if AP_PROXIMITY_LD06_SEND_SCAN
+        scan_point(angle_deg, distance_m, true);
+#endif
 
         // use the shortest distance within 2 degree sectors
         const uint16_t a2d = (int)(angle_deg / 2.0) * 2;
@@ -236,6 +247,50 @@ void AP_Proximity_LD06::parse_response_data()
         }
     }
 }
+
+#if AP_PROXIMITY_LD06_SEND_SCAN
+// Readings arrive in rotation order with angle_deg in 0..360 (counting down
+// when the sensor is mounted upside down). A jump of more than 180 degrees
+// between readings is the wrap through 0: a new rotation.
+void AP_Proximity_LD06::scan_point(float angle_deg, float distance_m, bool valid)
+{
+    if (fabsf(angle_deg - _scan_last_angle_deg) > 180.0f) {
+        send_scan();
+        memset(_scan_cm, 0, sizeof(_scan_cm));
+    }
+    _scan_last_angle_deg = angle_deg;
+    if (!valid) {
+        return;
+    }
+    const uint8_t bin = MIN(uint8_t(wrap_360(angle_deg) / (360.0f / LD06_SCAN_BINS)), LD06_SCAN_BINS - 1);
+    const uint16_t cm = MAX(uint16_t(distance_m * 100.0f), uint16_t(1));
+    if (_scan_cm[bin] == 0 || cm < _scan_cm[bin]) {
+        _scan_cm[bin] = cm;
+    }
+}
+
+// OBSTACLE_DISTANCE in the vehicle frame: bin 0 is straight ahead, 5 degrees
+// per bin clockwise. Bins without a return are sent as max_distance + 1 (clear).
+void AP_Proximity_LD06::send_scan()
+{
+    const uint32_t now_ms = AP_HAL::millis();
+    if (now_ms - _scan_last_sent_ms < LD06_SCAN_MIN_INTERVAL_MS) {
+        return;
+    }
+    _scan_last_sent_ms = now_ms;
+    mavlink_obstacle_distance_t pkt {};
+    pkt.time_usec = AP_HAL::micros64();
+    pkt.sensor_type = MAV_DISTANCE_SENSOR_LASER;
+    pkt.increment = 360 / LD06_SCAN_BINS;
+    pkt.min_distance = uint16_t(distance_min() * 100.0f);
+    pkt.max_distance = uint16_t(distance_max() * 100.0f);
+    pkt.frame = MAV_FRAME_BODY_FRD;
+    for (uint8_t i = 0; i < LD06_SCAN_BINS; i++) {
+        pkt.distances[i] = _scan_cm[i] != 0 ? _scan_cm[i] : pkt.max_distance + 1;
+    }
+    gcs().send_to_active_channels(MAVLINK_MSG_ID_OBSTACLE_DISTANCE, (const char *)&pkt);
+}
+#endif // AP_PROXIMITY_LD06_SEND_SCAN
 
 // The LD14/LD14P is a triangulation sensor: the reported angle is that of the
 // ranging centre, offset from the centre of rotation. Move it to the centre

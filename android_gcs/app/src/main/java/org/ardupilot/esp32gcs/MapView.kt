@@ -58,6 +58,8 @@ class MapView(context: Context) : View(context) {
     var mission: List<MissionItem> = emptyList()
     var currentWp = -1                                      // index into mission (vehicle seq - 1)
     var fences: List<FenceZone> = emptyList()
+    /** The latest LiDAR scan, drawn around the vehicle along its heading. */
+    var scan: LidarScan? = null
     /** Drag and tap fence corners and circle centres instead of waypoints. */
     var fenceEditing = false
     var selectedZone = -1
@@ -116,6 +118,7 @@ class MapView(context: Context) : View(context) {
     }
     private val fenceOutFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(70, 220, 38, 38) }
     private val cornerFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+    private val scanPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(249, 115, 22) }
     private val credit = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(220, 20, 20, 20); textSize = 9 * density; textAlign = Paint.Align.RIGHT
     }
@@ -299,6 +302,7 @@ class MapView(context: Context) : View(context) {
         }
 
         drawFences(canvas)
+        drawScan(canvas)
 
         val pts = mission.withIndex().filter { it.value.hasPosition }
         if (pts.isNotEmpty()) {
@@ -353,6 +357,23 @@ class MapView(context: Context) : View(context) {
         val w = credit.measureText(t)
         canvas.drawRect(width - w - 8 * density, height - 14 * density, width.toFloat(), height.toFloat(), creditBg)
         canvas.drawText(t, width - 4 * density, height - 4 * density, credit)
+    }
+
+    private fun drawScan(canvas: Canvas) {
+        val s = scan ?: return
+        val (la, lo, hdg) = vehicle ?: return
+        if (android.os.SystemClock.elapsedRealtime() - s.timeMs > 2000) return
+        val (vx, vy) = screen(la, lo)
+        val mpp = metersPerPixel()
+        val r = 2.2f * density
+        for (i in s.cm.indices) {
+            val d = s.cm[i]
+            if (d == 0xffff || d > s.maxCm || d < s.minCm) continue
+            // bins run clockwise from the nose, like compass bearings
+            val bearing = Math.toRadians((hdg + s.offsetDeg + (i + 0.5f) * s.incrementDeg).toDouble())
+            val m = d / 100.0
+            canvas.drawCircle((vx + m * sin(bearing) / mpp).toFloat(), (vy - m * cos(bearing) / mpp).toFloat(), r, scanPaint)
+        }
     }
 
     private fun metersPerPixel() = 156543.03392 * cos(Math.toRadians(centerLat)) / 2.0.pow(zoom) * (256 / tilePx)

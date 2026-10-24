@@ -5,7 +5,7 @@ this repository's ArduRover on the ESP32-S3. It speaks MAVLink 2 to the board ov
 (TCP `192.168.4.1:5760`), and also works with any other ArduRover or with SITL.
 
 Native Kotlin, no libraries: the MAVLink code, the map and the NTRIP client are part of the app.
-Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1)).
+Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2)).
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](docs/screens.svg)
 
@@ -29,6 +29,7 @@ and NTRIP corrections over mobile data.
 | **Plan** | Tap the map to add waypoints, drag them to move, tap one to edit it (waypoint, loiter time, RTL, speed change, order, delete). **Read** / **Write** to the vehicle, **Start Auto**, mission speed. Load and save Mission Planner `.waypoints` files. **Fence** switches to [fence editing](#fences). | Flight Plan |
 | **Params** | Full parameter list with search. Tap to edit: **Write now**, or **Stage** several and write them together. **Load file** stages only the values that differ from the vehicle (e.g. [`esp32s3_rover_ld14_f9p.parm`](../esp32s3_rover_ld14_f9p.parm)). **Save file**, **Reboot**. | Config → Full Parameter List |
 | **Setup** | Connection (TCP / UDP). 6-position accelerometer calibration, or level only. Compass calibration. Radio bars and calibration (writes `RCn_MIN/MAX/TRIM`). LiDAR proximity view. RTK over NTRIP. Set home, reboot, clear the mission. | Initial Setup, Optional Hardware |
+| **LiDAR** | The LD14's full scan seen from above, and the three behaviours of `robot_ws/src/hoverboard_laser`: [Avoid, Follow and Warn](#lidar). The scan is also drawn around the car on the Data map. | Proximity view (Ctrl-F) |
 | **Log** | Every message from the autopilot (`STATUSTEXT`), newest first. | Messages tab |
 
 ### RTK / NTRIP
@@ -60,6 +61,54 @@ The list shows how much fence storage the zones use. The ESP32-S3 board stores 6
 80 corners. The app refuses polygons with fewer than 3 corners and circles without a radius before
 sending, the same checks ArduPilot makes. Fences are drawn on the Data map too.
 
+### LiDAR
+
+The **LiDAR** tab shows each LD14 rotation from above, car in the middle with its front up (tap to zoom:
+2, 4 or 8 m). It needs firmware v4.6.3-esp32s3-3 or newer from this repository: its LD14 driver
+sends every rotation as MAVLink `OBSTACLE_DISTANCE`, 72 bins of 5°, about 5 times a second.
+
+The behaviours are ports of the hoverboard robot's `hoverboard_laser` ROS nodes:
+
+| Behaviour | ROS node | What it does here |
+| --- | --- | --- |
+| **Avoid** | `laser_Avoidance` | Drives forward. Front (±20°), left and right (20° to *Side sector*) sectors are blocked when *Bins to block* returns are inside *Response dist* × 1.5; the same decision table and hold times pick the turn. |
+| **Follow** | `laser_Tracker` | Follows the nearest object ahead (within *Priority angle* first, then *Search angle*) and keeps *Keep distance* from it. |
+| **Warn** | `laser_Warning` | Beeps and vibrates the phone while something within *Warn angle* ahead is closer than *Warn distance*. Doesn't drive. |
+
+Choose one, then **Start**. Avoid and Follow drive with stick overrides (`MANUAL_CONTROL`, as the
+Drive stick does), so the car must be armed and in **Acro** (best), Manual or Steering. The sectors
+the behaviour watches are shaded on the scan, red where it sees something.
+
+- Touching the Drive stick on the Data tab pauses the behaviour (like `/JoyState`); letting go resumes it.
+- **Stop**, switching behaviour, leaving the app, or the scan stopping for 1 s stops the car at once.
+  ArduPilot holds the last override for `RC_OVERRIDE_TIME` (3 s), so the app sends zeros, not just nothing.
+- The Data tab's *Power* setting caps both sticks.
+
+**An RC car is not a hoverboard.** The ROS nodes drive at 0.2 m/s and turn on the spot. With
+*Vehicle: RC car* (the default):
+
+- A turn on the spot becomes backing up with the wheels turned the other way (the nose swings
+  round), only while the rear is clear; otherwise the car stops.
+- Avoid turns at full *Speed*, not half: half the stick stalls in a car ESC's dead zone, and a car
+  must roll to turn. It also backs off at once when something is within *Response dist* × 0.6
+  straight ahead, even in the middle of a held manoeuvre.
+- Follow slows down over the last metre, steers in proportion to the target's angle, and backs up
+  to swing round onto a close target off to the side.
+- Defaults are scaled for a car: *Speed* 0.15, *Response dist* 1.0 m, *Keep distance* 1.0 m
+  (hoverboard: 0.55 m).
+
+*Vehicle: skid steer* restores the original on-the-spot turns and laser_Tracker's PID.
+
+Settings, in tested order of importance:
+
+- **Use Acro.** The stick is then a speed (a fraction of `CRUISE_SPEED`), the same on any car, and
+  zero brakes. In Manual the stick is raw throttle and the car coasts after a stop.
+- **Keep `AVOID_MARGIN` below *Keep distance*.** ArduPilot's own simple avoidance (`AVOID_ENABLE`)
+  also works in Acro: with SITL's `AVOID_MARGIN` of 2 m, it held the car 2 m back and Follow could
+  never reach 1 m. With 0.5 m (README step 8) it is a backstop that doesn't get in the way.
+- Start slowly; raise *Speed* only once the car reacts in time. With about 5 scans a second, *Response
+  dist* × 1.5 should be at least half a second of driving.
+
 ### Driving from the phone
 
 **Drive** sends `MANUAL_CONTROL`. ArduRover reads it as an RC override: steering on `y`,
@@ -87,11 +136,11 @@ Create `local.properties` with `sdk.dir=<path to the Android SDK>`, or set `ANDR
 
 ## Install
 
-Download the ready-built APK, [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk), from the
-[gcs-v1.1 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). `SHA256SUMS` there has its checksum.
+Download the ready-built APK, [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk), from the
+[gcs-v1.2 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2). `SHA256SUMS` there has its checksum.
 
 - **On the phone:** open the link, open the downloaded file, and allow "install unknown apps".
-- **USB:** turn on Developer options → USB debugging, then `adb install -r esp32-rover-gcs-1.1.apk`
+- **USB:** turn on Developer options → USB debugging, then `adb install -r esp32-rover-gcs-1.2.apk`
   (or `app/build/outputs/apk/release/app-release.apk` for your own build).
 
 The release APK is signed with an Android debug key. To install your own build over it,
@@ -112,6 +161,14 @@ uses, and run against ArduRover 4.6.3 SITL built from this tree. These worked ov
 - both calibration flows: the accel position prompts, and compass progress
 - splitting and fragmenting RTCM3
 
+The LiDAR behaviours were tested in SITL with its simulated LD06 (same driver, same scan output)
+and its field of 1 m posts, running `Lidar.kt`'s driver loop at 10 Hz as the app does:
+- the scan arrives at about 4 Hz and matches ArduPilot's own 8 proximity sectors
+- Follow: from a post 2.9 m away and 28° to the right, the car drove up and held 0.8-1.2 m from it
+- Warn alarms at 1.4 m and stays quiet at 0.5 m, and stops the car Follow left moving
+- Avoid: 60 s in the post field, 80-90 m driven, steering round posts 4-8 times; closest return ahead
+  0.37-0.92 m (Acro and Manual, `AVOID_MARGIN` 0.5)
+
 Fences were tested the same way:
 - a fence with every zone type (stay-in and stay-out polygons and circles, a return point)
   uploaded and read back identical
@@ -131,6 +188,8 @@ The screens were not tested in that run; they need a phone or an emulator.
 | `Link.kt` | TCP and UDP links. The socket is bound to the WiFi network so it does not go out over mobile data |
 | `Vehicle.kt` | Telemetry state, parameter / mission / fence / command protocols with retries, calibrations, RTCM injection |
 | `Fence.kt` | Fence zones ↔ fence mission items, ArduPilot's fence checks, storage estimate |
+| `Lidar.kt` | LiDAR scan, the hoverboard_laser behaviours (Avoid, Follow, Warn) adapted for a car, and the 10 Hz driver loop |
+| `LidarView.kt` | The scan from above with the behaviour's sectors |
 | `Ntrip.kt` | NTRIP 1.0 client, RTCM3 frame splitter (CRC-24Q), GGA sentence |
 | `MapView.kt` | OpenStreetMap / Esri satellite tiles (disk cache), vehicle, trail, home, mission, fences, waypoint and fence-corner dragging |
 | `HudView.kt`, `RadarView.kt`, `JoystickView.kt` | HUD, LiDAR proximity view, drive stick |

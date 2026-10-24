@@ -109,6 +109,9 @@ class Vehicle(private val ctx: Context) {
     @Volatile var magCalPct = IntArray(3)
     @Volatile var magCalStatus = IntArray(3)
     @Volatile var rxPackets = 0
+    /** Latest full LiDAR scan (OBSTACLE_DISTANCE from the LD14 driver), or null before the first. */
+    @Volatile var scan: LidarScan? = null
+    @Volatile var scanCount = 0
     @Volatile var rtcmBytes = 0L
 
     val messages = ArrayList<VehicleEvent.Text>()      // newest last, guarded by itself
@@ -324,6 +327,15 @@ class Vehicle(private val ctx: Context) {
                     proximity[orient] = if (d == 0 || d >= max) 0f else d / 100f
                     proximityTime[orient] = SystemClock.elapsedRealtime()
                     if (max in 1..5000) proximityMax = max / 100f
+                }
+            }
+            Mav.OBSTACLE_DISTANCE -> {
+                val n = 72
+                val cm = IntArray(n) { m.u16(8 + 2 * it) }
+                val inc = m.f32(158).takeIf { it > 0f } ?: m.u8(157).toFloat()
+                if (inc > 0f) {
+                    scan = LidarScan(cm, inc, m.f32(162), m.u16(152), m.u16(154), SystemClock.elapsedRealtime())
+                    scanCount++
                 }
             }
             Mav.BATTERY_STATUS -> if (m.u8(32) == 0 && m.i8(35) >= 0) batteryPct = m.i8(35)

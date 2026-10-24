@@ -16,7 +16,7 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 
 | File | Change |
 | --- | --- |
-| `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | LD14 model: the LD06 packet parser plus the LDROBOT SDK ranging-centre angle correction (the LD14 is a triangulation sensor, its raw angles are off by up to ~7°), 8 m max range, no confidence filter |
+| `libraries/AP_Proximity/AP_Proximity_LD06.{h,cpp}` | LD14 model: the LD06 packet parser plus the LDROBOT SDK ranging-centre angle correction (the LD14 is a triangulation sensor, its raw angles are off by up to ~7°), 8 m max range, no confidence filter; every rotation is also sent to the ground station as `OBSTACLE_DISTANCE` (72 bins of 5°, about 5 Hz) for the Android app's LiDAR tab |
 | `libraries/AP_Proximity/AP_Proximity.{h,cpp}`, `AP_Proximity_Params.cpp` | `PRX_TYPE` 19 = LD14 |
 | `libraries/AP_HAL_ESP32/boards/esp32s3devkit.h` | UART2 (RX GPIO41, TX GPIO42) added so SERIAL2 exists; MPU9250 IMU moved from SPI to I2C (0x68) and SPI removed, since GPIO33-37 belong to the octal PSRAM on N8R8/N16R8 modules; SD card disabled, since on the S3 it takes GPIO14/15/2 (RC input, I2C SCL, analog pin 3); ADC channel names updated for ESP-IDF 5.3 (`ADC1_CHANNEL_n` → `ADC_CHANNEL_n`), without which the board does not compile; fences, object avoidance and path planning (BendyRuler, Dijkstra's) turned on |
 | `libraries/AP_HAL/board/esp32.h` | The ESP32 defaults that leave out fences, avoidance and path planning can be overridden by a board header |
@@ -375,11 +375,12 @@ the car go around it. If it hesitates or swings, see the BendyRuler page (`OA_BR
 - a HUD, a map, mode buttons and arming, and a phone stick for driving
 - waypoint planning, with Mission Planner `.waypoints` files
 - the full parameter list, with `.parm` load and save
-- accelerometer, compass and radio calibration, and the LiDAR proximity view
+- accelerometer, compass and radio calibration
+- the LiDAR scan, and the hoverboard robot's `hoverboard_laser` behaviours for the car: Avoid, Follow and Warn
 - RTK corrections over NTRIP, using the phone's mobile data
 
-**Download:** [esp32-rover-gcs-1.1.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.1/esp32-rover-gcs-1.1.apk) (Android 8.0 or newer), from the
-[gcs-v1.1 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.1). Open it on the phone and allow "install unknown apps".
+**Download:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 or newer), from the
+[gcs-v1.2 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2). Open it on the phone and allow "install unknown apps".
 To build it yourself, see the app's README.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)

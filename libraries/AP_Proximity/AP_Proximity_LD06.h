@@ -31,6 +31,15 @@
 
 #include "AP_Proximity_Backend_Serial.h"
 #include <Filter/ModeFilter.h>
+#include <GCS_MAVLink/GCS_config.h>
+
+// Send each full rotation to the GCS as OBSTACLE_DISTANCE (72 bins of 5 degrees),
+// so a ground station can show the scan and steer by it
+#ifndef AP_PROXIMITY_LD06_SEND_SCAN
+#define AP_PROXIMITY_LD06_SEND_SCAN HAL_GCS_ENABLED
+#endif
+#define LD06_SCAN_BINS 72
+#define LD06_SCAN_MIN_INTERVAL_MS 200         // at most 5 scans a second
 
 #define MESSAGE_LENGTH_LD06         47
 
@@ -74,6 +83,15 @@ private:
 
     // LD14 only: move a raw angle from the ranging centre to the centre of the sensor
     float correct_angle_ld14(float raw_angle_deg, uint16_t distance_mm);
+
+#if AP_PROXIMITY_LD06_SEND_SCAN
+    // collect a reading into the current rotation's scan, sending the scan when the angle wraps
+    void scan_point(float angle_deg, float distance_m, bool valid);
+    void send_scan();
+    uint16_t _scan_cm[LD06_SCAN_BINS];        ///< closest return per bin this rotation, 0 = none
+    float _scan_last_angle_deg;
+    uint32_t _scan_last_sent_ms;
+#endif
 
     const Model _model;
     float _ld14_shift_deg;                    ///< last ranging-centre correction, reused for zero-distance points

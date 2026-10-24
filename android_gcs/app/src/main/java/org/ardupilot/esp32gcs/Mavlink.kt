@@ -45,6 +45,7 @@ object Mav {
     const val EKF_STATUS_REPORT = 193
     const val GPS_RTCM_DATA = 233
     const val HOME_POSITION = 242
+    const val OBSTACLE_DISTANCE = 330
     const val STATUSTEXT = 253
 
     /** message id -> (CRC extra, full payload length) */
@@ -84,6 +85,7 @@ object Mav {
         EKF_STATUS_REPORT to intArrayOf(71, 26),
         GPS_RTCM_DATA to intArrayOf(35, 182),
         HOME_POSITION to intArrayOf(104, 60),
+        OBSTACLE_DISTANCE to intArrayOf(23, 167),
         STATUSTEXT to intArrayOf(83, 54),
     )
 

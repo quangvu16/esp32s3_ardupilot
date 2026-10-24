@@ -6,6 +6,8 @@
          while map tiles and NTRIP keep using mobile data. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <!-- LiDAR Warn: buzz the phone when something is too close. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- NTRIP casters are plain http, and so are some tile servers. -->
     <application
