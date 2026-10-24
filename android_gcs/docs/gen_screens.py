@@ -3,8 +3,9 @@
 
 Usage: python3 android_gcs/docs/gen_screens.py android_gcs/docs/screens.svg
 A drawing, not a screenshot: layout, labels and colours follow MainActivity.kt,
-HudView.kt, MapView.kt, RadarView.kt and res/values/colors.xml (light theme).
-The map is made up; the vehicle state is a car in Auto with RTK Fixed.
+HudView.kt, MapView.kt, RadarView.kt, LidarView.kt and res/values/colors.xml (light
+theme). The map and the scan are made up; the car is in Auto with RTK Fixed, and in
+Acro running Avoid on the LiDAR tab.
 """
 import math
 import sys
@@ -16,6 +17,7 @@ ACCENT, ACCENT_SOFT, ON_ACCENT = "#1F5FD1", "#DFE8FA", "#FFFFFF"
 OK, OK_SOFT, WARN, WARN_SOFT = "#2F7D4F", "#DCEFE2", "#A16207", "#FBF0D2"
 # MapView / HudView paints
 ROUTE, WP_CUR, HOME, TRAIL, TARGET = "#FACC15", "#22C55E", "#EF4444", "#EC4899", "#3B82F6"
+SCAN = "#F97316"                                                   # MapView scanPaint
 
 PW, PH = 300, 640          # phone body
 SX, SY = 10, 10            # screen inset
@@ -72,7 +74,7 @@ def pill(x, y, label, tone):
     return w + 4.5
 
 
-def chrome(tab):
+def chrome(tab, mode="Auto · ARMED"):
     """Status bar, the pill bar and the tab bar; returns the content area's top and bottom."""
     e(f'<rect width="{W}" height="{STATUS + PILLS}" fill="{SURFACE}"/>')
     text(14, 15, "9:41", 10, FG, 600)
@@ -81,26 +83,26 @@ def chrome(tab):
     e(f'<rect x="{W - 22}" y="6" width="14" height="8" rx="2" fill="none" stroke="{FG}" stroke-width="1"/>'
       f'<rect x="{W - 20.5}" y="7.5" width="9" height="5" rx="1" fill="{FG}"/>')
     x = 6
-    for lb, tone in (("● TCP 192.168.4.1:5760", "ok"), ("Auto · ARMED", "bad"),
+    for lb, tone in (("● TCP 192.168.4.1:5760", "ok"), (mode, "bad"),
                      ("RTK Fixed · 28 sats", "ok"), ("12.42 V · 86%", "")):
         x += pill(x, STATUS + 7, lb, tone)
     top = STATUS + PILLS
     bot = H - TABS
     e(f'<rect y="{bot}" width="{W}" height="{TABS}" fill="{SURFACE}"/>')
-    names = ["Data", "Plan", "Params", "Setup", "Log"]
-    tw_ = (W - 6 - 4 * 2.5) / 5
+    names = ["Data", "Plan", "Params", "Setup", "LiDAR", "Log"]
+    tw_ = (W - 6 - (len(names) - 1) * 2.5) / len(names)
     for i, n in enumerate(names):
         x = 3 + i * (tw_ + 2.5)
         on = n == tab
         e(f'<rect x="{x:.1f}" y="{bot + 4}" width="{tw_:.1f}" height="32" rx="6" fill="{ACCENT_SOFT if on else SURFACE}"/>')
-        text(x + tw_ / 2, bot + 24, n, 10.5, ACCENT if on else FG, 600 if on else None, "middle")
+        text(x + tw_ / 2, bot + 24, n, 9.5, ACCENT if on else FG, 600 if on else None, "middle")
     return top, bot
 
 
 # ---------------------------------------------------------------------------
 # map
 
-def map_area(x, y, w, h, wp_pts, cur=None, tools=False, vehicle=None, trail=True, target=None):
+def map_area(x, y, w, h, wp_pts, cur=None, tools=False, vehicle=None, trail=True, target=None, scan=False):
     uid[0] += 1
     cid = f"map{uid[0]}"
     e(f'<clipPath id="{cid}"><rect x="{x}" y="{y}" width="{w}" height="{h}"/></clipPath><g clip-path="url(#{cid})">')
@@ -143,6 +145,14 @@ def map_area(x, y, w, h, wp_pts, cur=None, tools=False, vehicle=None, trail=True
         tx, ty = x + w * target[0], y + h * target[1]
         e(f'<g stroke="{TARGET}" stroke-width="2.2" fill="none"><circle cx="{tx}" cy="{ty}" r="9"/>'
           f'<line x1="{tx - 13}" y1="{ty}" x2="{tx + 13}" y2="{ty}"/><line x1="{tx}" y1="{ty - 13}" x2="{tx}" y2="{ty + 13}"/></g>')
+    if vehicle and scan:
+        # LiDAR returns around the car (MapView.drawScan): a wall ahead-left, a post to the right
+        vx, vy = x + w * vehicle[0], y + h * vehicle[1]
+        pts = [(vx - 52 + k * 5.5, vy - 34 + k * 1.2) for k in range(12)]
+        pts += [(vx + 30 + 6 * math.cos(a), vy + 22 + 6 * math.sin(a)) for a in (2.2, 2.7, 3.2, 3.7, 4.2)]
+        pts += [(vx + 70, vy - 30), (vx + 74, vy - 24), (vx - 64, vy + 40)]
+        for px_, py_ in pts:
+            e(f'<circle cx="{px_:.1f}" cy="{py_:.1f}" r="1.7" fill="{SCAN}"/>')
     if vehicle:
         vx, vy, hdg = x + w * vehicle[0], y + h * vehicle[1], vehicle[2]
         s = 11
@@ -234,13 +244,13 @@ def data_screen():
     y += 19
     button_row(y + 4, ["Disarm", "Manual", "Hold", "Auto", "RTL", "Guided", "Acro"], accent=("Disarm",))
     y += 4 + 28 + 5
-    map_area(0, y, W, bot - y, MISSION, cur=2, tools=True, vehicle=(0.44, 0.27, 74))
+    map_area(0, y, W, bot - y, MISSION, cur=2, tools=True, vehicle=(0.44, 0.27, 74), scan=True)
 
 
 def plan_screen():
     top, bot = chrome("Plan")
     y = top
-    button_row(y + 6, ["Read", "Write", "Tap adds: on", "Speed…", "Clear"], accent=("Write",))
+    button_row(y + 6, ["Fence", "Read", "Write", "Tap adds: on", "Speed…"], accent=("Write",))
     y += 6 + 28 + 4
     text(8, y + 9, "Mission uploaded: 5 items", 9, MUTED)
     y += 15
@@ -345,11 +355,98 @@ def setup_screen():
     e("</g>")
 
 
+def lidar_screen():
+    top, bot = chrome("LiDAR", mode="Acro · ARMED")
+    uid[0] += 1
+    cid = f"lidar{uid[0]}"
+    e(f'<clipPath id="{cid}"><rect y="{top}" width="{W}" height="{bot - top}"/></clipPath><g clip-path="url(#{cid})">')
+    x0 = 11
+    # LidarView: square up to 340 dp, surface background, 4 m range, rings every metre
+    vy0 = top + 6
+    vh = 255
+    vw = W - 2 * x0
+    e(f'<rect x="{x0}" y="{vy0}" width="{vw}" height="{vh}" fill="{SURFACE}"/>')
+    cx, cy = x0 + vw / 2, vy0 + vh / 2
+    rmax = 4.0
+    ppm = (min(vw, vh) / 2 - 8) / rmax
+    for k in range(1, 5):
+        e(f'<circle cx="{cx}" cy="{cy}" r="{k * ppm:.1f}" fill="none" stroke="{LINE}" stroke-width="0.8"/>')
+        text(cx + 2.5, cy - k * ppm + 8.5, f"{k} m", 7.5, MUTED)
+    e(f'<line x1="{cx}" y1="{cy - rmax * ppm:.1f}" x2="{cx}" y2="{cy + rmax * ppm:.1f}" stroke="{LINE}" stroke-width="0.8"/>')
+    e(f'<line x1="{cx - rmax * ppm:.1f}" y1="{cy}" x2="{cx + rmax * ppm:.1f}" y2="{cy}" stroke="{LINE}" stroke-width="0.8"/>')
+
+    def xy(deg, m):            # deg left-positive, 0 = up (LidarView.xy)
+        a = math.radians(deg)
+        return cx - m * ppm * math.sin(a), cy - m * ppm * math.cos(a)
+
+    def wedge(a0, a1, r, hot):
+        p0 = xy(a0, r); p1 = xy(a1, r)
+        fill = "rgba(239,68,68,0.27)" if hot else "rgba(34,197,94,0.18)"
+        e(f'<path d="M{cx:.1f} {cy:.1f} L{p0[0]:.1f} {p0[1]:.1f} A{r * ppm:.1f} {r * ppm:.1f} 0 0 0 {p1[0]:.1f} {p1[1]:.1f} Z" '
+          f'fill="{"#EF4444" if hot else "#22C55E"}" fill-opacity="{0.27 if hot else 0.18}"/>')
+    r = 1.5            # Response dist 1.0 m x 1.5
+    wedge(-20, 20, r, True)        # front blocked
+    wedge(20, 45, r, False)        # left clear
+    wedge(-45, -20, r, True)       # right blocked
+
+    # the scan: a box ahead-right, a wall on the left, a post behind, far clutter
+    pts = []
+    pts += [(a, 1.05 + 0.006 * abs(a + 15)) for a in range(-40, 5, 5)]             # box ahead-right
+    pts += [(a, 2.1 / max(0.35, math.sin(math.radians(a)))) for a in range(40, 140, 5)]   # wall on the left
+    pts += [(a, 2.6) for a in (170, 175, 180, -175)]                              # post behind
+    pts += [(-70, 3.4), (-75, 3.3), (-80, 3.35), (-120, 3.8), (-125, 3.7), (60, 3.9)]
+    for a, m in pts:
+        if m > rmax:
+            continue
+        px_, py_ = xy(a, m)
+        close = m < 0.6
+        e(f'<circle cx="{px_:.1f}" cy="{py_:.1f}" r="{2.4 if close else 1.8}" fill="{"#EF4444" if close else FG}"/>')
+    # the car, front up
+    e(f'<rect x="{cx - 7}" y="{cy - 11}" width="14" height="22" rx="2.5" fill="{ACCENT}"/>')
+    e(f'<path d="M{cx} {cy - 16} l-4.5 4.5 h9 z" fill="{ACCENT}"/>')
+    text(x0 + vw - 5, vy0 + 12, "4 m · tap to zoom", 8.5, MUTED, anchor="end")
+    text(x0 + 5, vy0 + vh - 6, "2316 scans  ·  nearest 1.05 m at -15°", 8.5, MUTED)
+
+    y = vy0 + vh + 6
+    text(x0, y + 13, "Front+right blocked: turn left", 12, FG, 700)
+    text(x0, y + 28, "thr +0.15  steer -0.80", 11, FG, 700)
+    y += 36
+    x = x0
+    for lb in ("Off", "Avoid", "Follow", "Warn"):
+        on = lb == "Avoid"
+        bw = tw(lb, 10.5) + 20
+        e(f'<rect x="{x}" y="{y + 1.2}" width="{bw:.1f}" height="28" rx="6" fill="#000" opacity="0.10"/>')
+        e(f'<rect x="{x}" y="{y}" width="{bw:.1f}" height="28" rx="6" fill="{ACCENT_SOFT if on else SURFACE}"/>')
+        text(x + bw / 2, y + 17.8, lb, 10.5, ACCENT if on else FG, anchor="middle")
+        x += bw + 4.5
+    button(x, y, "Stop", accent=True)
+    y += 34
+    for line in ("laser_Avoidance: drives forward and steers away from", "obstacles in the front, left and right sectors. Drives",
+                 "with stick overrides (Manual, Acro or Steering mode)…"):
+        text(x0, y + 9, line, 8.8, MUTED)
+        y += 12
+    y += 8
+    text(x0, y + 9, "SETTINGS", 9, MUTED, 700, extra=' letter-spacing="0.7"')
+    y += 16
+    x = x0
+    for lb in ("Vehicle: RC car", "Warn sound: on"):
+        x += button(x, y, lb) + 4.5
+    y += 36
+    for lab, val in (("Speed (stick, 0-1)", "0.15"), ("Steering (stick, 0-1)", "0.8"), ("Response dist (m)", "1"),
+                     ("Side sector to (deg)", "45")):
+        text(x0, y + 13, lab, 9, MUTED)
+        text(x0 + 112, y + 13, val, 10.5)
+        e(f'<line x1="{x0 + 110}" y1="{y + 20}" x2="{W - x0}" y2="{y + 20}" stroke="{MUTED}" stroke-width="0.8"/>')
+        y += 26
+    e("</g>")
+
+
 SCREENS = [
     ("Data", "HUD, modes and arm, map with mission and trail", data_screen),
     ("Plan", "Tap to add, drag to move, Write to the car", plan_screen),
     ("Params", "Search, edit, load a .parm: only changes staged", params_screen),
     ("Setup", "Radio, LiDAR proximity, RTK over NTRIP, calibration", setup_screen),
+    ("LiDAR", "The scan, and Avoid / Follow / Warn from hoverboard_laser", lidar_screen),
 ]
 
 
@@ -362,7 +459,7 @@ def main(path):
     e(f'<rect width="{total_w}" height="{total_h}" fill="#ffffff"/>')
     text(margin, 46, "ESP32 Rover GCS — Android app", 24, "#1f2328", 600)
     text(margin, 72, "MAVLink over the board's WiFi (TCP 192.168.4.1:5760) · drawn from the app's layout, "
-         "shown with a car in Auto and RTK Fixed", 14, "#59636e")
+         "shown with a car in Auto and RTK Fixed, and running Avoid in Acro on the LiDAR tab", 14, "#59636e")
     for i, (name, caption, fn) in enumerate(SCREENS):
         px = margin + i * (PW + gap)
         py = title_h
