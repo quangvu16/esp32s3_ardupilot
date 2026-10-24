@@ -2,7 +2,8 @@
 #   Esp32RoverGcs-<version>-windows-portable.zip   unzip anywhere, run Esp32RoverGcs.exe
 #   Esp32RoverGcs-<version>.exe                     installer: Start menu + desktop shortcut
 # Both carry their own Java runtime (jpackage), so the PC needs no Java install.
-# Pushing a tag gcs-win-v<version> also publishes them as a GitHub release.
+# A tag gcs-win-v<version> also attaches them to that GitHub release: create the release on
+# github.com with a new tag (the files arrive a few minutes later), or push the tag from git.
 name: Windows app (exe)
 
 on:
@@ -99,6 +100,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $files = @(Get-ChildItem Esp32RoverGcs-*-windows-portable.zip) + @(Get-ChildItem installer/*.exe)
-          gh release create "${{ github.ref_name }}" $files.FullName `
-            --title "Windows ground station ${{ steps.v.outputs.version }}" `
-            --notes-file android_gcs/desktop/packaging/RELEASE_NOTES.md
+          # A release made on github.com (Releases → Draft a new release → new tag) already
+          # exists: attach the files to it. A tag pushed from git has no release yet: make one.
+          gh release view "${{ github.ref_name }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload "${{ github.ref_name }}" $files.FullName --clobber
+          } else {
+            gh release create "${{ github.ref_name }}" $files.FullName `
+              --title "Windows ground station ${{ steps.v.outputs.version }}" `
+              --notes-file android_gcs/desktop/packaging/RELEASE_NOTES.md
+          }
