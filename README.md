@@ -308,6 +308,19 @@ Work in this order. Mission Planner's **Config → Tuning** page and the live gr
 - [ ] Receiver failsafe tested
 - [ ] Battery charged, and the car on the ground only once directions are confirmed
 
+## Android app
+
+[`android_gcs/`](android_gcs/README.md) is a small Mission Planner for the phone. Join the
+`ardupilot123` WiFi and the app connects to `192.168.4.1:5760` by itself. It has:
+
+- a HUD, a map, mode buttons and arming, and a phone stick for driving
+- waypoint planning, with Mission Planner `.waypoints` files
+- the full parameter list, with `.parm` load and save
+- accelerometer, compass and radio calibration, and the LiDAR proximity view
+- RTK corrections over NTRIP, using the phone's mobile data
+
+Build and install instructions are in its README.
+
 ## License
 
 GPLv3, the same as ArduPilot — see [LICENSE](LICENSE).

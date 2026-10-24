@@ -309,6 +309,19 @@ Mission Planner cho thấy giá trị yêu cầu so với giá trị thực tế
 - [ ] Đã thử failsafe của bộ thu
 - [ ] Pin đã sạc đầy, và chỉ đặt xe xuống đất khi đã xác nhận đúng chiều lái và chiều ga
 
+## Ứng dụng Android
+
+[`android_gcs/`](android_gcs/README.md) là một Mission Planner thu nhỏ trên điện thoại. Điện
+thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4.1:5760`. Ứng dụng có:
+
+- HUD, bản đồ, nút chuyển chế độ, arm, và cần lái trên màn hình để điều khiển xe
+- lập lộ trình waypoint, đọc/ghi file `.waypoints` của Mission Planner
+- toàn bộ danh sách tham số, nạp và lưu file `.parm`
+- hiệu chuẩn gia tốc kế, la bàn và tay điều khiển, xem LiDAR
+- hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
+
+Cách biên dịch và cài đặt (tiếng Anh) xem README của ứng dụng.
+
 ## Giấy phép
 
 GPLv3, giống ArduPilot — xem [LICENSE](LICENSE).

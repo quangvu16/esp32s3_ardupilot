@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A rover seen from above (four wheels) driving a dashed route to a waypoint. 108dp canvas, 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#0B1F44" android:pathData="M30,50h6v8h-6z M48,50h6v8h-6z M30,72h6v8h-6z M48,72h6v8h-6z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M38,46h8a4,4 0,0 1,4 4v30a4,4 0,0 1,-4 4h-8a4,4 0,0 1,-4 -4v-30a4,4 0,0 1,4 -4z" />
+    <path android:fillColor="#1F5FD1" android:pathData="M42,50l4,7h-8z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M44,40h4v-4h-4z M52,32h4v-4h-4z M60,28h4v-4h-4z" />
+    <path android:fillColor="#FBBF24" android:pathData="M74,24a8,8 0,0 1,8 8c0,6 -8,14 -8,14s-8,-8 -8,-14a8,8 0,0 1,8 -8z" />
+    <path android:fillColor="#0B1F44" android:pathData="M74,32m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+</vector>
