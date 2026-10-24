@@ -1,0 +1,35 @@
+# SITL indoor test of the LiDAR SLAM (Tools/lidar_slam_test/sitl_indoor.py):
+# no GPS, no compass; the EKF takes position and heading from the LD06 SLAM.
+# Loaded after Tools/autotest/default_params/rover.parm.
+
+# LiDAR: the simulated LD06 on SERIAL5 (--serial5=sim:ld06), in a room (SIM_ROOM=1)
+SERIAL5_PROTOCOL 11
+PRX1_TYPE 16
+PRX1_SLAM 1
+PRX1_SLAM_LAT -35.363261
+PRX1_SLAM_LON 149.165230
+
+# no GPS, no compass
+GPS1_TYPE 0
+COMPASS_USE 0
+COMPASS_USE2 0
+COMPASS_USE3 0
+
+# EKF3: position (and height) and heading from external navigation (the SLAM)
+EK3_SRC1_POSXY 6
+EK3_SRC1_VELXY 0
+EK3_SRC1_POSZ 6
+EK3_SRC1_VELZ 0
+EK3_SRC1_YAW 6
+# The SLAM pose arrives 30-60 ms after the scan it comes from. Without GPS the
+# EKF only looks back 60 ms; the optical-flow delay (unused, no flow sensor)
+# widens that window to 100 ms so the pose is fused at the right moment.
+EK3_FLOW_DELAY 100
+
+# slow laps in a small room
+ARMING_CHECK 0
+AVOID_ENABLE 0          # avoidance would back the car away from the walls (2 m margin)
+CRUISE_SPEED 0.6
+WP_SPEED 0.6
+WP_RADIUS 0.3
+LOG_DISARMED 1

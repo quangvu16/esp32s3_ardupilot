@@ -32,6 +32,11 @@
 #include "AP_Proximity_Backend_Serial.h"
 #include <Filter/ModeFilter.h>
 #include <GCS_MAVLink/GCS_config.h>
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+#include <AP_HAL/Semaphores.h>
+#include "LidarSlam.h"
+#define LD06_SLAM_MAX_POINTS 360              // points kept per rotation: one per degree
+#endif
 
 // Send each full rotation to the GCS as OBSTACLE_DISTANCE (72 bins of 5 degrees),
 // so a ground station can show the scan and steer by it
@@ -93,6 +98,62 @@ private:
     uint16_t _scan_cm[LD06_SCAN_BINS];        ///< closest return per bin this rotation, 0 = none
     float _scan_last_start_deg;               ///< raw start angle of the previous packet
     uint32_t _scan_last_sent_ms;
+#endif
+
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    // LiDAR SLAM (PRX_SLAM): the scan is matched against a map in a worker
+    // thread, and the pose goes to the EKF as external navigation
+    void slam_init();
+    void slam_packet(float raw_start_angle_deg, uint16_t speed_dps);   // each packet, before its points
+    void slam_point(float raw_angle_deg, float angle_deg, float distance_m);
+    void slam_rotation_end();                 // hand the finished rotation to the worker
+    void slam_update();                       // main thread: gyro, results to the EKF, origin
+    void slam_thread();
+    struct Slam {
+        LidarSlam core;
+        // the rotation being collected (main thread only)
+        float raw_deg[LD06_SLAM_MAX_POINTS];  // sensor's own angle: when the point was taken
+        float ang_deg[LD06_SLAM_MAX_POINTS];  // vehicle-frame angle
+        float dist_m[LD06_SLAM_MAX_POINTS];
+        uint16_t n;
+        float last_start_deg;
+        int16_t last_kept_deg;                // whole degree of the last point kept
+        uint32_t last_wrap_ms;                // when the previous rotation ended
+        uint8_t warmup;                       // steady rotations seen before the map starts
+        float speed_dps;
+        float rot_dyaw;                       // gyro heading change during this rotation (rad)
+        float dyaw_acc;                       // and since the last scan given to the worker
+        uint32_t last_gyro_us;
+        // the job for the worker: owned by the worker while busy
+        float px[LD06_SLAM_MAX_POINTS];
+        float py[LD06_SLAM_MAX_POINTS];
+        uint16_t job_n;
+        float job_dyaw;
+        uint32_t job_ms;
+        bool job_reset;
+        float job_yaw0;
+        // results, under sem
+        HAL_Semaphore sem;
+        HAL_BinarySemaphore wake;
+        bool busy;
+        bool have_result;
+        LidarSlam::Result result;
+        LidarSlam::Pose pose;
+        uint32_t result_ms;
+        // main thread
+        bool started;                         // the first scan has gone to the worker
+        Vector2f offset_ne;                   // EKF position at the start: the map's (0,0)
+        uint32_t reset_ms;
+        uint16_t lost_count;
+        bool tracking;
+        uint32_t last_origin_try_ms;
+        LidarSlam::Pose prev_pose;            // for the forward speed used in the deskew
+        uint32_t prev_ms;
+        float v_fwd;                          // m/s, from the SLAM's own poses
+        uint32_t dropped;
+    };
+    Slam *_slam;
+    bool _slam_init_done;
 #endif
 
     const Model _model;

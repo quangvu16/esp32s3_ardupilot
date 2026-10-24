@@ -1,0 +1,44 @@
+# Indoors without GPS: position and heading from the LD14 LiDAR (LiDAR SLAM),
+# fused with the MPU9250 IMU in EKF3. Load AFTER esp32s3_rover_ld14_f9p.parm,
+# then reboot. To go back outdoors, load esp32s3_rover_ld14_f9p.parm again
+# (and set PRX1_SLAM 0 if you like: it uses ~60 KB of RAM).
+# Guide: docs/SENSOR_FUSION.md
+#
+# How to use it:
+#   1. Put the car on the same start mark, facing the same way, every time.
+#      The map is built new at each boot, starting where the car stands:
+#      that spot is the EKF origin (PRX1_SLAM_LAT/LON) and "north" is the way
+#      the car faces. Missions saved one day work the next only from the same
+#      start pose.
+#   2. Power on and keep the car still for ~5 s: "SLAM: started", then
+#      "SLAM: tracking" and "EKF3 IMU0 is using external nav data".
+#   3. Drive slowly (<= 1 m/s) until you trust it. "SLAM: lost" means the scan
+#      no longer matches the map: stop (Hold) and drive back by hand.
+
+# ---------------------------------------------------------------- LiDAR SLAM
+PRX1_SLAM,1             # LD14 scan -> map -> position and heading to the EKF
+PRX1_SLAM_CELL,0.1      # m per map cell
+PRX1_SLAM_SIZE,20       # m; 20 m x 20 m map around the start, 53 KB of RAM
+PRX1_SLAM_LAT,0         # deg; SET to your building's latitude  (e.g. 21.028511)
+PRX1_SLAM_LON,0         # deg; SET to your building's longitude (e.g. 105.804817)
+PRX1_SLAM_X,0           # m; LiDAR in front of the board (IMU), negative if behind
+PRX1_SLAM_Y,0           # m; LiDAR right of the board, negative if left
+
+# ---------------------------------------------------------------- no GPS, no compass
+GPS1_TYPE,0             # GPS off indoors (no fix, and it would block arming)
+COMPASS_USE,0           # steel and wires indoors upset the compass; heading comes from SLAM
+
+# ---------------------------------------------------------------- EKF3 sources
+EK3_SRC1_POSXY,6        # horizontal position: ExternalNav (SLAM)
+EK3_SRC1_VELXY,0        # horizontal velocity: none (EKF gets it from the IMU + positions)
+EK3_SRC1_POSZ,6         # height: ExternalNav (a ground car: always 0)
+EK3_SRC1_VELZ,0
+EK3_SRC1_YAW,6          # heading: ExternalNav (SLAM)
+EK3_FLOW_DELAY,100      # ms; widens the EKF's look-back window from 60 to 100 ms so a
+                        # SLAM pose arriving 40-80 ms late is fused at the right moment
+                        # (no optical-flow sensor here, so nothing else uses this)
+
+# ---------------------------------------------------------------- slower, tighter
+CRUISE_SPEED,1          # m/s
+WP_SPEED,1              # m/s
+WP_RADIUS,0.5           # m; SLAM is good to ~0.1 m

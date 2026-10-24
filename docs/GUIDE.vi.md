@@ -35,6 +35,7 @@ Có bốn ứng dụng trạm mặt đất dùng chung một lõi: Android, Wind
 10. [Xử lý sự cố](#10-xử-lý-sự-cố)
 11. [Trước mỗi lần chạy](#11-trước-mỗi-lần-chạy)
 12. [Tập luyện không cần xe](#12-tập-luyện-không-cần-xe)
+13. [Trong nhà không GPS (LiDAR SLAM)](#13-trong-nhà-không-gps-lidar-slam)
 
 ## 1. Bạn có gì
 
@@ -251,3 +252,16 @@ Windows). Nó gửi vị trí trong một công viên với RTK Fixed, vòng qu�
 23 tham số, và trả lời arm, chế độ, cần Drive, Guided, lộ trình và hàng rào: ở Auto xe chạy qua các
 waypoint rồi dừng ở Hold. Đây chỉ là mô hình đơn giản, không phải mô phỏng xe thật; muốn vậy hãy dùng
 ArduPilot SITL.
+
+## 13. Trong nhà không GPS (LiDAR SLAM)
+
+Xe có thể chạy nhiệm vụ trong nhà mà không cần GPS: nó vẽ bản đồ căn phòng bằng LD14 và tự định vị
+trong bản đồ đó (khoảng ±10 cm khi thử nghiệm), rồi EKF kết hợp với IMU.
+
+1. Nạp [`esp32s3_rover_ld14_indoor.parm`](../esp32s3_rover_ld14_indoor.parm) sau file thường dùng,
+   và đặt `PRX1_SLAM_LAT`, `PRX1_SLAM_LON` theo tọa độ tòa nhà.
+2. Khởi động lại khi xe đứng trên vạch xuất phát, luôn quay cùng một hướng. Chờ `SLAM: tracking`.
+3. Chạy chậm ở Manual trước, rồi mới Auto.
+
+Cách hoạt động, tham số, độ chính xác, chỉnh EKF cho RTK ngoài trời và xử lý sự cố có trong
+[Kết hợp cảm biến: IMU + LiDAR + GPS](SENSOR_FUSION.vi.md).

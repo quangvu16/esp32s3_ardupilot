@@ -34,6 +34,7 @@ There are four ground station apps with the same core: Android, Windows, iPhone/
 10. [Troubleshooting](#10-troubleshooting)
 11. [Before every drive](#11-before-every-drive)
 12. [Practise without the car](#12-practise-without-the-car)
+13. [Indoors without GPS (LiDAR SLAM)](#13-indoors-without-gps-lidar-slam)
 
 ## 1. What you have
 
@@ -248,3 +249,16 @@ Then point the app at TCP **`127.0.0.1:5760`** (Setup, or the Windows app's addr
 position in a park with RTK Fixed, a LiDAR scan with four posts around home, 23 parameters, and
 answers arm, modes, the Drive stick, Guided, missions and fences: Auto drives the waypoints and stops
 in Hold. It is a toy model, not a simulator of the real car; for that use ArduPilot SITL.
+
+## 13. Indoors without GPS (LiDAR SLAM)
+
+The car can drive missions indoors with no GPS: it maps the room with the LD14 and finds itself in
+that map (about ±10 cm in tests), and the EKF fuses this with the IMU.
+
+1. Load [`esp32s3_rover_ld14_indoor.parm`](../esp32s3_rover_ld14_indoor.parm) after the usual file,
+   and set `PRX1_SLAM_LAT` and `PRX1_SLAM_LON` to your building.
+2. Reboot with the car on a start mark, always facing the same way. Wait for `SLAM: tracking`.
+3. Drive slowly in Manual first, then Auto.
+
+How it works, the settings, accuracy, outdoor RTK tuning and troubleshooting are in
+[Sensor fusion: IMU + LiDAR + GPS](SENSOR_FUSION.md).

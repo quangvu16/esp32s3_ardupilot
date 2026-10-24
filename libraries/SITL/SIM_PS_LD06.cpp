@@ -47,38 +47,31 @@ void PS_LD06::update_input()
 
 void PS_LD06::update_output(const Location &location)
 {
-    const uint32_t now_ms = AP_HAL::millis();
-    if (last_scan_output_time_ms == 0) {
-        last_scan_output_time_ms = now_ms;
-        return;
-    }
-    const uint32_t time_delta_ms = (now_ms - last_scan_output_time_ms);
-
-    // the driver and device only send/handle 12 readings at a time at
-    // the moment
+    // the LD06 turns at about 2152 deg/s and measures 4500 times a second,
+    // 12 readings to a packet: one packet every 2.67 ms. Send as many as
+    // are due, each measured where the vehicle is now.
     const uint32_t sample_count = 12;
+    const float samples_per_second = 4500;
+    const float degrees_per_s = 2152;  // see example datasheet page 8
+    const float degrees_per_sample = degrees_per_s / samples_per_second;
+    const uint32_t packet_interval_us = uint32_t(sample_count * 1.0e6f / samples_per_second);
 
-    const uint32_t samples_per_second = 4500;
-    const float samples_per_ms = samples_per_second / 1000.0f;
-
-    const uint32_t required_time_delta_ms = sample_count * samples_per_ms;
-
-    if (time_delta_ms < required_time_delta_ms) {
+    const uint32_t now_us = AP_HAL::micros();
+    if (last_scan_output_time_us == 0) {
+        last_scan_output_time_us = now_us;
         return;
     }
-    // sanity check we're being called often enough:
-    if (time_delta_ms / samples_per_ms > sample_count) {
-        AP_HAL::panic("Not being called often enough");
+    if (now_us - last_scan_output_time_us > 100000) {
+        last_scan_output_time_us = now_us - packet_interval_us;     // far behind: skip ahead
     }
+    while (now_us - last_scan_output_time_us >= packet_interval_us) {
+        last_scan_output_time_us += packet_interval_us;
+        send_packet(location, sample_count, degrees_per_s, degrees_per_sample);
+    }
+}
 
-    const float degrees_per_s = 2152;  // see example datasheet page 8
-    const float degrees_per_ms = degrees_per_s / 1000.0f;
-    const float degrees_per_sample = degrees_per_ms / samples_per_ms;
-
-    // ::fprintf(stderr, "Packing %u samples in for %ums interval (%f degrees/sample)\n", sample_count, time_delta_ms, degrees_per_sample);
-
-    last_scan_output_time_ms += sample_count/samples_per_ms;
-
+void PS_LD06::send_packet(const Location &location, uint32_t sample_count, float degrees_per_s, float degrees_per_sample)
+{
     const uint32_t required_send_buffer_size = 11 + 3*sample_count;
     if (required_send_buffer_size > send_buffer_size) {
         if (send_buffer != nullptr) {
@@ -113,7 +106,7 @@ void PS_LD06::update_output(const Location &location)
     packet_start.preamble = 0x54;
     packet_start.length = sample_count;
     packet_start.angular_rate = htole16(degrees_per_s);
-    packet_start.start_angle = htole16(last_degrees_bf * 100);
+    packet_start.start_angle = htole16(fmodf(last_degrees_bf + degrees_per_sample, 360.0f) * 100);
 
     uint16_t offset = sizeof(PacketStart);
 

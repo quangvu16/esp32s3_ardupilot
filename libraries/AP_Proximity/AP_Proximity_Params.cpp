@@ -117,6 +117,64 @@ const AP_Param::GroupInfo AP_Proximity_Params::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("_ADDR", 25, AP_Proximity_Params, address, 0),
 
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    // @Param: _SLAM
+    // @DisplayName: LiDAR SLAM
+    // @Description: LD06/LD14 only (PRX_TYPE 16 or 19). Builds a 2D map of the surroundings from the scan, matches every rotation against it, and gives the vehicle's position and heading in that map to the EKF as external navigation, for driving without GPS (indoors). Set EK3_SRC1_POSXY, EK3_SRC1_POSZ and EK3_SRC1_YAW to 6 (ExternalNav) to use it. The map is kept in RAM and starts again at each boot, where the vehicle stands.
+    // @Values: 0:Disabled,1:Enabled
+    // @RebootRequired: True
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM", 26, AP_Proximity_Params, slam, 0),
+
+    // @Param: _SLAM_CELL
+    // @DisplayName: LiDAR SLAM map cell size
+    // @Description: Size of one map cell. Smaller cells need more memory: (SLAM_SIZE / SLAM_CELL)^2 x 1.33 bytes.
+    // @Units: m
+    // @Range: 0.05 0.3
+    // @RebootRequired: True
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_CELL", 27, AP_Proximity_Params, slam_cell, 0.1f),
+
+    // @Param: _SLAM_SIZE
+    // @DisplayName: LiDAR SLAM map size
+    // @Description: Side length of the square map, centred where the vehicle starts. Keep the vehicle well inside it. 20 m with 0.1 m cells uses 53 KB of RAM.
+    // @Units: m
+    // @Range: 5 50
+    // @RebootRequired: True
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_SIZE", 28, AP_Proximity_Params, slam_size, 20.0f),
+
+    // @Param: _SLAM_LAT
+    // @DisplayName: LiDAR SLAM origin latitude
+    // @Description: Without GPS the EKF has no origin, which Auto, Guided and RTL need. SLAM sets it here (with SLAM_LON) when no GPS has given one, so maps and missions show where the building really is.
+    // @Units: deg
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_LAT", 29, AP_Proximity_Params, slam_lat, 0.0f),
+
+    // @Param: _SLAM_LON
+    // @DisplayName: LiDAR SLAM origin longitude
+    // @Description: See SLAM_LAT.
+    // @Units: deg
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_LON", 30, AP_Proximity_Params, slam_lon, 0.0f),
+
+    // @Param: _SLAM_X
+    // @DisplayName: LiDAR position, forward
+    // @Description: The LiDAR's distance in front of the vehicle's centre (the IMU), negative if behind.
+    // @Units: m
+    // @Range: -1 1
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_X", 31, AP_Proximity_Params, slam_pos_x, 0.0f),
+
+    // @Param: _SLAM_Y
+    // @DisplayName: LiDAR position, right
+    // @Description: The LiDAR's distance to the right of the vehicle's centre (the IMU), negative if left.
+    // @Units: m
+    // @Range: -1 1
+    // @User: Advanced
+    AP_GROUPINFO("_SLAM_Y", 32, AP_Proximity_Params, slam_pos_y, 0.0f),
+#endif
+
     AP_GROUPEND
 };
 

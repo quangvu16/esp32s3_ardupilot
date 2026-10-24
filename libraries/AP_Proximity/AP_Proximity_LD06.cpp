@@ -28,6 +28,17 @@
 #if AP_PROXIMITY_LD06_ENABLED
 #include "AP_Proximity_LD06.h"
 #include <GCS_MAVLink/GCS.h>
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+#include <AP_AHRS/AP_AHRS.h>
+#include <AP_GPS/AP_GPS.h>
+#include <AP_Logger/AP_Logger.h>
+#include <AP_Common/Location.h>
+
+extern const AP_HAL::HAL& hal;
+
+#define LD06_SLAM_MIN_RANGE_M   0.15f         // closer points are the vehicle itself
+#define LD06_SLAM_LOST_SCANS    30            // ~5 s of failed matches: report lost
+#endif
 
 #define LD_START_CHAR       0x54
 #define PROXIMITY_LD06_TIMEOUT_MS 50
@@ -74,9 +85,36 @@ void AP_Proximity_LD06::update(void)
         return;
     }
 
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    if (!_slam_init_done) {
+        _slam_init_done = true;
+        if (params.slam > 0) {
+            slam_init();
+        }
+    }
+    if (_slam != nullptr) {
+        // integrate the gyro before the new packets: a rotation that ends in
+        // them gets the heading change up to now
+        const uint32_t now_us = AP_HAL::micros();
+        if (_slam->last_gyro_us != 0) {
+            const float dt = MIN((now_us - _slam->last_gyro_us) * 1.0e-6f, 0.1f);
+            const float rate = AP::ahrs().get_gyro().z;      // rad/s, clockwise, bias-corrected
+            _slam->rot_dyaw += rate * dt;
+            _slam->dyaw_acc += rate * dt;
+        }
+        _slam->last_gyro_us = now_us;
+    }
+#endif
+
     // Begin getting sensor readings
     // Calls method that repeatedly reads through UART channel
     get_readings();
+
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    if (_slam != nullptr) {
+        slam_update();
+    }
+#endif
 
     // Check if the data is being received correctly and sets Proximity Status
     if (_last_distance_received_ms == 0 || (AP_HAL::millis() - _last_distance_received_ms > PROXIMITY_LD06_TIMEOUT_MS)) {
@@ -174,6 +212,11 @@ void AP_Proximity_LD06::parse_response_data()
 #if AP_PROXIMITY_LD06_SEND_SCAN
     scan_packet(start_angle);
 #endif
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    if (_slam != nullptr) {
+        slam_packet(start_angle, UINT16_VALUE(_response[3], _response[2]));
+    }
+#endif
     // Each recording point is three bytes long, goes through all of that and updates database
     for (uint16_t i = START_PAYLOAD; i < START_PAYLOAD + MEASUREMENT_PAYLOAD_LENGTH * PAYLOAD_COUNT; i += MEASUREMENT_PAYLOAD_LENGTH) {
 
@@ -201,6 +244,11 @@ void AP_Proximity_LD06::parse_response_data()
 
 #if AP_PROXIMITY_LD06_SEND_SCAN
         scan_point(angle_deg, distance_m);
+#endif
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+        if (_slam != nullptr) {
+            slam_point(start_angle + angle_step * (i / MEASUREMENT_PAYLOAD_LENGTH), angle_deg, distance_m);
+        }
 #endif
 
         // use the shortest distance within 2 degree sectors
@@ -293,6 +341,246 @@ void AP_Proximity_LD06::send_scan()
     gcs().send_to_active_channels(MAVLINK_MSG_ID_OBSTACLE_DISTANCE, (const char *)&pkt);
 }
 #endif // AP_PROXIMITY_LD06_SEND_SCAN
+
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+/*
+  LiDAR SLAM. The main thread collects each rotation's points, straightens out
+  the motion during the rotation (deskew) and hands them to a worker thread,
+  which matches them against the map (LidarSlam, ~15-30 ms on an ESP32-S3).
+  The pose comes back to the main thread, which gives it to the EKF.
+*/
+void AP_Proximity_LD06::slam_init()
+{
+    _slam = NEW_NOTHROW Slam;
+    if (_slam == nullptr || !_slam->core.init(params.slam_cell, params.slam_size)) {
+        GCS_SEND_TEXT(MAV_SEVERITY_ERROR, "SLAM: out of memory (%.0f m map, %.2f m cells)",
+                      double(params.slam_size.get()), double(params.slam_cell.get()));
+        delete _slam;
+        _slam = nullptr;
+        return;
+    }
+    if (!hal.scheduler->thread_create(FUNCTOR_BIND_MEMBER(&AP_Proximity_LD06::slam_thread, void),
+                                      "slam", 4096, AP_HAL::Scheduler::PRIORITY_IO, 0)) {
+        GCS_SEND_TEXT(MAV_SEVERITY_ERROR, "SLAM: no thread");
+        delete _slam;
+        _slam = nullptr;
+        return;
+    }
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "SLAM: map %.0f m, %.2f m cells, %u KB",
+                  double(params.slam_size.get()), double(params.slam_cell.get()),
+                  unsigned(_slam->core.memory_bytes() / 1024));
+}
+
+void AP_Proximity_LD06::slam_packet(float raw_start_angle_deg, uint16_t speed_dps)
+{
+    Slam &s = *_slam;
+    if (speed_dps > 360) {
+        s.speed_dps = speed_dps;
+    }
+    if (raw_start_angle_deg < s.last_start_deg) {
+        // a rotation has ended. Only one that took about as long as a turn of
+        // the sensor is used: a backlog of packets read at once (at start-up,
+        // or after a pause) has the wrong timing for the deskew
+        const uint32_t now_ms = AP_HAL::millis();
+        const float period_ms = 360000.0f / (s.speed_dps > 360 ? s.speed_dps : 2160.0f);
+        const uint32_t took_ms = now_ms - s.last_wrap_ms;
+        s.last_wrap_ms = now_ms;
+        if (took_ms > 0.6f * period_ms && took_ms < 3.0f * period_ms) {
+            slam_rotation_end();
+        } else {
+            s.n = 0;
+            s.rot_dyaw = 0;
+        }
+    }
+    s.last_start_deg = raw_start_angle_deg;
+}
+
+void AP_Proximity_LD06::slam_point(float raw_angle_deg, float angle_deg, float distance_m)
+{
+    if (distance_m < LD06_SLAM_MIN_RANGE_M || _slam->n >= LD06_SLAM_MAX_POINTS) {
+        return;
+    }
+    // thin out to one point per degree, spread over the whole rotation
+    // (the LD06 measures about two per degree, the LD14 about one)
+    const int16_t whole_deg = int16_t(raw_angle_deg);
+    if (_slam->n > 0 && whole_deg == _slam->last_kept_deg) {
+        return;
+    }
+    _slam->last_kept_deg = whole_deg;
+    const uint16_t k = _slam->n++;
+    _slam->raw_deg[k] = raw_angle_deg;
+    _slam->ang_deg[k] = angle_deg;
+    _slam->dist_m[k] = distance_m;
+}
+
+void AP_Proximity_LD06::slam_rotation_end()
+{
+    Slam &s = *_slam;
+    const uint16_t n = s.n;
+    const float rot_dyaw = s.rot_dyaw;
+    s.n = 0;
+    s.rot_dyaw = 0;
+    if (n < 30) {
+        return;                                // nothing to see
+    }
+    if (s.warmup < 10) {
+        s.warmup++;                            // let the sensor settle for a couple of seconds first
+        return;
+    }
+    {
+        WITH_SEMAPHORE(s.sem);
+        if (s.busy) {
+            s.dropped++;                       // the worker is behind: skip this one, keep the heading change
+            return;
+        }
+    }
+
+    AP_AHRS &ahrs = AP::ahrs();
+    // the scan is deskewed to the time of its last point: an earlier point
+    // was taken when the vehicle was turned less and was further back
+    const float speed_dps = s.speed_dps > 360 ? s.speed_dps : 2160.0f;
+    const float period_s = 360.0f / speed_dps;
+    const float rate = rot_dyaw / period_s;                  // rad/s
+    const float v_fwd = s.v_fwd;
+    const float raw_end = s.raw_deg[n - 1];
+    for (uint16_t k = 0; k < n; k++) {
+        const float ago = wrap_360(raw_end - s.raw_deg[k]) / speed_dps;
+        const float a = radians(s.ang_deg[k]) - rate * ago;
+        s.px[k] = s.dist_m[k] * cosf(a) - v_fwd * ago;
+        s.py[k] = s.dist_m[k] * sinf(a);
+    }
+    s.job_n = n;
+    s.job_dyaw = s.dyaw_acc;
+    s.dyaw_acc = 0;
+    s.job_ms = AP_HAL::millis();
+    s.job_reset = !s.started;
+    if (!s.started) {
+        // the map starts here, lined up with the heading the AHRS has now
+        s.started = true;
+        s.job_yaw0 = ahrs.get_yaw();
+        s.reset_ms = s.job_ms;
+        Vector2f ne;
+        if (ahrs.get_relative_position_NE_origin(ne)) {
+            s.offset_ne = ne;
+        }
+        GCS_SEND_TEXT(MAV_SEVERITY_INFO, "SLAM: started, heading %.0f", double(degrees(wrap_2PI(s.job_yaw0))));
+    }
+    {
+        WITH_SEMAPHORE(s.sem);
+        s.busy = true;
+    }
+    s.wake.signal();
+}
+
+void AP_Proximity_LD06::slam_thread()
+{
+    Slam &s = *_slam;
+    while (true) {
+        s.wake.wait_blocking();
+        if (s.job_reset) {
+            s.core.reset(s.job_yaw0);
+        }
+        const LidarSlam::Result r = s.core.process(s.px, s.py, s.job_n, s.job_dyaw,
+                                                   params.slam_pos_x, params.slam_pos_y);
+        WITH_SEMAPHORE(s.sem);
+        s.result = r;
+        s.pose = s.core.pose();
+        s.result_ms = s.job_ms;
+        s.have_result = true;
+        s.busy = false;
+    }
+}
+
+void AP_Proximity_LD06::slam_update()
+{
+    Slam &s = *_slam;
+    AP_AHRS &ahrs = AP::ahrs();
+    const uint32_t now_ms = AP_HAL::millis();
+
+    // without GPS the EKF has no origin, and Auto, Guided and RTL need one
+    if (s.started && now_ms - s.last_origin_try_ms > 1000) {
+        s.last_origin_try_ms = now_ms;
+        Location origin;
+        if (!ahrs.get_origin(origin)
+#if AP_GPS_ENABLED
+            && AP::gps().status() < AP_GPS::GPS_OK_FIX_3D
+#endif
+            ) {
+            origin.zero();
+            origin.lat = int32_t(params.slam_lat * 1.0e7f);
+            origin.lng = int32_t(params.slam_lon * 1.0e7f);
+            if (ahrs.set_origin(origin)) {
+                GCS_SEND_TEXT(MAV_SEVERITY_INFO, "SLAM: EKF origin %.6f %.6f",
+                              double(params.slam_lat.get()), double(params.slam_lon.get()));
+            }
+        }
+    }
+
+    LidarSlam::Result r;
+    LidarSlam::Pose p;
+    uint32_t t_ms;
+    {
+        WITH_SEMAPHORE(s.sem);
+        if (!s.have_result) {
+            return;
+        }
+        s.have_result = false;
+        r = s.result;
+        p = s.pose;
+        t_ms = s.result_ms;
+    }
+
+    if (r.matched) {
+        // forward speed for the next deskew, from the last two poses
+        if (s.prev_ms != 0 && t_ms - s.prev_ms > 20 && t_ms - s.prev_ms < 1000) {
+            const float d = (p.x - s.prev_pose.x) * cosf(p.yaw) + (p.y - s.prev_pose.y) * sinf(p.yaw);
+            const float v = constrain_float(d / ((t_ms - s.prev_ms) * 0.001f), -5.0f, 5.0f);
+            s.v_fwd = 0.5f * s.v_fwd + 0.5f * v;
+        }
+        s.prev_pose = p;
+        s.prev_ms = t_ms;
+        s.lost_count = 0;
+        if (!s.tracking) {
+            s.tracking = true;
+            GCS_SEND_TEXT(MAV_SEVERITY_INFO, "SLAM: tracking");
+        }
+        // uncertainty grows as fewer points land on the map
+        const float q = constrain_float(r.quality, 0.0f, 1.0f);
+        const float pos_err = 0.05f + (1.0f - q) * 0.5f;
+        const float ang_err = 0.03f + (1.0f - q) * 0.2f;
+        Quaternion att;
+        att.from_euler(ahrs.get_roll(), ahrs.get_pitch(), p.yaw);
+        const Vector3f pos {p.x + s.offset_ne.x, p.y + s.offset_ne.y, 0.0f};
+        ahrs.writeExtNavData(pos, att, pos_err, ang_err, t_ms, 0, s.reset_ms);
+    } else if (s.lost_count < UINT16_MAX) {
+        s.lost_count++;
+        if (s.tracking && s.lost_count == LD06_SLAM_LOST_SCANS) {
+            s.tracking = false;
+            GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "SLAM: lost (scan does not match the map)");
+        }
+    }
+
+#if HAL_LOGGING_ENABLED
+    // @LoggerMessage: SLAM
+    // @Description: LiDAR SLAM pose, given to the EKF as external navigation
+    // @Field: TimeUS: Time since system startup
+    // @Field: X: position north of the start (map frame)
+    // @Field: Y: position east of the start (map frame)
+    // @Field: Yaw: heading
+    // @Field: Q: match quality, 0..1
+    // @Field: N: points used
+    // @Field: M: 1 if the scan matched the map
+    // @Field: Map: 1 if the scan was added to the map
+    // @Field: Drop: scans skipped because the matcher was busy
+    // @Field: Age: time from the end of the scan to now (the pose is for the end of the scan)
+    AP::logger().WriteStreaming("SLAM", "TimeUS,X,Y,Yaw,Q,N,M,Map,Drop,Age", "smmd-----s", "F000-----C",
+                                "QffffHBBIH",
+                                AP_HAL::micros64(), p.x, p.y, degrees(wrap_2PI(p.yaw)), r.quality,
+                                r.used, uint8_t(r.matched), uint8_t(r.mapped), s.dropped,
+                                uint16_t(MIN(now_ms - t_ms, 65535U)));
+#endif
+}
+#endif // AP_PROXIMITY_LD06_SLAM_ENABLED
 
 // The LD14/LD14P is a triangulation sensor: the reported angle is that of the
 // ranging centre, offset from the centre of rotation. Move it to the centre

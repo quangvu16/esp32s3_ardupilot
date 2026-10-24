@@ -2,6 +2,7 @@
 
 #include <AP_Param/AP_Param.h>
 #include <AP_Math/AP_Math.h>
+#include "AP_Proximity_config.h"
 
 #define PROXIMITY_MAX_IGNORE                4   // up to six areas can be ignored
 
@@ -24,4 +25,13 @@ public:
     AP_Float max_m;                                     // maximum range in meters
     AP_Float min_m;                                     // minimum range in meters
     AP_Int8  address;                                   // proximity address (for AP_Periph CAN)
+#if AP_PROXIMITY_LD06_SLAM_ENABLED
+    AP_Int8  slam;                                      // LD06/LD14: 1 = LiDAR SLAM to the EKF as external navigation
+    AP_Float slam_cell;                                 // map cell size (m)
+    AP_Float slam_size;                                 // map side length (m)
+    AP_Float slam_lat;                                  // EKF origin when there is no GPS (deg)
+    AP_Float slam_lon;
+    AP_Float slam_pos_x;                                // scanner position on the vehicle, forward (m)
+    AP_Float slam_pos_y;                                // and right (m)
+#endif
 };

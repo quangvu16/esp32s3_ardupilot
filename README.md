@@ -7,6 +7,8 @@ ArduPilot (ArduRover 4.6.3) for the **ESP32-S3** (`esp32s3devkit` board) driving
 
 - **LDROBOT LD14 / LD14P 360° LiDAR** as a proximity sensor — new `PRX1_TYPE = 19` (LD14)
 - **u-blox ZED-F9P RTK GPS**, with NTRIP corrections sent from Mission Planner over WiFi
+- **LiDAR SLAM** on the ESP32-S3: the LD14 maps the room and gives the EKF position and heading,
+  so the car also navigates **indoors without GPS** ([sensor fusion guide](docs/SENSOR_FUSION.md))
 
 Based on the upstream [ArduPilot](https://github.com/ArduPilot/ardupilot) `ArduPilot-4.6`
 branch at commit `913e171eca7a37549d9f02e442698edfd4490435`. The upstream README is kept
@@ -22,6 +24,10 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 | `libraries/AP_HAL/board/esp32.h` | The ESP32 defaults that leave out fences, avoidance and path planning can be overridden by a board header |
 | `esp32s3_rover_ld14_f9p.parm` | Parameters for the RC car (servo, ESC, receiver, modes), the LiDAR, the F9P and RTK injection |
 | `esp32s3-env.sh` | ESP-IDF environment for an S3-only toolchain install |
+| `libraries/AP_Proximity/LidarSlam.{h,cpp}`, `AP_Proximity_LD06.{h,cpp}`, `AP_Proximity_Params.{h,cpp}` | **LiDAR SLAM** (`PRX1_SLAM`): each LD06/LD14 rotation is deskewed with the gyro, matched against an occupancy-grid map (Hector-style Gauss-Newton, 3 resolutions) in a worker thread, and the pose goes to EKF3 as external navigation, so the car navigates indoors with no GPS or compass. See [docs/SENSOR_FUSION.md](docs/SENSOR_FUSION.md) |
+| `libraries/SITL/SITL.cpp`, `SIM_PS_LD06.{h,cpp}` | Simulator: an indoor room for the simulated LiDARs (`SIM_ROOM=1`); the simulated LD06 sends packets at its real rate |
+| `Tools/lidar_slam_test/` | Offline SLAM test, SITL indoor test without GPS, plot script |
+| `esp32s3_rover_ld14_indoor.parm` | Indoors without GPS: SLAM on, GPS and compass off, EKF3 sources ExternalNav (load after the file above) |
 
 ## Wiring
 
