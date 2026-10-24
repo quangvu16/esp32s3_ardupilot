@@ -85,11 +85,13 @@ private:
     float correct_angle_ld14(float raw_angle_deg, uint16_t distance_mm);
 
 #if AP_PROXIMITY_LD06_SEND_SCAN
-    // collect a reading into the current rotation's scan, sending the scan when the angle wraps
-    void scan_point(float angle_deg, float distance_m, bool valid);
+    // a packet whose raw start angle is below the previous one begins a new rotation
+    void scan_packet(float raw_start_angle_deg);
+    // collect a valid reading into the current rotation's scan
+    void scan_point(float angle_deg, float distance_m);
     void send_scan();
     uint16_t _scan_cm[LD06_SCAN_BINS];        ///< closest return per bin this rotation, 0 = none
-    float _scan_last_angle_deg;
+    float _scan_last_start_deg;               ///< raw start angle of the previous packet
     uint32_t _scan_last_sent_ms;
 #endif
 

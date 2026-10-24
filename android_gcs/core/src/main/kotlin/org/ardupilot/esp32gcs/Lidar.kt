@@ -277,7 +277,9 @@ class LidarDriver(private val vehicle: Vehicle, val behaviours: LidarBehaviours)
         if (!running) return LidarCommand.STOP
         val scan = vehicle.scan
         if (scan == null || nowMs - scan.timeMs > 1000) {
-            if (drives && last.throttle != 0f) vehicle.manualControl(0f, 0f)
+            // Zero sticks with the retries of halt(): a single lost zero would leave the
+            // last command driving the car until RC_OVERRIDE_TIME runs out.
+            halt()
             last = LidarCommand(0f, 0f, if (scan == null) "waiting for a LiDAR scan" else "LiDAR scan is old: stopped")
             return last
         }

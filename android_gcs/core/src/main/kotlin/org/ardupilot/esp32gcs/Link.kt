@@ -50,6 +50,7 @@ abstract class Link {
             try {
                 while (!stopping) {
                     val b = txq.poll(200, TimeUnit.MILLISECONDS) ?: continue
+                    if (b === CLOSE) break
                     if (open) write(b)
                 }
             } catch (e: Exception) {
@@ -73,11 +74,25 @@ abstract class Link {
         onClosed?.invoke(why)
     }
 
+    /**
+     * Sends what is still queued (up to 300 ms), then closes. The last frame is
+     * often a zero-stick MANUAL_CONTROL from stopping a LiDAR behaviour or the
+     * keyboard: dropped, the car would keep the old sticks for RC_OVERRIDE_TIME.
+     */
     fun close() {
+        val tx = threads.getOrNull(1)
+        if (open && tx != null && tx.isAlive && Thread.currentThread() !== tx && txq.offer(CLOSE)) {
+            try { tx.join(300) } catch (_: InterruptedException) {}
+        }
         stopping = true
         open = false
         try { shut() } catch (_: Exception) {}
         threads.forEach { it.interrupt() }
+    }
+
+    private companion object {
+        /** Queue marker: [close] waits for the tx thread to reach it. */
+        val CLOSE = ByteArray(0)
     }
 }
 

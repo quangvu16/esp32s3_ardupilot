@@ -171,6 +171,9 @@ void AP_Proximity_LD06::parse_response_data()
     } else {
         angle_step = (end_angle + 360 - start_angle) / (PAYLOAD_COUNT - 1);
     }
+#if AP_PROXIMITY_LD06_SEND_SCAN
+    scan_packet(start_angle);
+#endif
     // Each recording point is three bytes long, goes through all of that and updates database
     for (uint16_t i = START_PAYLOAD; i < START_PAYLOAD + MEASUREMENT_PAYLOAD_LENGTH * PAYLOAD_COUNT; i += MEASUREMENT_PAYLOAD_LENGTH) {
 
@@ -188,22 +191,16 @@ void AP_Proximity_LD06::parse_response_data()
         // The LD14's intensity is not a confidence, so it is not filtered on
         if (distance_m < distance_min() || distance_m > distance_max() ||
             (_model == Model::LD06 && confidence < CONFIDENCE_THRESHOLD)) {
-#if AP_PROXIMITY_LD06_SEND_SCAN
-            scan_point(angle_deg, distance_m, false);
-#endif
             continue;
         }
 
         // ignore distances that are out-of-range (based on user parameters) or within ignore areas
         if (ignore_reading(angle_deg, distance_m)) {
-#if AP_PROXIMITY_LD06_SEND_SCAN
-            scan_point(angle_deg, distance_m, false);
-#endif
             continue;
         }
 
 #if AP_PROXIMITY_LD06_SEND_SCAN
-        scan_point(angle_deg, distance_m, true);
+        scan_point(angle_deg, distance_m);
 #endif
 
         // use the shortest distance within 2 degree sectors
@@ -249,19 +246,24 @@ void AP_Proximity_LD06::parse_response_data()
 }
 
 #if AP_PROXIMITY_LD06_SEND_SCAN
-// Readings arrive in rotation order with angle_deg in 0..360 (counting down
-// when the sensor is mounted upside down). A jump of more than 180 degrees
-// between readings is the wrap through 0: a new rotation.
-void AP_Proximity_LD06::scan_point(float angle_deg, float distance_m, bool valid)
+// The sensor's own packet start angles rise through each rotation and fall
+// back on the wrap through 0. They are used, rather than the corrected angles
+// of the readings, because the LD14 correction moves very close returns (the
+// car's own chassis) by up to ~30 degrees: near 0 those would look like extra
+// wraps and throw away part of the scan. Mounting (PRX_ORIENT, PRX_YAW_CORR)
+// does not change the raw angles either.
+void AP_Proximity_LD06::scan_packet(float raw_start_angle_deg)
 {
-    if (fabsf(angle_deg - _scan_last_angle_deg) > 180.0f) {
+    if (raw_start_angle_deg < _scan_last_start_deg) {
         send_scan();
         memset(_scan_cm, 0, sizeof(_scan_cm));
     }
-    _scan_last_angle_deg = angle_deg;
-    if (!valid) {
-        return;
-    }
+    _scan_last_start_deg = raw_start_angle_deg;
+}
+
+// angle_deg is in the vehicle frame (after PRX_ORIENT and PRX_YAW_CORR)
+void AP_Proximity_LD06::scan_point(float angle_deg, float distance_m)
+{
     const uint8_t bin = MIN(uint8_t(wrap_360(angle_deg) / (360.0f / LD06_SCAN_BINS)), LD06_SCAN_BINS - 1);
     const uint16_t cm = MAX(uint16_t(distance_m * 100.0f), uint16_t(1));
     if (_scan_cm[bin] == 0 || cm < _scan_cm[bin]) {
