@@ -1,0 +1,104 @@
+# Builds the Windows ground station (android_gcs/desktop) into
+#   Esp32RoverGcs-<version>-windows-portable.zip   unzip anywhere, run Esp32RoverGcs.exe
+#   Esp32RoverGcs-<version>.exe                     installer: Start menu + desktop shortcut
+# Both carry their own Java runtime (jpackage), so the PC needs no Java install.
+# Pushing a tag gcs-win-v<version> also publishes them as a GitHub release.
+name: Windows app (exe)
+
+on:
+  push:
+    branches: [main, windows-exe]
+    paths:
+      - "android_gcs/core/**"
+      - "android_gcs/desktop/**"
+      - "android_gcs/*.kts"
+      - ".github/workflows/windows-gcs.yml"
+    tags: ["gcs-win-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      GCS_DESKTOP_ONLY: "1"        # settings.gradle.kts: leave the Android app out (no SDK needed)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Build the jar
+        working-directory: android_gcs
+        run: gradle --no-daemon :desktop:fatJar
+
+      - name: Version
+        id: v
+        shell: pwsh
+        run: |
+          $jar = Get-ChildItem android_gcs/desktop/build/libs/Esp32RoverGcs-*.jar | Select-Object -First 1
+          $ver = $jar.BaseName -replace '^Esp32RoverGcs-', ''
+          "version=$ver" >> $env:GITHUB_OUTPUT
+          New-Item -ItemType Directory -Force jpin | Out-Null
+          Copy-Item $jar.FullName jpin/Esp32RoverGcs.jar
+          Write-Output "Esp32RoverGcs $ver"
+
+      - name: Portable app (exe + Java runtime)
+        shell: pwsh
+        run: |
+          jpackage --type app-image --name Esp32RoverGcs `
+            --input jpin --main-jar Esp32RoverGcs.jar `
+            --main-class org.ardupilot.esp32gcs.desktop.MainKt `
+            --app-version ${{ steps.v.outputs.version }} --vendor "esp32s3_ardupilot" `
+            --description "ESP32 Rover ground station" `
+            --icon android_gcs/desktop/packaging/Esp32RoverGcs.ico `
+            --dest out
+          Compress-Archive -Path out/Esp32RoverGcs -DestinationPath "Esp32RoverGcs-${{ steps.v.outputs.version }}-windows-portable.zip"
+
+      - name: Smoke test (the exe starts and keeps running)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out/Esp32RoverGcs/Esp32RoverGcs.exe -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { Write-Error "Esp32RoverGcs.exe exited with code $($p.ExitCode)"; exit 1 }
+          Write-Output "Running after 15 s (pid $($p.Id))"
+          Stop-Process -Id $p.Id -Force
+
+      - name: Installer
+        shell: pwsh
+        run: |
+          jpackage --type exe --name Esp32RoverGcs `
+            --app-image out/Esp32RoverGcs `
+            --app-version ${{ steps.v.outputs.version }} --vendor "esp32s3_ardupilot" `
+            --description "ESP32 Rover ground station" `
+            --win-menu --win-menu-group "ESP32 Rover" --win-shortcut `
+            --win-per-user-install --win-dir-chooser `
+            --win-upgrade-uuid 6b1f3d1e-6a0e-4c43-9a5e-2f0e8b0f3a71 `
+            --dest installer
+          Get-ChildItem installer
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Esp32RoverGcs-${{ steps.v.outputs.version }}-windows
+          path: |
+            Esp32RoverGcs-*-windows-portable.zip
+            installer/*.exe
+
+      - name: Release (tags gcs-win-v*)
+        if: startsWith(github.ref, 'refs/tags/gcs-win-v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $files = @(Get-ChildItem Esp32RoverGcs-*-windows-portable.zip) + @(Get-ChildItem installer/*.exe)
+          gh release create "${{ github.ref_name }}" $files.FullName `
+            --title "Windows ground station ${{ steps.v.outputs.version }}" `
+            --notes-file android_gcs/desktop/packaging/RELEASE_NOTES.md

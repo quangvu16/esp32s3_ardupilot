@@ -7,12 +7,24 @@ use Mission Planner for those on a PC.
 
 ## Install and run
 
-1. Install **Java 17** or newer if the PC doesn't have it, e.g. the Eclipse Temurin 17 JRE from
-   https://adoptium.net (choose Windows, x64, JRE, `.msi`).
-2. Put `Esp32RoverGcs.jar` and `Esp32RoverGcs.bat` in one folder and double-click
-   `Esp32RoverGcs.bat`. Or, in a command prompt: `java -jar Esp32RoverGcs.jar`.
-3. Join the board's WiFi **`ardupilot123`** (password `ardupilot123`). The app connects to TCP
-   `192.168.4.1:5760` by itself. The address is at the top left; ArduPilot SITL is `127.0.0.1:5760`.
+**Easiest: the `.exe`, with Java inside** (no Java install). From the
+[releases](https://github.com/quangvu16/esp32s3_ardupilot/releases) (or the *Windows app (exe)*
+workflow's artifacts), take one of:
+
+- `Esp32RoverGcs-<version>.exe`: installer. Installs for your Windows user (no administrator
+  needed), with a Start-menu entry (*ESP32 Rover*) and a desktop shortcut.
+- `Esp32RoverGcs-<version>-windows-portable.zip`: no install. Unzip anywhere and run
+  `Esp32RoverGcs\Esp32RoverGcs.exe`.
+
+The first time, Windows SmartScreen may say *"Windows protected your PC"* (the app isn't signed
+with a paid certificate): **More info → Run anyway**. If Windows Firewall asks, allow **Private
+networks**.
+
+**Or the jar**, if the PC has Java 17 or newer: put `Esp32RoverGcs.jar` and `Esp32RoverGcs.bat` in
+one folder and double-click `Esp32RoverGcs.bat` (or `java -jar Esp32RoverGcs.jar`).
+
+Then join the board's WiFi **`ardupilot123`** (password `ardupilot123`). The app connects to TCP
+`192.168.4.1:5760` by itself. The address is at the top left; ArduPilot SITL is `127.0.0.1:5760`.
 
 Settings (connection, map type, zig-zag points, LiDAR settings) are remembered per Windows user.
 Map tiles are cached in `%USERPROFILE%\.esp32gcs\tiles`.
@@ -40,7 +52,13 @@ export JAVA_HOME=~/Android/jdk
 # -> desktop/build/libs/Esp32RoverGcs-<version>.jar  (rename it to Esp32RoverGcs.jar next to dist/Esp32RoverGcs.bat)
 ```
 
-On any machine with internet, `./gradlew :desktop:fatJar` works too. The shared code is in
+On any machine with internet, `./gradlew :desktop:fatJar` works too (`GCS_DESKTOP_ONLY=1` skips
+the Android app, so no Android SDK is needed).
+
+The `.exe` files are made on Windows by `.github/workflows/windows-gcs.yml`: it builds the jar,
+wraps it with `jpackage` (JDK 17) into `Esp32RoverGcs.exe` with its own Java runtime and the icon in
+`desktop/packaging/`, starts it once as a smoke test, then builds the installer. Pushing a tag
+`gcs-win-v<version>` publishes both as a release. The shared code is in
 `android_gcs/core`; the desktop window is `desktop/src/main/kotlin/.../desktop/` (Swing, no
 libraries besides Kotlin).
 
