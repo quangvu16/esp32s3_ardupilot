@@ -319,7 +319,9 @@ Work in this order. Mission Planner's **Config → Tuning** page and the live gr
 - accelerometer, compass and radio calibration, and the LiDAR proximity view
 - RTK corrections over NTRIP, using the phone's mobile data
 
-Build and install instructions are in its README.
+**Download:** [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk) (Android 8.0 or newer), from the
+[gcs-v1.0 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). Open it on the phone and allow "install unknown apps".
+To build it yourself, see the app's README.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)
 

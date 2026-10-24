@@ -320,7 +320,9 @@ thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4
 - hiệu chuẩn gia tốc kế, la bàn và tay điều khiển, xem LiDAR
 - hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
 
-Cách biên dịch và cài đặt (tiếng Anh) xem README của ứng dụng.
+**Tải về:** [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk) (Android 8.0 trở lên), trong
+[bản phát hành gcs-v1.0](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".
+Cách tự biên dịch (tiếng Anh) xem README của ứng dụng.
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](android_gcs/docs/screens.svg)
 

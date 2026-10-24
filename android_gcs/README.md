@@ -5,7 +5,7 @@ this repository's ArduRover on the ESP32-S3. It speaks MAVLink 2 to the board ov
 (TCP `192.168.4.1:5760`), and also works with any other ArduRover or with SITL.
 
 Native Kotlin, no libraries: the MAVLink code, the map and the NTRIP client are part of the app.
-Android 8.0 (API 26) or newer.
+Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0)).
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](docs/screens.svg)
 
@@ -66,9 +66,15 @@ Create `local.properties` with `sdk.dir=<path to the Android SDK>`, or set `ANDR
 
 ## Install
 
-- **USB:** turn on Developer options → USB debugging, then
-  `adb install -r app/build/outputs/apk/release/app-release.apk`
-- **Without a cable:** copy the APK to the phone, open it, and allow "install unknown apps".
+Download the ready-built APK, [esp32-rover-gcs-1.0.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.0/esp32-rover-gcs-1.0.apk), from the
+[gcs-v1.0 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.0). `SHA256SUMS` there has its checksum.
+
+- **On the phone:** open the link, open the downloaded file, and allow "install unknown apps".
+- **USB:** turn on Developer options → USB debugging, then `adb install -r esp32-rover-gcs-1.0.apk`
+  (or `app/build/outputs/apk/release/app-release.apk` for your own build).
+
+The release APK is signed with an Android debug key. To install your own build over it,
+uninstall the release first.
 
 ## How it was tested
 
