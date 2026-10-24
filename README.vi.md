@@ -327,7 +327,7 @@ rồi đọc lại tham số để thấy các tham số `OA_BR_` và `OA_DB_`):
 
 ```
 OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
-OA_MARGIN_MAX    = 3    # m giữ cách vật cản và hàng rào (mặc định 5); luôn lớn hơn WP_RADIUS
+OA_MARGIN_MAX    = 2    # m giữ cách vật cản và hàng rào (mặc định 5); luôn lớn hơn WP_RADIUS
 OA_BR_LOOKAHEAD  = 5    # m quét phía trước (BendyRuler); nhỏ hơn tầm 8 m của LD14
 OA_DB_DIST_MAX   = 8    # m: bỏ qua điểm LiDAR xa hơn tầm đo của LD14
 ```
@@ -340,6 +340,14 @@ OA_DB_DIST_MAX   = 8    # m: bỏ qua điểm LiDAR xa hơn tầm đo của LD14
 - Đặt `OA_MARGIN_MAX` lớn hơn `WP_RADIUS` (mặc định 2 m). Xe coi như đã tới waypoint sớm `WP_RADIUS`
   mét và cắt góc, nên khoảng cách nhỏ hơn sẽ làm xe chạm góc hàng rào, vượt rào và dừng ở Hold. Trong
   SITL, khoảng cách 2 với `WP_RADIUS` 2 chạm vào hộp cấm vào; khoảng cách 3 với `WP_RADIUS` 1 đi vòng qua an toàn.
+- **Giữa nhiều vật cản** (tuần tra với BendyRuler; nút *Patrol… → Set up BendyRuler* của ứng dụng ghi
+  các giá trị này): `OA_MARGIN_MAX` 2, `WP_RADIUS` 1, `AVOID_MARGIN` 1, `WP_SPEED` 1. Đã thử trong SITL
+  với các cột cách nhau 8 m: khoảng cách 3 m không còn lối đi giữa các cột, `AVOID_MARGIN` 2 (mặc định)
+  dừng xe trước khi BendyRuler kịp lái vòng, và ở 2 m/s xe ôm cua lao vào cột. Với các giá trị trên xe
+  đi vòng qua các cột (gần nhất 0,5-1,6 m), nhưng có lần xe dừng cách một cột 1 m và đứng yên: hãy theo
+  dõi khi tuần tra và lấy lại quyền điều khiển nếu xe kẹt. Đặt waypoint xa vật cản hơn `OA_MARGIN_MAX`:
+  BendyRuler không tới được waypoint nằm trong khoảng cách đó và sẽ đi lòng vòng. Xem thêm
+  [hướng dẫn](docs/GUIDE.vi.md#6-tuần-tra-với-lidar).
 
 **4. Hàng rào** (cho Dijkstra's, và cho bit hàng rào của Simple Avoidance). Vẽ đa giác hoặc vòng
 tròn cho phép (inclusion, stay-in) và cấm vào (exclusion, stay-out), rồi tải lên xe: trong
@@ -372,11 +380,16 @@ xe vòng qua. Nếu xe chần chừ hoặc lắc qua lại, xem trang BendyRuler
 thoại vào WiFi `ardupilot123`, ứng dụng tự kết nối tới `192.168.4.1:5760`. Ứng dụng có:
 
 - HUD, bản đồ, nút chuyển chế độ, arm, và cần lái trên màn hình để điều khiển xe
-- lập lộ trình waypoint, đọc/ghi file `.waypoints` của Mission Planner
+- lập lộ trình waypoint, đọc/ghi file `.waypoints` của Mission Planner; chạy zig-zag giữa hai điểm A và B;
+  tuần tra (lặp lộ trình, BendyRuler lái vòng qua vật cản LiDAR thấy)
 - toàn bộ danh sách tham số, nạp và lưu file `.parm`
 - hiệu chuẩn gia tốc kế, la bàn và tay điều khiển
 - xem vòng quét LiDAR, và các hành vi `hoverboard_laser` của robot hoverboard cho xe: Avoid (tránh), Follow (bám theo), Warn (cảnh báo)
 - hiệu chỉnh RTK qua NTRIP bằng dữ liệu di động của điện thoại
+
+[Phiên bản Windows](android_gcs/desktop/README.md) có cùng bản đồ, lộ trình, zig-zag, tuần tra,
+hàng rào, tab LiDAR và tham số (hiệu chuẩn và RTK vẫn dùng Mission Planner trên máy tính).
+**Cách sử dụng tất cả: xem [hướng dẫn](docs/GUIDE.vi.md).**
 
 **Tải về:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 trở lên), trong
 [bản phát hành gcs-v1.2](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2). Mở file trên điện thoại và cho phép "cài ứng dụng không rõ nguồn gốc".

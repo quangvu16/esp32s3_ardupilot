@@ -55,6 +55,9 @@ class MapView(context: Context) : View(context) {
     var vehicle: Triple<Double, Double, Float>? = null      // lat, lon, heading (deg)
     var home: Pair<Double, Double>? = null
     var guidedTarget: Pair<Double, Double>? = null
+    /** Zig-zag points A and B (lat, lon), drawn with the line between them. */
+    var zigA: DoubleArray? = null
+    var zigB: DoubleArray? = null
     var mission: List<MissionItem> = emptyList()
     var currentWp = -1                                      // index into mission (vehicle seq - 1)
     var fences: List<FenceZone> = emptyList()
@@ -330,6 +333,8 @@ class MapView(context: Context) : View(context) {
             canvas.drawText("H", x, y + homeText.textSize * 0.36f, homeText)
         }
 
+        drawZigZagAB(canvas)
+
         guidedTarget?.let { (la, lo) ->
             val (x, y) = screen(la, lo)
             val r = 12 * density
@@ -377,6 +382,27 @@ class MapView(context: Context) : View(context) {
     }
 
     private fun metersPerPixel() = 156543.03392 * cos(Math.toRadians(centerLat)) / 2.0.pow(zoom) * (256 / tilePx)
+
+    private val abLine = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; strokeWidth = 2f * density; color = Color.rgb(147, 51, 234)
+        pathEffect = android.graphics.DashPathEffect(floatArrayOf(8 * density, 5 * density), 0f)
+    }
+    private val abFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(147, 51, 234) }
+
+    private fun drawZigZagAB(canvas: Canvas) {
+        val a = zigA; val b = zigB
+        if (a != null && b != null) {
+            val (x1, y1) = screen(a[0], a[1]); val (x2, y2) = screen(b[0], b[1])
+            canvas.drawLine(x1, y1, x2, y2, abLine)
+        }
+        for ((p, label) in listOf(a to "A", b to "B")) {
+            p ?: continue
+            val (x, y) = screen(p[0], p[1])
+            canvas.drawCircle(x, y, 10 * density, abFill)
+            canvas.drawCircle(x, y, 10 * density, vehicleRim)
+            canvas.drawText(label, x, y + homeText.textSize * 0.36f, homeText)
+        }
+    }
 
     private fun drawFences(canvas: Canvas) {
         fences.forEachIndexed { zi, z ->
@@ -481,8 +507,7 @@ class MapView(context: Context) : View(context) {
                 if (file.exists()) bmp = BitmapFactory.decodeFile(file.path)
                 if (bmp == null) {
                     val url = URL(src.url.format(z, x, y))
-                    val net = internetNetwork(context)
-                    val conn = (net?.openConnection(url) ?: url.openConnection()) as HttpURLConnection
+                    val conn = Platform.net.openInternet(url) as HttpURLConnection
                     conn.connectTimeout = 6000; conn.readTimeout = 8000
                     conn.setRequestProperty("User-Agent", "Esp32RoverGcs/1.0 (ArduPilot ESP32-S3 ground station)")
                     val bytes = conn.inputStream.use { it.readBytes() }

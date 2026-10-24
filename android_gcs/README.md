@@ -5,6 +5,8 @@ this repository's ArduRover on the ESP32-S3. It speaks MAVLink 2 to the board ov
 (TCP `192.168.4.1:5760`), and also works with any other ArduRover or with SITL.
 
 Native Kotlin, no libraries: the MAVLink code, the map and the NTRIP client are part of the app.
+There is also a [Windows version](desktop/README.md) on the same core. How to drive with them is in the
+[guide](../docs/GUIDE.md).
 Android 8.0 (API 26) or newer. **[Download the APK](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk)** ([release notes](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2)).
 
 ![App screens: Data (HUD, modes, map with mission), Plan (waypoints), Params (search and edit), Setup (radio, LiDAR proximity, NTRIP)](docs/screens.svg)
@@ -26,7 +28,7 @@ and NTRIP corrections over mobile data.
 | Tab | What it does | Mission Planner equivalent |
 | --- | --- | --- |
 | **Data** | HUD (horizon, heading, speed, mode, armed, GPS, battery, waypoint distance). **Arm** (long press: force arm), mode buttons, and a map with the car, its trail, home and the mission. Tap the map in Guided mode to drive there. Long press for *Drive here*, *Set home here* or *Add waypoint*. **Drive** opens a phone stick (RC override over MAVLink, power limit 10-100%). | Flight Data |
-| **Plan** | Tap the map to add waypoints, drag them to move, tap one to edit it (waypoint, loiter time, RTL, speed change, order, delete). **Read** / **Write** to the vehicle, **Start Auto**, mission speed. Load and save Mission Planner `.waypoints` files. **Fence** switches to [fence editing](#fences). | Flight Plan |
+| **Plan** | Tap the map to add waypoints, drag them to move, tap one to edit it (waypoint, loiter time, RTL, speed change, order, delete). **Read** / **Write** to the vehicle, **Start Auto**, mission speed. Load and save Mission Planner `.waypoints` files. **Zig zag…** makes back-and-forth lanes from points A and B; **Patrol…** loops the plan with BendyRuler steering round obstacles ([below](#zig-zag-and-patrol)). **Fence** switches to [fence editing](#fences). | Flight Plan |
 | **Params** | Full parameter list with search. Tap to edit: **Write now**, or **Stage** several and write them together. **Load file** stages only the values that differ from the vehicle (e.g. [`esp32s3_rover_ld14_f9p.parm`](../esp32s3_rover_ld14_f9p.parm)). **Save file**, **Reboot**. | Config → Full Parameter List |
 | **Setup** | Connection (TCP / UDP). 6-position accelerometer calibration, or level only. Compass calibration. Radio bars and calibration (writes `RCn_MIN/MAX/TRIM`). LiDAR proximity view. RTK over NTRIP. Set home, reboot, clear the mission. | Initial Setup, Optional Hardware |
 | **LiDAR** | The LD14's full scan seen from above, and the three behaviours of `robot_ws/src/hoverboard_laser`: [Avoid, Follow and Warn](#lidar). The scan is also drawn around the car on the Data map. | Proximity view (Ctrl-F) |
@@ -60,6 +62,19 @@ planning (`OA_TYPE` 2 or 3) and the fence part of `AVOID_ENABLE`; see the main R
 The list shows how much fence storage the zones use. The ESP32-S3 board stores 672 bytes, about
 80 corners. The app refuses polygons with fewer than 3 corners and circles without a radius before
 sending, the same checks ArduPilot makes. Fences are drawn on the Data map too.
+
+### Zig zag and patrol
+
+**Zig zag…** turns points A and B into back-and-forth lanes, like Copter's ZigZag mode (which Rover
+doesn't have): set A and B from the car's position or by long-pressing the Plan map, then the line
+spacing, number of lines, side, wait at the ends and a run-out past the ends for the car's turns.
+
+**Patrol…** repeats the plan (a number of laps, or forever) with a `DO_JUMP`, so the car keeps going
+without the phone; **Set up BendyRuler** writes the obstacle settings (two presses, with a reboot in
+between). The HUD shows the lap.
+
+How to use them, the settings that matter and how they were tested: [guide, sections 5 and
+6](../docs/GUIDE.md#5-zig-zag).
 
 ### LiDAR
 
@@ -129,7 +144,12 @@ cd android_gcs
 export JAVA_HOME=~/Android/jdk ANDROID_HOME=~/Android/Sdk
 ~/Android/gradle-8.7/bin/gradle --no-daemon --offline assembleRelease
 # -> app/build/outputs/apk/release/app-release.apk  (signed with the debug key)
+~/Android/gradle-8.7/bin/gradle --no-daemon --offline :desktop:fatJar     # the Windows app
 ```
+
+Three modules: `core` (Kotlin, no Android: MAVLink, vehicle, links, NTRIP, fences, zig-zag, patrol,
+LiDAR behaviours), `app` (Android) and `desktop` (Windows, Swing). Both apps use `core`, so the
+features behave the same in both.
 
 `./gradlew` also works where gradle.org (or the Tencent mirror it is set to) can be reached.
 Create `local.properties` with `sdk.dir=<path to the Android SDK>`, or set `ANDROID_HOME`.
@@ -169,6 +189,17 @@ and its field of 1 m posts, running `Lidar.kt`'s driver loop at 10 Hz as the app
 - Avoid: 60 s in the post field, 80-90 m driven, steering round posts 4-8 times; closest return ahead
   0.37-0.92 m (Acro and Manual, `AVOID_MARGIN` 0.5)
 
+Zig-zag and patrol, against SITL:
+- zig-zag geometry: lanes parallel to A→B, the set spacing apart, on the chosen side, alternating
+  direction, run-out past the ends but not behind A
+- a 4-line zig-zag, 20 m lines 4 m apart, driven in Auto within 0.14 m of each line; with 1 m spacing
+  (less than the car's 1.8 m U-turn) still every line, within 0.5 m
+- BendyRuler set up in two steps (the `OA_BR_` parameters appear only after the reboot)
+- a 2-lap patrol through SITL's posts with the LiDAR: round the posts (0.5-1.6 m at the closest)
+  and on into lap 2; without BendyRuler the route goes through them. In one run the car stopped 1 m
+  in front of a post and stayed there (simple avoidance stopped it inside BendyRuler's margin): see
+  the [guide](../docs/GUIDE.md#6-patrol-with-the-lidar)
+
 Fences were tested the same way:
 - a fence with every zone type (stay-in and stay-out polygons and circles, a return point)
   uploaded and read back identical
@@ -182,15 +213,28 @@ The screens were not tested in that run; they need a phone or an emulator.
 
 ## Files
 
+In `core/` (shared with the Windows app):
+
 | File | Contents |
 | --- | --- |
+| `Platform.kt` | What the shared code needs from each app: clock, UI thread, network routing |
+| `ZigZag.kt` | Zig-zag lanes from A and B |
+| `Patrol.kt` | Patrol loop (`DO_JUMP`), BendyRuler settings and checks, lap counter |
 | `Mavlink.kt` | v1/v2 parser, v2 encoder, X.25 CRC, message ids, CRC extras and lengths (from ArduPilot 4.6's generated headers) |
 | `Link.kt` | TCP and UDP links. The socket is bound to the WiFi network so it does not go out over mobile data |
 | `Vehicle.kt` | Telemetry state, parameter / mission / fence / command protocols with retries, calibrations, RTCM injection |
 | `Fence.kt` | Fence zones ↔ fence mission items, ArduPilot's fence checks, storage estimate |
 | `Lidar.kt` | LiDAR scan, the hoverboard_laser behaviours (Avoid, Follow, Warn) adapted for a car, and the 10 Hz driver loop |
-| `LidarView.kt` | The scan from above with the behaviour's sectors |
 | `Ntrip.kt` | NTRIP 1.0 client, RTCM3 frame splitter (CRC-24Q), GGA sentence |
+
+In `app/` (Android):
+
+| File | Contents |
+| --- | --- |
+| `AndroidPlatform.kt` | Android's clock, main thread, and WiFi / mobile-data socket binding |
+| `LidarView.kt` | The scan from above with the behaviour's sectors |
 | `MapView.kt` | OpenStreetMap / Esri satellite tiles (disk cache), vehicle, trail, home, mission, fences, waypoint and fence-corner dragging |
 | `HudView.kt`, `RadarView.kt`, `JoystickView.kt` | HUD, LiDAR proximity view, drive stick |
-| `MainActivity.kt` | The five tabs |
+| `MainActivity.kt` | The six tabs |
+
+The Windows app's window code is in `desktop/` ([desktop/README.md](desktop/README.md)).

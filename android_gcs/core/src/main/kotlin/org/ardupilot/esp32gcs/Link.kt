@@ -1,9 +1,5 @@
 package org.ardupilot.esp32gcs
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.DatagramPacket
@@ -16,10 +12,10 @@ import java.util.concurrent.TimeUnit
 
 /**
  * A byte pipe to the autopilot. The ESP32 board's access point has no internet,
- * so Android would route a plain socket over mobile data; [wifiNetwork] binds it
+ * so Android would route a plain socket over mobile data; [Platform.net] binds it
  * to the WiFi network instead (map tiles and NTRIP stay on the default network).
  */
-abstract class Link(protected val ctx: Context) {
+abstract class Link {
     @Volatile var open = false
         protected set
     var onBytes: ((ByteArray, Int) -> Unit)? = null
@@ -83,25 +79,17 @@ abstract class Link(protected val ctx: Context) {
         try { shut() } catch (_: Exception) {}
         threads.forEach { it.interrupt() }
     }
-
-    protected fun wifiNetwork(): Network? {
-        val cm = ctx.getSystemService(ConnectivityManager::class.java) ?: return null
-        @Suppress("DEPRECATION")
-        return cm.allNetworks.firstOrNull {
-            cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-        }
-    }
 }
 
 /** MAVLink over TCP: the board listens on 192.168.4.1:5760 (also ArduPilot SITL's default). */
-class TcpLink(ctx: Context, private val host: String, private val port: Int) : Link(ctx) {
+class TcpLink(private val host: String, private val port: Int) : Link() {
     private val sock = Socket()
     private lateinit var ins: InputStream
     private lateinit var outs: OutputStream
     override val name get() = "TCP $host:$port"
 
     override fun connect() {
-        wifiNetwork()?.let { if (isLocal(host)) it.bindSocket(sock) }
+        if (isLocal(host)) Platform.net.bindLocal(sock)
         sock.tcpNoDelay = true
         sock.connect(InetSocketAddress(host, port), 5000)
         sock.soTimeout = 0
@@ -119,7 +107,7 @@ class TcpLink(ctx: Context, private val host: String, private val port: Int) : L
  * sends: the board's HAL_ESP32_WIFI 2 mode broadcasts to 192.168.4.255:14550,
  * and SITL / mavproxy --out send there too. With a host it sends there first.
  */
-class UdpLink(ctx: Context, private val host: String, private val port: Int) : Link(ctx) {
+class UdpLink(private val host: String, private val port: Int) : Link() {
     private lateinit var sock: DatagramSocket
     @Volatile private var peer: InetSocketAddress? = null
     override val name get() = if (host.isBlank()) "UDP listen :$port" else "UDP $host:$port"
@@ -127,7 +115,7 @@ class UdpLink(ctx: Context, private val host: String, private val port: Int) : L
     override fun connect() {
         sock = if (host.isBlank()) DatagramSocket(port).apply { broadcast = true } else DatagramSocket()
         // Replies to the board must leave through its WiFi, not mobile data.
-        if (host.isBlank() || isLocal(host)) wifiNetwork()?.bindSocket(sock)
+        if (host.isBlank() || isLocal(host)) Platform.net.bindLocal(sock)
         if (host.isNotBlank()) peer = InetSocketAddress(InetAddress.getByName(host), port)
         sock.soTimeout = 0
     }

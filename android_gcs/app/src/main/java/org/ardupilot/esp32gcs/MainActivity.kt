@@ -74,6 +74,8 @@ class MainActivity : Activity() {
     private lateinit var planStatus: TextView
     private var planAddMode = true
     private var planSpeed = 0f
+    private val zigzag = ZigZag()
+    private val lapCounter = LapCounter()
     private var planFence = false                       // the Plan tab edits the fence, not the mission
     private val fence = ArrayList<FenceZone>()
     private var fenceZone = -1                          // zone that map taps add corners to
@@ -132,7 +134,8 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         prefs = getSharedPreferences("gcs", MODE_PRIVATE)
-        vehicle = Vehicle(applicationContext)
+        installAndroidPlatform(applicationContext)
+        vehicle = Vehicle()
         vehicle.onEvent = { onVehicleEvent(it) }
         driveLimit = prefs.getFloat("drive_limit", 0.3f)
 
@@ -436,6 +439,8 @@ class MainActivity : Activity() {
             button("Write", accent = true) { writeMission() },
             addBtn,
             button("Speed…") { askPlanSpeed() },
+            button("Zig zag…") { zigZagDialog() },
+            button("Patrol…") { patrolDialog() },
             button("Clear") { confirm("Clear plan", "Remove all waypoints from the plan on the phone?") { plan.clear(); planChanged() } },
             button("Start Auto") { startAuto() },
             button("Load") { openFile(REQ_LOAD_MISSION) },
@@ -455,12 +460,16 @@ class MainActivity : Activity() {
             }
             onWaypointTap = { i -> editItem(i) }
             onWaypointMoved = { _, _, _ -> planChanged() }
+            onLongPress = { lat, lon -> if (!planFence) zigZagPointMenu(lat, lon) }
             onFenceTap = { zone, point -> editZone(zone, point) }
             onFenceMoved = { zone -> fenceZone = zone; fenceChanged() }
         }
         v.addView(planMap, lp(-1, 0, 1f))
         planList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(10), dp(4), dp(10), dp(4)) }
         v.addView(ScrollView(this).apply { addView(planList) }, lp(-1, dp(150)))
+        loadZigZag()
+        planMap.zigA = zigzag.a; planMap.zigB = zigzag.b
+        flyMap.zigA = zigzag.a; flyMap.zigB = zigzag.b
         planChanged()
         return v
     }
@@ -589,7 +598,7 @@ class MainActivity : Activity() {
         17 -> "Loiter forever"
         Mav.CMD_NAV_RETURN_TO_LAUNCH -> "Return to launch"
         Mav.CMD_DO_CHANGE_SPEED -> "Speed %.1f m/s".format(it.p2)
-        177 -> "Jump to ${it.p1.toInt()} (${it.p2.toInt()}×)"
+        Patrol.CMD_DO_JUMP -> "Repeat from item ${it.p1.toInt()}: " + if (it.p2 < 0) "forever (patrol)" else "${it.p2.toInt()} more times (patrol)"
         else -> "Command ${it.command}"
     }
 
@@ -663,6 +672,96 @@ class MainActivity : Activity() {
         }.show()
     }
 
+    // --- zig zag (Copter's ZigZag mode, as a mission) ----------------------------------
+
+    private fun zigZagPointMenu(lat: Double, lon: Double) {
+        AlertDialog.Builder(this).setTitle("%.7f, %.7f".format(lat, lon))
+            .setItems(arrayOf("Zig-zag point A here", "Zig-zag point B here", "Add waypoint here")) { _, w ->
+                when (w) {
+                    0 -> { zigzag.a = doubleArrayOf(lat, lon); zigZagChanged() }
+                    1 -> { zigzag.b = doubleArrayOf(lat, lon); zigZagChanged() }
+                    2 -> { plan.add(newWaypoint(lat, lon)); planChanged() }
+                }
+            }.show()
+    }
+
+    private fun zigZagChanged() {
+        planMap.zigA = zigzag.a; planMap.zigB = zigzag.b
+        flyMap.zigA = zigzag.a; flyMap.zigB = zigzag.b
+        planMap.invalidate(); flyMap.invalidate()
+        zigzag.a?.let { prefs.edit().putString("zz_a", "${it[0]},${it[1]}").apply() }
+        zigzag.b?.let { prefs.edit().putString("zz_b", "${it[0]},${it[1]}").apply() }
+    }
+
+    private fun loadZigZag() {
+        fun pt(k: String) = prefs.getString(k, null)?.split(',')?.mapNotNull { it.toDoubleOrNull() }
+            ?.takeIf { it.size == 2 }?.let { doubleArrayOf(it[0], it[1]) }
+        zigzag.a = pt("zz_a"); zigzag.b = pt("zz_b")
+        zigzag.sideDistM = prefs.getFloat("zz_side", 2f)
+        zigzag.lines = prefs.getInt("zz_lines", 5)
+        zigzag.right = prefs.getBoolean("zz_right", true)
+        zigzag.waitS = prefs.getFloat("zz_wait", 0f)
+        zigzag.runOutM = prefs.getFloat("zz_runout", -1f)
+    }
+
+    /** A and B (car position or long-press on the Plan map), the ZIGZ_-style settings, then the lanes as the plan. */
+    private fun zigZagDialog() {
+        val turnR = vehicle.paramValue("TURN_RADIUS")
+        if (zigzag.runOutM < 0f) zigzag.runOutM = turnR ?: 1f
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), 0) }
+        val abText = text("", 13f)
+        fun showAB() {
+            fun f(p: DoubleArray?) = p?.let { "%.6f, %.6f".format(it[0], it[1]) } ?: "not set"
+            abText.text = "A: ${f(zigzag.a)}\nB: ${f(zigzag.b)}" +
+                if (zigzag.a != null && zigzag.b != null) "\nA to B: %.1f m".format(zigzag.lengthM) else ""
+        }
+        showAB()
+        box.addView(abText)
+        box.addView(text("Drive the car to each end and tap, or long-press the Plan map.", 11f, R.color.muted))
+        fun carPoint(set: (DoubleArray) -> Unit) {
+            if (!vehicle.hasPosition) { toast("No GPS position from the car"); return }
+            set(doubleArrayOf(vehicle.lat, vehicle.lon)); zigZagChanged(); showAB()
+        }
+        box.addView(flow(
+            button("A = car here") { carPoint { zigzag.a = it } },
+            button("B = car here") { carPoint { zigzag.b = it } },
+        ))
+        val num = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        val side = edit("m", fmt(zigzag.sideDistM), num)
+        val lines = edit("lines", zigzag.lines.toString(), InputType.TYPE_CLASS_NUMBER)
+        val wait = edit("s", fmt(zigzag.waitS), num)
+        val runout = edit("m", fmt(zigzag.runOutM), num)
+        var right = zigzag.right
+        val dir = button(if (right) "Right of A→B" else "Left of A→B") { b -> right = !right; b.text = if (right) "Right of A→B" else "Left of A→B" }
+        box.addView(labeled("Line spacing", side))
+        box.addView(labeled("Lines", lines))
+        box.addView(labeled("Side", dir))
+        box.addView(labeled("Wait at ends", wait))
+        box.addView(labeled("Run-out", runout))
+        box.addView(text("Run-out extends each line past both ends so the car turns outside the area." +
+            (turnR?.let { " TURN_RADIUS is ${fmt(it)} m: a U-turn needs about ${fmt(2 * it)} m, so with a smaller spacing use a run-out of about ${fmt(it)} m." } ?: ""),
+            11f, R.color.muted))
+        AlertDialog.Builder(this).setTitle("Zig zag").setView(ScrollView(this).apply { addView(box) })
+            .setPositiveButton("Make lanes") { _, _ ->
+                zigzag.sideDistM = side.text.toString().toFloatOrNull() ?: zigzag.sideDistM
+                zigzag.lines = lines.text.toString().toIntOrNull() ?: zigzag.lines
+                zigzag.waitS = (wait.text.toString().toFloatOrNull() ?: 0f).coerceAtLeast(0f)
+                zigzag.runOutM = (runout.text.toString().toFloatOrNull() ?: 0f).coerceAtLeast(0f)
+                zigzag.right = right
+                prefs.edit().putFloat("zz_side", zigzag.sideDistM).putInt("zz_lines", zigzag.lines)
+                    .putBoolean("zz_right", right).putFloat("zz_wait", zigzag.waitS).putFloat("zz_runout", zigzag.runOutM).apply()
+                zigzag.problem()?.let { toast(it); return@setPositiveButton }
+                val make = {
+                    plan.clear(); plan.addAll(zigzag.waypoints()); planChanged(); planMap.fit()
+                    planStatus.text = "Zig zag: ${zigzag.lines} lines of %.0f m, %s m apart. Press Write, then Start Auto."
+                        .format(zigzag.lengthM + 2 * zigzag.runOutM, fmt(zigzag.sideDistM))
+                }
+                if (plan.isEmpty()) make()
+                else confirm("Replace the plan", "Replace the ${plan.size} items on the phone with the zig-zag lanes?", "Replace") { make() }
+            }
+            .setNegativeButton("Cancel", null).show()
+    }
+
     private fun askPlanSpeed() {
         val e = edit("m/s, empty = WP_SPEED", if (planSpeed > 0) fmt(planSpeed) else "",
             InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
@@ -686,9 +785,58 @@ class MainActivity : Activity() {
     private fun startAuto() {
         if (!requireLink()) return
         confirm("Start mission", "Switch to Auto and run the mission from the start?", "Start") {
+            lapCounter.reset()
             vehicle.setCurrentWaypoint(1)
             vehicle.setMode(10)
         }
+    }
+
+    // --- patrol: the plan in a loop, BendyRuler round what the LiDAR sees --------------
+
+    private fun patrolDialog() {
+        if (plan.none { it.hasPosition }) { toast("Make a plan first: waypoints or Zig zag"); return }
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), 0) }
+        val cur = Patrol.laps(plan)
+        val laps = edit("0 = forever", if (cur == 1) "0" else cur.toString(), InputType.TYPE_CLASS_NUMBER)
+        val lastWait = plan.lastOrNull { it.command == Mav.CMD_NAV_WAYPOINT && it.hasPosition }?.p1 ?: 0f
+        val wait = edit("s", fmt(lastWait), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        box.addView(labeled("Laps", laps))
+        box.addView(labeled("Wait each lap", wait))
+        box.addView(text("Loops the plan with a DO_JUMP, so the car keeps patrolling in Auto even without the phone. " +
+            "Stop it with Hold.", 11f, R.color.muted))
+        box.addView(section("Obstacles: BendyRuler"))
+        val status = text("", 13f)
+        fun showStatus() {
+            val problems = Patrol.bendyRulerProblems { vehicle.paramValue(it) }
+            status.text = if (problems.isEmpty()) "Ready: BendyRuler (OA_TYPE ${fmt(vehicle.paramValue("OA_TYPE") ?: 0f)}) steers round what the LiDAR sees."
+                else problems.joinToString("\n") { "• $it" }
+            status.setTextColor(col(if (problems.isEmpty()) R.color.ok else R.color.warn))
+        }
+        showStatus()
+        box.addView(status)
+        box.addView(flow(button("Set up BendyRuler") {
+            if (!requireLink()) return@button
+            val (writes, reboot) = Patrol.setupWrites { vehicle.paramValue(it) }
+            if (writes.isEmpty()) { toast("BendyRuler is already set up"); return@button }
+            val changes = writes.entries.joinToString("\n") { (k, x) -> "$k ${vehicle.paramValue(k)?.let { fmt(it) } ?: "?"} → ${fmt(x)}" }
+            val more = if (reboot) "\n\nOA_TYPE takes effect after a reboot. After the board reconnects, Refresh the " +
+                "parameters and press Set up BendyRuler again: the OA_BR_ settings only exist after the reboot." else ""
+            confirm("BendyRuler", changes + more, if (reboot) "Write and reboot" else "Write") {
+                writes.forEach { (k, x) -> vehicle.setParam(k, x) }
+                if (reboot) { ui.postDelayed({ vehicle.reboot() }, 2500); toast("Writing, then rebooting the board") }
+                else toast("BendyRuler settings written")
+            }
+        }))
+        box.addView(text("BendyRuler needs the LiDAR set up (PRX1_TYPE 19, PRX1_YAW_CORR checked) and works in Auto, Guided and RTL.", 11f, R.color.muted))
+        AlertDialog.Builder(this).setTitle("Patrol").setView(ScrollView(this).apply { addView(box) })
+            .setPositiveButton("Make patrol") { _, _ ->
+                val n = (laps.text.toString().toIntOrNull() ?: 0).coerceAtLeast(0)
+                val w = (wait.text.toString().toFloatOrNull() ?: 0f).coerceAtLeast(0f)
+                val p = Patrol.apply(plan, n, w)
+                plan.clear(); plan.addAll(p); planChanged()
+                planStatus.text = (if (n == 0) "Patrol forever" else "Patrol: $n laps") + ". Press Write, then Start Auto; Hold stops it."
+            }
+            .setNegativeButton("Cancel", null).show()
     }
 
     // =========================================================================
@@ -921,7 +1069,7 @@ class MainActivity : Activity() {
         val host = prefs.getString("link_host", "192.168.4.1")!!
         val port = prefs.getInt("link_port", 5760)
         vehicle.connect {
-            if (type == "UDP") UdpLink(applicationContext, host, port) else TcpLink(applicationContext, host, port)
+            if (type == "UDP") UdpLink(host, port) else TcpLink(host, port)
         }
     }
 
@@ -956,7 +1104,7 @@ class MainActivity : Activity() {
         val f = ntripFields.mapValues { it.value.text.toString().trim() }
         if (f["host"].isNullOrEmpty() || f["mount"].isNullOrEmpty()) { toast("Caster and mountpoint are needed"); return }
         prefs.edit().apply { f.forEach { (k, v) -> putString("ntrip_$k", v) } }.apply()
-        val c = NtripClient(applicationContext, f["host"]!!, f["port"]?.toIntOrNull() ?: 2101, f["mount"]!!,
+        val c = NtripClient(f["host"]!!, f["port"]?.toIntOrNull() ?: 2101, f["mount"]!!,
             f["user"]!!, f["pass"]!!,
             position = { if (vehicle.hasPosition) Pair(vehicle.lat, vehicle.lon) else null },
             onFrame = { vehicle.injectRtcm(it) })
@@ -1208,9 +1356,10 @@ class MainActivity : Activity() {
             is VehicleEvent.MissionUploaded -> { planStatus.text = e.text; toast(e.text) }
             is VehicleEvent.MissionDownloaded -> {
                 planStatus.text = e.text; toast(e.text)
-                if (e.items != null && e.type == Vehicle.MISSION_TYPE_FENCE) {
-                    fence.clear(); fence.addAll(Fence.fromItems(e.items)); fenceZone = -1; fenceChanged(); planMap.fit()
-                } else if (e.items != null) { plan.clear(); plan.addAll(e.items); planChanged(); planMap.fit() }
+                val items = e.items
+                if (items != null && e.type == Vehicle.MISSION_TYPE_FENCE) {
+                    fence.clear(); fence.addAll(Fence.fromItems(items)); fenceZone = -1; fenceChanged(); planMap.fit()
+                } else if (items != null) { plan.clear(); plan.addAll(items); planChanged(); planMap.fit() }
             }
             is VehicleEvent.CommandAck -> {
                 val what = when (e.command) {
@@ -1275,7 +1424,10 @@ class MainActivity : Activity() {
             gps = if (conn) "GPS $fix  ${v.gpsSats} sats  hdop %.2f".format(v.gpsHdop) +
                 (if (v.gpsHAcc > 0) "  ±%.2f m".format(v.gpsHAcc) else "") else "GPS —"
             battery = if (conn && v.voltage > 0.5f) "%.2f V  %.1f A".format(v.voltage, v.current) else ""
-            wp = if (conn && v.customMode == 10) "WP ${v.missionSeq}  ${v.wpDist} m  xtrack %.1f m".format(v.xtrack)
+            val lap = lapCounter.update(v.missionSeq, conn && v.customMode == 10)
+            val patrol = Patrol.laps(plan)
+            val lapText = if (patrol == 1) "" else "Lap $lap" + (if (patrol > 0) "/$patrol" else "") + "  "
+            wp = if (conn && v.customMode == 10) lapText + "WP ${v.missionSeq}  ${v.wpDist} m  xtrack %.1f m".format(v.xtrack)
                 else if (v.rtcmBytes > 0) "RTCM sent ${v.rtcmBytes / 1024} kB" else ""
             invalidate()
         }

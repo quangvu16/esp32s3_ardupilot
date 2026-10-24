@@ -326,7 +326,7 @@ refresh the parameters to see the `OA_BR_` and `OA_DB_` ones):
 
 ```
 OA_TYPE          = 1    # 1 BendyRuler, 2 Dijkstra's, 3 Dijkstra's with BendyRuler
-OA_MARGIN_MAX    = 3    # m kept from obstacles and fences (default 5); keep it above WP_RADIUS
+OA_MARGIN_MAX    = 2    # m kept from obstacles and fences (default 5); keep it above WP_RADIUS
 OA_BR_LOOKAHEAD  = 5    # m probed ahead (BendyRuler); keep it under the LD14's 8 m range
 OA_DB_DIST_MAX   = 8    # m: ignore LiDAR points further away than the LD14 can measure
 ```
@@ -340,6 +340,14 @@ OA_DB_DIST_MAX   = 8    # m: ignore LiDAR points further away than the LD14 can 
   `WP_RADIUS` early and cuts the corner, so a smaller margin lets it clip a fence corner, breach it and
   stop in Hold. In SITL, margin 2 with `WP_RADIUS` 2 touched a stay-out box; margin 3 with
   `WP_RADIUS` 1 went cleanly around it.
+- **Among obstacles** (patrolling with BendyRuler; the apps' *Patrol… → Set up BendyRuler* writes
+  these): `OA_MARGIN_MAX` 2, `WP_RADIUS` 1, `AVOID_MARGIN` 1, `WP_SPEED` 1. Tested in SITL's field of
+  posts 8 m apart: a 3 m margin left no way between them, `AVOID_MARGIN` 2 (the default) stopped the
+  car before BendyRuler could steer, and at 2 m/s a turn carried the car into a post. With these it
+  drove round the posts (0.5-1.6 m at the closest), but once it stopped 1 m in front of a post and
+  stayed: watch a patrol and take over if it stalls. Keep waypoints further than `OA_MARGIN_MAX` from
+  obstacles: BendyRuler can't reach one inside the margin and wanders. More in the
+  [guide](docs/GUIDE.md#6-patrol-with-the-lidar).
 
 **4. Fences** (for Dijkstra's, and for simple avoidance's fence bit). Draw stay-in (inclusion)
 and stay-out (exclusion) polygons or circles, then upload them: in the
@@ -373,11 +381,16 @@ the car go around it. If it hesitates or swings, see the BendyRuler page (`OA_BR
 `ardupilot123` WiFi and the app connects to `192.168.4.1:5760` by itself. It has:
 
 - a HUD, a map, mode buttons and arming, and a phone stick for driving
-- waypoint planning, with Mission Planner `.waypoints` files
+- waypoint planning, with Mission Planner `.waypoints` files; zig-zag lanes from points A and B;
+  patrol (the plan in a loop, with BendyRuler steering round what the LiDAR sees)
 - the full parameter list, with `.parm` load and save
 - accelerometer, compass and radio calibration
 - the LiDAR scan, and the hoverboard robot's `hoverboard_laser` behaviours for the car: Avoid, Follow and Warn
 - RTK corrections over NTRIP, using the phone's mobile data
+
+A [Windows version](android_gcs/desktop/README.md) has the same map, missions, zig-zag, patrol,
+fences, LiDAR tab and parameters (calibration and RTK stay with Mission Planner on a PC).
+**How to use all of it: the [guide](docs/GUIDE.md).**
 
 **Download:** [esp32-rover-gcs-1.2.apk](https://github.com/quangvu16/esp32s3_ardupilot/releases/download/gcs-v1.2/esp32-rover-gcs-1.2.apk) (Android 8.0 or newer), from the
 [gcs-v1.2 release](https://github.com/quangvu16/esp32s3_ardupilot/releases/tag/gcs-v1.2). Open it on the phone and allow "install unknown apps".

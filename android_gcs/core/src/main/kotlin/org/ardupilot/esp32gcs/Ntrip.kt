@@ -1,10 +1,5 @@
 package org.ardupilot.esp32gcs
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.util.Base64
 import java.io.InputStream
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -12,23 +7,12 @@ import java.util.Calendar
 import java.util.TimeZone
 import kotlin.math.abs
 
-/** The network that reaches the internet (mobile data while the phone is on the board's WiFi). */
-fun internetNetwork(ctx: Context): Network? {
-    val cm = ctx.getSystemService(ConnectivityManager::class.java) ?: return null
-    @Suppress("DEPRECATION")
-    return cm.allNetworks.firstOrNull {
-        val c = cm.getNetworkCapabilities(it)
-        c != null && c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-    } ?: cm.activeNetwork
-}
-
 /**
  * NTRIP 1.0 client: pulls RTCM3 from a caster and hands each complete RTCM3
  * frame to [onFrame] (for GPS_RTCM_DATA), like Mission Planner's RTK inject.
  * Sends the rover's position as GGA every 10 s for casters that need it (VRS).
  */
 class NtripClient(
-    private val ctx: Context,
     val host: String, val port: Int, val mount: String,
     private val user: String, private val pass: String,
     private val position: () -> Pair<Double, Double>?,
@@ -75,11 +59,11 @@ class NtripClient(
         status = "Connecting to $host:$port…"
         val s = Socket()
         sock = s
-        internetNetwork(ctx)?.bindSocket(s)
+        Platform.net.bindInternet(s)
         s.connect(InetSocketAddress(host, port), 8000)
         s.soTimeout = 15000
         val out = s.getOutputStream()
-        val auth = Base64.encodeToString("$user:$pass".toByteArray(), Base64.NO_WRAP)
+        val auth = java.util.Base64.getEncoder().encodeToString("$user:$pass".toByteArray())
         val req = "GET /$mount HTTP/1.0\r\n" +
             "User-Agent: NTRIP Esp32RoverGcs/1.0\r\n" +
             "Accept: */*\r\n" +

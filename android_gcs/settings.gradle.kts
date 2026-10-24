@@ -6,4 +6,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "Esp32Gcs"
-include(":app")
+include(":app", ":core", ":desktop")

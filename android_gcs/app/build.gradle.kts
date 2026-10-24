@@ -11,8 +11,8 @@ android {
         applicationId = "org.ardupilot.esp32gcs"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
     }
     buildTypes {
         release {
@@ -29,4 +29,8 @@ android {
     lint { abortOnError = false }
 }
 
-// No dependencies: MAVLink, the map and the NTRIP client are all in this app.
+// No outside libraries: MAVLink, the map and the NTRIP client are all in this app.
+// The Android-free part is shared with the Windows app in :core.
+dependencies {
+    implementation(project(":core"))
+}

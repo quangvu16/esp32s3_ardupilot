@@ -1,9 +1,5 @@
 package org.ardupilot.esp32gcs
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -43,10 +39,9 @@ sealed class VehicleEvent {
  * thread and read by the UI on a timer; the parameter, mission and command
  * protocols run on [timer] and the link thread, guarded by `synchronized(this)`.
  */
-class Vehicle(private val ctx: Context) {
+class Vehicle {
     var onEvent: ((VehicleEvent) -> Unit)? = null
 
-    private val main = Handler(Looper.getMainLooper())
     private val enc = MavEncoder()
     private val parser = MavParser()
     private val timer = Executors.newSingleThreadScheduledExecutor { Thread(it, "vehicle").apply { isDaemon = true } }
@@ -116,7 +111,7 @@ class Vehicle(private val ctx: Context) {
 
     val messages = ArrayList<VehicleEvent.Text>()      // newest last, guarded by itself
 
-    val connected get() = SystemClock.elapsedRealtime() - lastHeartbeat < 4000
+    val connected get() = Platform.clock() - lastHeartbeat < 4000
     val modeName get() = ROVER_MODES[customMode] ?: if (customMode < 0) "—" else "Mode $customMode"
 
     // --- parameters ------------------------------------------------------------
@@ -183,7 +178,7 @@ class Vehicle(private val ctx: Context) {
                 link = null
                 linkText = "Lost ${l.name}: $why"
                 post(VehicleEvent.Link(linkText))
-                reconnectAt = SystemClock.elapsedRealtime() + 2000
+                reconnectAt = Platform.clock() + 2000
             }
         }
         link = l
@@ -195,14 +190,14 @@ class Vehicle(private val ctx: Context) {
         link?.send(enc.frame(msgId, b))
     }
 
-    private fun post(e: VehicleEvent) = main.post { onEvent?.invoke(e) }
+    private fun post(e: VehicleEvent) = Platform.post(Runnable { onEvent?.invoke(e) })
 
     private fun tick() {
-        try { tickInner() } catch (e: Exception) { android.util.Log.e("Vehicle", "tick", e) }
+        try { tickInner() } catch (e: Exception) { Platform.logError("Vehicle tick", e) }
     }
 
     private fun tickInner() {
-        val now = SystemClock.elapsedRealtime()
+        val now = Platform.clock()
         if (link == null && wantLink != null && now >= reconnectAt) {
             reconnectAt = now + 3000
             openLink()
@@ -275,7 +270,7 @@ class Vehicle(private val ctx: Context) {
             autopilot = ap
             armed = m.u8(6) and 0x80 != 0
             systemStatus = m.u8(7)
-            lastHeartbeat = SystemClock.elapsedRealtime()
+            lastHeartbeat = Platform.clock()
             if (first) post(VehicleEvent.Link("Connected to system $sysId"))
             return
         }
@@ -289,7 +284,7 @@ class Vehicle(private val ctx: Context) {
             }
             Mav.ATTITUDE -> {
                 roll = m.f32(4); pitch = m.f32(8); yaw = m.f32(12); yawRate = m.f32(24)
-                lastAttitudeAt = SystemClock.elapsedRealtime()
+                lastAttitudeAt = Platform.clock()
             }
             Mav.GLOBAL_POSITION_INT -> {
                 val la = m.i32(4); val lo = m.i32(8)
@@ -314,7 +309,7 @@ class Vehicle(private val ctx: Context) {
             Mav.RC_CHANNELS -> {
                 val n = minOf(m.u8(40), 16)
                 for (i in 0 until 16) rc[i] = m.u16(4 + 2 * i)
-                rcCount = n; rssi = m.u8(41); rcTime = SystemClock.elapsedRealtime()
+                rcCount = n; rssi = m.u8(41); rcTime = Platform.clock()
             }
             Mav.EKF_STATUS_REPORT -> {
                 ekfFlags = m.u16(20)
@@ -325,7 +320,7 @@ class Vehicle(private val ctx: Context) {
                 if (orient in 0..7) {
                     val d = m.u16(8); val max = m.u16(6)
                     proximity[orient] = if (d == 0 || d >= max) 0f else d / 100f
-                    proximityTime[orient] = SystemClock.elapsedRealtime()
+                    proximityTime[orient] = Platform.clock()
                     if (max in 1..5000) proximityMax = max / 100f
                 }
             }
@@ -334,7 +329,7 @@ class Vehicle(private val ctx: Context) {
                 val cm = IntArray(n) { m.u16(8 + 2 * it) }
                 val inc = m.f32(158).takeIf { it > 0f } ?: m.u8(157).toFloat()
                 if (inc > 0f) {
-                    scan = LidarScan(cm, inc, m.f32(162), m.u16(152), m.u16(154), SystemClock.elapsedRealtime())
+                    scan = LidarScan(cm, inc, m.f32(162), m.u16(152), m.u16(154), Platform.clock())
                     scanCount++
                 }
             }
@@ -378,7 +373,7 @@ class Vehicle(private val ctx: Context) {
 
     fun command(cmd: Int, vararg p: Float) {
         val pp = FloatArray(7) { p.getOrElse(it) { 0f } }
-        synchronized(this) { commands[cmd] = PendingCmd(cmd, pp, 1, SystemClock.elapsedRealtime()) }
+        synchronized(this) { commands[cmd] = PendingCmd(cmd, pp, 1, Platform.clock()) }
         sendCommandLong(cmd, pp, 0)
     }
 
@@ -503,7 +498,7 @@ class Vehicle(private val ctx: Context) {
     fun fetchParams() = synchronized(this) {
         params.clear(); paramIndices.clear(); paramCount = 0
         paramsFetching = true; paramRounds = 0
-        paramLastRx = SystemClock.elapsedRealtime()
+        paramLastRx = Platform.clock()
         val b = Mav.payload(Mav.PARAM_REQUEST_LIST)
         b.put(0, sysId.toByte()); b.put(1, compId.toByte())
         send(Mav.PARAM_REQUEST_LIST, b)
@@ -543,7 +538,7 @@ class Vehicle(private val ctx: Context) {
         if (index != 0xffff) {
             paramCount = count
             paramIndices.add(index)
-            paramLastRx = SystemClock.elapsedRealtime()
+            paramLastRx = Platform.clock()
             if (paramsFetching && paramIndices.size >= count) {
                 paramsFetching = false
                 post(VehicleEvent.ParamsDone(paramIndices.size, count))
@@ -642,14 +637,14 @@ class Vehicle(private val ctx: Context) {
         b.putShort(0, txItems.size.toShort()); b.put(2, sysId.toByte()); b.put(3, compId.toByte())
         b.put(4, txType.toByte())
         send(Mav.MISSION_COUNT, b)
-        txSentAt = SystemClock.elapsedRealtime()
+        txSentAt = Platform.clock()
     }
 
     private fun sendMissionRequestList() {
         val b = Mav.payload(Mav.MISSION_REQUEST_LIST)
         b.put(0, sysId.toByte()); b.put(1, compId.toByte()); b.put(2, txType.toByte())
         send(Mav.MISSION_REQUEST_LIST, b)
-        txSentAt = SystemClock.elapsedRealtime()
+        txSentAt = Platform.clock()
     }
 
     private fun sendMissionRequest(seq: Int) {
@@ -657,7 +652,7 @@ class Vehicle(private val ctx: Context) {
         b.putShort(0, seq.toShort()); b.put(2, sysId.toByte()); b.put(3, compId.toByte())
         b.put(4, txType.toByte())
         send(Mav.MISSION_REQUEST_INT, b)
-        txSentAt = SystemClock.elapsedRealtime()
+        txSentAt = Platform.clock()
     }
 
     private fun sendMissionItem(seq: Int) {
@@ -670,7 +665,7 @@ class Vehicle(private val ctx: Context) {
         b.put(34, it.frame.toByte()); b.put(35, if (seq == 0 && txType == MISSION_TYPE_MISSION) 1 else 0)
         b.put(36, it.autocontinue.toByte()); b.put(37, txType.toByte())
         send(Mav.MISSION_ITEM_INT, b)
-        txSentAt = SystemClock.elapsedRealtime()
+        txSentAt = Platform.clock()
     }
 
     private fun sendMissionAck(result: Int) {
