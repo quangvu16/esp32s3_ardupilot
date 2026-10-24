@@ -1,0 +1,288 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EFCEE865B6F87A83E6DF5821 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFC4C26307441C8C3C99A69 /* AppModel.swift */; };
+		0FD3F60310A316CEF28DEE6A /* Lidar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A2B639DECC68D86480EA4E /* Lidar.swift */; };
+		D61D3A3BEC968FD30A57BD92 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03196BAB537D0E13B9598370 /* Link.swift */; };
+		3500392B6EB5E85DC23222AF /* Mavlink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */; };
+		846BA277318DF2938986AFA0 /* Ntrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = B594E5B0BA29B32EAF17D35C /* Ntrip.swift */; };
+		7CD5CB7D012E59F157F9299D /* Plan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CCFF6EC8F192150009E697 /* Plan.swift */; };
+		313DCD7F540524E9B29A14ED /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC891B73670C480A4628383 /* Vehicle.swift */; };
+		AEB8C461DB998B16432F2E1F /* Esp32RoverGcsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58AF7622158EDBD572CA251 /* Esp32RoverGcsApp.swift */; };
+		73CE78E40EF2CBA2356D1109 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35A9FD7E52FE051605685D5 /* Common.swift */; };
+		0CDA3B6199100A9642BA5C42 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B6916139746F883A6768B8 /* ContentView.swift */; };
+		7CBB6AE47C19369EF9D2936A /* DataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17626A5BFE354CC26C3A4D08 /* DataView.swift */; };
+		ADFB469B284F5EDC0DA1C63E /* LidarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E56D6FE6D74475688BD439 /* LidarView.swift */; };
+		C12079FAEB9C05735BB2EB78 /* MapPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE52B8A82E732CE40BC693D /* MapPanel.swift */; };
+		EAD687934AE1A2F11BBFCF77 /* ParamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF9EF444FF4389E330C9C49 /* ParamsView.swift */; };
+		ED9A32BB8F057CA406044A80 /* PlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32075D2550A210D9ACF3F95B /* PlanView.swift */; };
+		2BFAA769594F3912BBA016AE /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4BEFCF7BE73067F0A089FE /* SetupView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F5BF48AA40CAD7891EB709FC /* Esp32RoverGcs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Esp32RoverGcs.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EBFC4C26307441C8C3C99A69 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A6A2B639DECC68D86480EA4E /* Lidar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lidar.swift; sourceTree = "<group>"; };
+		03196BAB537D0E13B9598370 /* Link.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
+		6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mavlink.swift; sourceTree = "<group>"; };
+		B594E5B0BA29B32EAF17D35C /* Ntrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ntrip.swift; sourceTree = "<group>"; };
+		93CCFF6EC8F192150009E697 /* Plan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plan.swift; sourceTree = "<group>"; };
+		CDC891B73670C480A4628383 /* Vehicle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vehicle.swift; sourceTree = "<group>"; };
+		A58AF7622158EDBD572CA251 /* Esp32RoverGcsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Esp32RoverGcsApp.swift; sourceTree = "<group>"; };
+		A35A9FD7E52FE051605685D5 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		92B6916139746F883A6768B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		17626A5BFE354CC26C3A4D08 /* DataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataView.swift; sourceTree = "<group>"; };
+		83E56D6FE6D74475688BD439 /* LidarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LidarView.swift; sourceTree = "<group>"; };
+		CEE52B8A82E732CE40BC693D /* MapPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPanel.swift; sourceTree = "<group>"; };
+		BBF9EF444FF4389E330C9C49 /* ParamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamsView.swift; sourceTree = "<group>"; };
+		32075D2550A210D9ACF3F95B /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
+		FE4BEFCF7BE73067F0A089FE /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8F51EF3B9040A527832BEBBA /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (
+			); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2B731CEFC6751AAE0EC69B98 = {isa = PBXGroup; children = (
+				D8DBA3F9900DD17689CA0C4D /* Esp32RoverGcs */,
+				86024CAD1E83101D97359D73 /* Products */,
+			); sourceTree = "<group>"; };
+		86024CAD1E83101D97359D73 /* Products */ = {isa = PBXGroup; children = (
+				F5BF48AA40CAD7891EB709FC /* Esp32RoverGcs.app */,
+			); name = Products; sourceTree = "<group>"; };
+		D8DBA3F9900DD17689CA0C4D /* Esp32RoverGcs */ = {isa = PBXGroup; children = (
+				5ABEAAFE85A81CA6838F46ED /* Core */,
+				820EF62CADFCC56B9389F6FE /* Views */,
+				EBFC4C26307441C8C3C99A69 /* AppModel.swift */,
+				A58AF7622158EDBD572CA251 /* Esp32RoverGcsApp.swift */,
+			); path = Esp32RoverGcs; sourceTree = "<group>"; };
+		5ABEAAFE85A81CA6838F46ED /* Core */ = {isa = PBXGroup; children = (
+				A6A2B639DECC68D86480EA4E /* Lidar.swift */,
+				03196BAB537D0E13B9598370 /* Link.swift */,
+				6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */,
+				B594E5B0BA29B32EAF17D35C /* Ntrip.swift */,
+				93CCFF6EC8F192150009E697 /* Plan.swift */,
+				CDC891B73670C480A4628383 /* Vehicle.swift */,
+			); path = Core; sourceTree = "<group>"; };
+		820EF62CADFCC56B9389F6FE /* Views */ = {isa = PBXGroup; children = (
+				A35A9FD7E52FE051605685D5 /* Common.swift */,
+				92B6916139746F883A6768B8 /* ContentView.swift */,
+				17626A5BFE354CC26C3A4D08 /* DataView.swift */,
+				83E56D6FE6D74475688BD439 /* LidarView.swift */,
+				CEE52B8A82E732CE40BC693D /* MapPanel.swift */,
+				BBF9EF444FF4389E330C9C49 /* ParamsView.swift */,
+				32075D2550A210D9ACF3F95B /* PlanView.swift */,
+				FE4BEFCF7BE73067F0A089FE /* SetupView.swift */,
+			); path = Views; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		42AEFBAE01D2DFD981F7DA7D /* Esp32RoverGcs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD5B959833E219C36151D647 /* Build configuration list for PBXNativeTarget "Esp32RoverGcs" */;
+			buildPhases = (
+				F2AB5FB218DA8B84623F4557 /* Sources */,
+				8F51EF3B9040A527832BEBBA /* Frameworks */,
+				9B207167E5381C47682C6B4F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Esp32RoverGcs;
+			productName = Esp32RoverGcs;
+			productReference = F5BF48AA40CAD7891EB709FC /* Esp32RoverGcs.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					42AEFBAE01D2DFD981F7DA7D = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 2CA666E9AB7FD185F98B8152 /* Build configuration list for PBXProject "Esp32RoverGcs" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2B731CEFC6751AAE0EC69B98;
+			productRefGroup = 86024CAD1E83101D97359D73 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				42AEFBAE01D2DFD981F7DA7D /* Esp32RoverGcs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9B207167E5381C47682C6B4F /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
+			); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F2AB5FB218DA8B84623F4557 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
+				EFCEE865B6F87A83E6DF5821 /* AppModel.swift in Sources */,
+				0FD3F60310A316CEF28DEE6A /* Lidar.swift in Sources */,
+				D61D3A3BEC968FD30A57BD92 /* Link.swift in Sources */,
+				3500392B6EB5E85DC23222AF /* Mavlink.swift in Sources */,
+				846BA277318DF2938986AFA0 /* Ntrip.swift in Sources */,
+				7CD5CB7D012E59F157F9299D /* Plan.swift in Sources */,
+				313DCD7F540524E9B29A14ED /* Vehicle.swift in Sources */,
+				AEB8C461DB998B16432F2E1F /* Esp32RoverGcsApp.swift in Sources */,
+				73CE78E40EF2CBA2356D1109 /* Common.swift in Sources */,
+				0CDA3B6199100A9642BA5C42 /* ContentView.swift in Sources */,
+				7CBB6AE47C19369EF9D2936A /* DataView.swift in Sources */,
+				ADFB469B284F5EDC0DA1C63E /* LidarView.swift in Sources */,
+				C12079FAEB9C05735BB2EB78 /* MapPanel.swift in Sources */,
+				EAD687934AE1A2F11BBFCF77 /* ParamsView.swift in Sources */,
+				ED9A32BB8F057CA406044A80 /* PlanView.swift in Sources */,
+				2BFAA769594F3912BBA016AE /* SetupView.swift in Sources */,
+			); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EC329CBA9EDA0E990ADA4552 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SWIFT_VERSION = 5.0;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		35F8F5364DB985DA51E7BF0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.quangvu16.Esp32RoverGcs;
+				MARKETING_VERSION = 1.0;
+				CURRENT_PROJECT_VERSION = 1;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rover GCS";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The app talks MAVLink to the rover's ESP32 over its WiFi network (192.168.4.1).";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone[sdk=iphone*]" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphone*]" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		473B54CD36B1F927492FAABC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SWIFT_VERSION = 5.0;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		1D035EC01667947DFEC7FE1D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.quangvu16.Esp32RoverGcs;
+				MARKETING_VERSION = 1.0;
+				CURRENT_PROJECT_VERSION = 1;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rover GCS";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The app talks MAVLink to the rover's ESP32 over its WiFi network (192.168.4.1).";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone[sdk=iphone*]" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphone*]" = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2CA666E9AB7FD185F98B8152 /* Build configuration list for PBXProject "Esp32RoverGcs" */ = {isa = XCConfigurationList; buildConfigurations = (
+				EC329CBA9EDA0E990ADA4552 /* Debug */,
+				473B54CD36B1F927492FAABC /* Release */,
+			); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		DD5B959833E219C36151D647 /* Build configuration list for PBXNativeTarget "Esp32RoverGcs" */ = {isa = XCConfigurationList; buildConfigurations = (
+				35F8F5364DB985DA51E7BF0A /* Debug */,
+				1D035EC01667947DFEC7FE1D /* Release */,
+			); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}
