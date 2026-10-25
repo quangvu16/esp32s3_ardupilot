@@ -44,8 +44,8 @@
 <text x="84.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Plan</text>
 <circle cx="140.0" cy="581" r="2.5" fill="#8E8E93"/><path d="M134.0 575 a8.5 8.5 0 0 0 0 12 M146.0 575 a8.5 8.5 0 0 1 0 12" fill="none" stroke="#8E8E93" stroke-width="1.7"/>
 <text x="140.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">LiDAR</text>
-<path d="M189.0 588 l10 -10 M197.0 574 a4 4 0 1 0 6 6" fill="none" stroke="#8E8E93" stroke-width="2"/>
-<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Setup</text>
+<path d="M188.0 581 l8 -7 l8 7 M190.0 580 v8 h12 v-8" fill="none" stroke="#8E8E93" stroke-width="1.8" stroke-linejoin="round"/>
+<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Indoor</text>
 <circle cx="245.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="252.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="259.0" cy="581" r="2" fill="#8E8E93"/>
@@ -256,8 +256,8 @@
 <text x="84.0" y="602.0" font-size="9.5" fill="#007AFF" font-weight="500" text-anchor="middle">Plan</text>
 <circle cx="140.0" cy="581" r="2.5" fill="#8E8E93"/><path d="M134.0 575 a8.5 8.5 0 0 0 0 12 M146.0 575 a8.5 8.5 0 0 1 0 12" fill="none" stroke="#8E8E93" stroke-width="1.7"/>
 <text x="140.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">LiDAR</text>
-<path d="M189.0 588 l10 -10 M197.0 574 a4 4 0 1 0 6 6" fill="none" stroke="#8E8E93" stroke-width="2"/>
-<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Setup</text>
+<path d="M188.0 581 l8 -7 l8 7 M190.0 580 v8 h12 v-8" fill="none" stroke="#8E8E93" stroke-width="1.8" stroke-linejoin="round"/>
+<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Indoor</text>
 <circle cx="245.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="252.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="259.0" cy="581" r="2" fill="#8E8E93"/>
@@ -450,8 +450,8 @@
 <text x="84.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Plan</text>
 <circle cx="140.0" cy="581" r="2.5" fill="#007AFF"/><path d="M134.0 575 a8.5 8.5 0 0 0 0 12 M146.0 575 a8.5 8.5 0 0 1 0 12" fill="none" stroke="#007AFF" stroke-width="1.7"/>
 <text x="140.0" y="602.0" font-size="9.5" fill="#007AFF" font-weight="500" text-anchor="middle">LiDAR</text>
-<path d="M189.0 588 l10 -10 M197.0 574 a4 4 0 1 0 6 6" fill="none" stroke="#8E8E93" stroke-width="2"/>
-<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Setup</text>
+<path d="M188.0 581 l8 -7 l8 7 M190.0 580 v8 h12 v-8" fill="none" stroke="#8E8E93" stroke-width="1.8" stroke-linejoin="round"/>
+<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Indoor</text>
 <circle cx="245.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="252.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="259.0" cy="581" r="2" fill="#8E8E93"/>
@@ -577,8 +577,8 @@
 <text x="84.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Plan</text>
 <circle cx="140.0" cy="581" r="2.5" fill="#8E8E93"/><path d="M134.0 575 a8.5 8.5 0 0 0 0 12 M146.0 575 a8.5 8.5 0 0 1 0 12" fill="none" stroke="#8E8E93" stroke-width="1.7"/>
 <text x="140.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">LiDAR</text>
-<path d="M189.0 588 l10 -10 M197.0 574 a4 4 0 1 0 6 6" fill="none" stroke="#007AFF" stroke-width="2"/>
-<text x="196.0" y="602.0" font-size="9.5" fill="#007AFF" font-weight="500" text-anchor="middle">Setup</text>
+<path d="M188.0 581 l8 -7 l8 7 M190.0 580 v8 h12 v-8" fill="none" stroke="#8E8E93" stroke-width="1.8" stroke-linejoin="round"/>
+<text x="196.0" y="602.0" font-size="9.5" fill="#8E8E93" font-weight="500" text-anchor="middle">Indoor</text>
 <circle cx="245.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="252.0" cy="581" r="2" fill="#8E8E93"/>
 <circle cx="259.0" cy="581" r="2" fill="#8E8E93"/>

@@ -8,7 +8,7 @@ import kotlin.math.abs
  * maxCm + 1 is clear, 65535 unknown.
  */
 class LidarScan(val cm: IntArray, val incrementDeg: Float, val offsetDeg: Float,
-                val minCm: Int, val maxCm: Int, val timeMs: Long) {
+                val minCm: Int, val maxCm: Int, val timeMs: Long, val vehicleTimeUs: Long = 0L) {
     /**
      * Valid returns as (angle_deg, range_m), angle in the hoverboard_laser
      * convention: robot frame, wrapped to (-180, 180], 0 straight ahead,

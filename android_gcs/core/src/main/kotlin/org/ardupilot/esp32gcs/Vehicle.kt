@@ -107,6 +107,20 @@ class Vehicle {
     /** Latest full LiDAR scan (OBSTACLE_DISTANCE from the LD14 driver), or null before the first. */
     @Volatile var scan: LidarScan? = null
     @Volatile var scanCount = 0
+    /** The car's own pose in its frame (LOCAL_POSITION_NED + ATTITUDE), by autopilot time, for indoor navigation. */
+    val poses = org.ardupilot.esp32gcs.nav.PoseHistory()
+    @Volatile var localX = 0.0
+    @Volatile var localY = 0.0
+    @Volatile var localVx = 0.0
+    @Volatile var localVy = 0.0
+    @Volatile var localTime = 0L            // Platform.clock() of the last LOCAL_POSITION_NED, 0 = none
+    @Volatile var vehicleBootMs = 0L        // the autopilot's time_boot_ms then
+    /** Ask for position and attitude at 10 Hz (indoor navigation). */
+    @Volatile var fastPose = false
+        set(v) { if (v != field) { field = v; lastStreamsAt = 0L } }
+    private var partScan: IntArray? = null
+    private var partScanUs = -1L
+    private var partScanDeg = 0f
     @Volatile var rtcmBytes = 0L
 
     val messages = ArrayList<VehicleEvent.Text>()      // newest last, guarded by itself
@@ -237,8 +251,8 @@ class Vehicle {
         val rates = intArrayOf(
             2 /* EXTENDED_STATUS */, 2,
             3 /* RC_CHANNELS */, 2,
-            6 /* POSITION */, 3,
-            10 /* EXTRA1: attitude */, 8,
+            6 /* POSITION */, if (fastPose) 10 else 3,
+            10 /* EXTRA1: attitude */, if (fastPose) 10 else 8,
             11 /* EXTRA2: VFR_HUD */, 4,
             12 /* EXTRA3: distance sensors, EKF, battery, mag cal */, 3,
         )
@@ -285,6 +299,14 @@ class Vehicle {
             Mav.ATTITUDE -> {
                 roll = m.f32(4); pitch = m.f32(8); yaw = m.f32(12); yawRate = m.f32(24)
                 lastAttitudeAt = Platform.clock()
+                poses.addYaw(m.u32(0), yaw.toDouble())
+            }
+            Mav.LOCAL_POSITION_NED -> {
+                val t = m.u32(0)
+                localX = m.f32(4).toDouble(); localY = m.f32(8).toDouble()
+                localVx = m.f32(16).toDouble(); localVy = m.f32(20).toDouble()
+                localTime = Platform.clock(); vehicleBootMs = t
+                poses.addPosition(t, localX, localY)
             }
             Mav.GLOBAL_POSITION_INT -> {
                 val la = m.i32(4); val lo = m.i32(8)
@@ -328,9 +350,29 @@ class Vehicle {
                 val n = 72
                 val cm = IntArray(n) { m.u16(8 + 2 * it) }
                 val inc = m.f32(158).takeIf { it > 0f } ?: m.u8(157).toFloat()
-                if (inc > 0f) {
-                    scan = LidarScan(cm, inc, m.f32(162), m.u16(152), m.u16(154), Platform.clock())
+                val off = m.f32(162)
+                val us = m.p.getLong(0)
+                if (inc <= 0f) return
+                if (inc * n >= 359f) {
+                    scan = LidarScan(cm, inc, off, m.u16(152), m.u16(154), Platform.clock(), us)
                     scanCount++
+                } else {
+                    // A finer scan comes in parts (PRX_SCAN_FULL: 5 x 72 bins of 1°) with the same time
+                    val bins = Math.round(360f / inc)
+                    var parts = partScan
+                    if (us != partScanUs || parts == null || parts.size != bins) {
+                        parts = IntArray(bins) { 0xffff }; partScan = parts; partScanUs = us; partScanDeg = 0f
+                    }
+                    for (i in 0 until n) {
+                        val k = Math.round(off / inc) + i
+                        if (k in 0 until bins) parts[k] = cm[i]
+                    }
+                    partScanDeg += n * inc
+                    if (partScanDeg >= 359f) {
+                        scan = LidarScan(parts.copyOf(), inc, 0f, m.u16(152), m.u16(154), Platform.clock(), us)
+                        scanCount++
+                        partScanDeg = -1e9f                     // ignore any repeat of this scan's parts
+                    }
                 }
             }
             Mav.BATTERY_STATUS -> if (m.u8(32) == 0 && m.i8(35) >= 0) batteryPct = m.i8(35)
@@ -425,6 +467,22 @@ class Vehicle {
         b.put(50, sysId.toByte()); b.put(51, compId.toByte())
         b.put(52, Mav.FRAME_GLOBAL_RELATIVE_ALT_INT.toByte())
         send(Mav.SET_POSITION_TARGET_GLOBAL_INT, b)
+    }
+
+    /**
+     * Speed (m/s, negative reverse) and turn rate (rad/s, clockwise) in Guided mode:
+     * SET_POSITION_TARGET_LOCAL_NED in the body frame with velocity + yaw rate
+     * (type_mask 1511). Rover stops by itself if these stop for 3 s.
+     */
+    fun sendVelocity(v: Double, yawRate: Double) {
+        val b = Mav.payload(Mav.SET_POSITION_TARGET_LOCAL_NED)
+        b.putInt(0, (vehicleBootMs and 0xffffffffL).toInt())
+        b.putFloat(16, v.toFloat())
+        b.putFloat(44, yawRate.toFloat())
+        b.putShort(48, 1511)        // ignore position, vz, acceleration and yaw; use vx, vy and yaw rate
+        b.put(50, sysId.toByte()); b.put(51, compId.toByte())
+        b.put(52, Mav.FRAME_BODY_NED.toByte())
+        send(Mav.SET_POSITION_TARGET_LOCAL_NED, b)
     }
 
     fun setCurrentWaypoint(seq: Int) {

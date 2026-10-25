@@ -33,7 +33,7 @@ Không cảm biến nào giỏi mọi thứ. Mỗi cái sai theo một kiểu ri
 (GPS ngoài trời, LiDAR trong nhà) giữ cho IMU không trôi.
 
 *Ví dụ:* ở 1 m/s, GPS cập nhật mỗi 0,2 s để lại khoảng trống 20 cm. IMU lấp đầy mượt mà, nên bộ lái
-có vị trí mới ở mỗi vòng lặp chính (hàng trăm lần mỗi giây), chứ không phải 5 lần mỗi giây.
+có vị trí mới ở mỗi vòng lặp chính (50 lần mỗi giây trên Rover), chứ không phải 5 lần mỗi giây.
 
 *Nguồn:* ArduPilot, "Extended Kalman Filter (EKF)" [1].
 
@@ -145,6 +145,9 @@ Những gì cần xem trong log (bản tin `SLAM`; đặt `LOG_BACKEND_TYPE`=2 �
 (không dùng tới) thành 100 ms để mở rộng cửa sổ. *Ví dụ:* ở 1 m/s, sai 40 ms về thời gian làm vị trí
 chậm 4 cm.
 
+Muốn điều khiển xe đến các chỗ trên bản đồ đã lưu từ điện thoại (chạm để đi, tuần tra), xem
+[Tự hành trong nhà trên ứng dụng](INDOOR_NAV.vi.md).
+
 ## 5. Độ chính xác bao nhiêu?
 
 Thử trong trình mô phỏng của ArduPilot (SITL): firmware thật, LiDAR LD06 mô phỏng trong một phòng
@@ -155,7 +158,7 @@ Thử trong trình mô phỏng của ArduPilot (SITL): firmware thật, LiDAR LD
 
 | Thử nghiệm | Sai số vị trí RMS | Lớn nhất | Sai số hướng | Lần quét khớp được |
 | --- | --- | --- | --- | --- |
-| SITL, 3 vòng Auto, đầu ra EKF ([`sitl_indoor.py`](../Tools/lidar_slam_test/sitl_indoor.py)) | **10–12 cm** | 20 cm | < 1° | 100 % |
+| SITL, 3 vòng Auto, đầu ra EKF ([`sitl_indoor.py`](../Tools/lidar_slam_test/sitl_indoor.py)) | **10–14 cm** | 20–22 cm | < 1° | 100 % |
 | Offline, 3 phút chạy vòng, nhiễu và mất điểm giống LD14, con quay lệch 0,3°/s ([`test_slam.cpp`](../Tools/lidar_slam_test/test_slam.cpp)) | 7,7 cm | 14 cm | 1,8° | 100 % |
 | Như trên, 10 phút (14 vòng) | 8,2 cm | 14 cm | 2,3° | 100 % |
 

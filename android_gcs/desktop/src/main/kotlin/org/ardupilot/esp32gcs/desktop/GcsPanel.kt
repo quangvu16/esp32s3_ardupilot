@@ -16,6 +16,7 @@ import org.ardupilot.esp32gcs.UdpLink
 import org.ardupilot.esp32gcs.Vehicle
 import org.ardupilot.esp32gcs.VehicleEvent
 import org.ardupilot.esp32gcs.ZigZag
+import org.ardupilot.esp32gcs.nav.IndoorNav
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -122,6 +123,17 @@ class GcsPanel : JPanel(BorderLayout()) {
     private val paramStatus = JLabel("Press Refresh to read the parameters")
     private lateinit var paramModel: AbstractTableModel
 
+    // indoor
+    private val indoor = IndoorNav(vehicle)
+    private val indoorPanel = IndoorPanel(indoor)
+    private val indoorStatus = JLabel("Off")
+    private val indoorInfo = JLabel(" ")
+    private val indoorArm = JButton("Arm")
+    private val indoorAddMode = JToggleButton("Click adds a waypoint")
+    private val indoorScanBtn = JButton("Use 1° scans (PRX1_SCAN_FULL 1)")
+    private val indoorWps = DefaultListModel<String>()
+    private var indoorWpShown: List<String> = emptyList()
+
     // log
     private val logArea = JTextArea()
     private var logShown = -1
@@ -135,6 +147,7 @@ class GcsPanel : JPanel(BorderLayout()) {
         tabs.addTab("Plan", planTab())
         tabs.addTab("LiDAR", lidarTab())
         tabs.addTab("Params", paramsTab())
+        tabs.addTab("Indoor", indoorTab())
         tabs.addTab("Log", JScrollPane(logArea.apply { isEditable = false; font = Font(Font.MONOSPACED, Font.PLAIN, 12) }))
         add(tabs, BorderLayout.CENTER)
         add(lastMsg.apply { border = BorderFactory.createEmptyBorder(3, 8, 3, 8) }, BorderLayout.SOUTH)
@@ -148,6 +161,7 @@ class GcsPanel : JPanel(BorderLayout()) {
     /** On closing the window: stop any LiDAR behaviour (zero sticks) and close the link. */
     fun shutdown() {
         driver.stop()
+        indoor.stop(); indoor.close()
         vehicle.close()
     }
 
@@ -874,7 +888,8 @@ class GcsPanel : JPanel(BorderLayout()) {
         when (tabs.selectedIndex) { 0 -> flyMap.repaint(); 1 -> planMap.repaint() }
         if (v.missionBusy) planStatus.text = v.missionProgress
         if (v.paramsFetching) paramStatus.text = "Reading ${v.params.size} / ${v.paramCount}…"
-        if (tabs.selectedIndex == 4) {
+        if (tabs.selectedIndex == TAB_INDOOR) refreshIndoor()
+        if (tabs.selectedIndex == TAB_LOG) {
             val msgs = synchronized(v.messages) { v.messages.toList() }
             if (msgs.size != logShown) {
                 logShown = msgs.size
@@ -882,6 +897,105 @@ class GcsPanel : JPanel(BorderLayout()) {
                 logArea.caretPosition = 0
             }
         }
+    }
+
+    // =========================================================================
+    // indoor: Nav2-style navigation in a saved map (core: nav/IndoorNav)
+    // =========================================================================
+
+    private fun indoorTab(): JComponent {
+        indoor.settings.speed = prefs.getDouble("indoor_speed", 0.4)
+        indoor.settings.robotRadius = prefs.getDouble("indoor_radius", 0.2)
+        indoor.settings.inflation = prefs.getDouble("indoor_inflation", 0.55)
+        indoorPanel.onTap = { x, y -> indoorClick(x, y) }
+        indoorPanel.onPose = { x, y, yaw -> indoor.setPose(x, y, yaw) }
+        indoorStatus.font = Font(Font.SANS_SERIF, Font.BOLD, 14)
+        indoorStatus.preferredSize = Dimension(420, 22)
+        indoorArm.addActionListener { if (requireLink()) vehicle.arm(!vehicle.armed) }
+        indoorScanBtn.addActionListener { vehicle.setParam("PRX1_SCAN_FULL", 1f) }
+        val stop = btn("STOP") { indoor.stop() }.apply { background = Color(0xC2, 0x41, 0x0C); foreground = Color.WHITE; font = font.deriveFont(Font.BOLD) }
+        val wpList = JList(indoorWps).apply { visibleRowCount = 6; selectionMode = ListSelectionModel.SINGLE_SELECTION }
+        fun selected() = indoor.waypoints.getOrNull(wpList.selectedIndex)
+        fun field(v: Double) = JTextField("%.2f".format(java.util.Locale.ROOT, v), 5)
+        val speed = field(indoor.settings.speed); val radius = field(indoor.settings.robotRadius); val infl = field(indoor.settings.inflation)
+        val apply = btn("Apply") {
+            speed.text.toDoubleOrNull()?.let { indoor.settings.speed = it.coerceIn(0.1, 1.5) }
+            radius.text.toDoubleOrNull()?.let { indoor.settings.robotRadius = it.coerceIn(0.05, 1.0) }
+            infl.text.toDoubleOrNull()?.let { indoor.settings.inflation = it.coerceIn(0.1, 2.0) }
+            prefs.putDouble("indoor_speed", indoor.settings.speed); prefs.putDouble("indoor_radius", indoor.settings.robotRadius)
+            prefs.putDouble("indoor_inflation", indoor.settings.inflation)
+            info("Saved. New values apply when a map is loaded or saved.")
+        }
+        val right = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            fun add2(c: JComponent) { c.alignmentX = 0f; add(c) }
+            add2(indoorStatus); add2(indoorInfo)
+            add2(row(stop, indoorArm, btn("Patrol") { if (requireLink()) indoor.startPatrol() }))
+            add2(row(indoorAddMode, btn("Find me") { indoor.findMe() }))
+            add2(JLabel("<html><small>Click the map to drive there (Guided). Right-drag on the map to set where the car is " +
+                "and which way it faces.</small></html>"))
+            add2(JLabel(" "))
+            add2(JLabel("Map").apply { font = font.deriveFont(Font.BOLD) })
+            add2(row(btn("Map new") {
+                if (ask("Map a new room", "Put the car where it will always start, then drive it slowly round the room. " +
+                        "Save when the walls are complete.")) { indoor.startMapping(); indoorPanel.refit() }
+            }, btn("Save map") { saveIndoorMap() }, btn("Load map") { loadIndoorMap() }))
+            add2(indoorScanBtn)
+            add2(JLabel(" "))
+            add2(JLabel("Waypoints (the patrol goes in this order)").apply { font = font.deriveFont(Font.BOLD) })
+            add2(JScrollPane(wpList).apply { preferredSize = Dimension(380, 120); maximumSize = Dimension(600, 160) })
+            add2(row(btn("Go there") { selected()?.let { if (requireLink()) indoor.goToWaypoint(it.name) } },
+                btn("Delete") { selected()?.let { indoor.removeWaypoint(it.name) } },
+                btn("Delete all") { if (ask("Waypoints", "Delete all waypoints?")) indoor.clearWaypoints() }))
+            add2(JLabel(" "))
+            add2(JLabel("Settings").apply { font = font.deriveFont(Font.BOLD) })
+            add2(form("Speed (m/s)" to speed, "Car radius (m)" to radius, "Keep away from walls (m)" to infl).apply { maximumSize = Dimension(600, 110) })
+            add2(row(apply))
+            add(Box.createVerticalGlue())
+            preferredSize = Dimension(420, 0)
+        }
+        return JSplitPane(JSplitPane.HORIZONTAL_SPLIT, indoorPanel, JScrollPane(right)).apply { resizeWeight = 1.0 }
+    }
+
+    private fun indoorClick(x: Double, y: Double) {
+        if (indoor.grid == null) { info("Load or make a map first"); return }
+        if (indoorAddMode.isSelected) { indoor.addWaypoint(x, y); return }
+        if (!requireLink()) return
+        if (!vehicle.armed) { info("Arm the car first"); return }
+        if (ask("Go here?", "Drive to %.1f m N, %.1f m E in Guided mode.".format(x, y))) indoor.goTo(x, y)
+    }
+
+    private fun saveIndoorMap() {
+        if (indoor.grid == null) { info("Nothing to save: Map new first"); return }
+        val n = JOptionPane.showInputDialog(this, "Map name", indoor.mapName ?: "room") ?: return
+        val clean = n.trim().replace(Regex("[^A-Za-z0-9_-]"), "_")
+        if (clean.isNotEmpty()) indoor.saveMap(clean)
+    }
+
+    private fun loadIndoorMap() {
+        val names = indoor.maps()
+        if (names.isEmpty()) { info("No saved maps yet (they are kept in ${indoor.dir})"); return }
+        val pick = JOptionPane.showInputDialog(this, "Map (kept in ${indoor.dir})", "Load map", JOptionPane.PLAIN_MESSAGE,
+            null, names.toTypedArray(), indoor.mapName ?: names[0]) as String? ?: return
+        indoor.loadMap(pick); indoorPanel.refit()
+    }
+
+    private fun refreshIndoor() {
+        indoorPanel.repaint()
+        indoorStatus.text = indoor.status
+        val loc = indoor.localizer
+        val scanRes = vehicle.scan?.let { if (it.cm.size >= 360) "1°" else "${it.incrementDeg.toInt()}°" } ?: "none"
+        indoorInfo.text = listOfNotNull(
+            indoor.mapName?.let { "Map: $it" } ?: if (indoor.mode == IndoorNav.Mode.MAPPING) "Mapping" else "No map",
+            loc?.let { if (it.initialised) "pose ±%.2f m, match %.0f%%".format(it.spreadXY, it.score * 100) else "pose not set" },
+            "scan $scanRes",
+            if (vehicle.paramValue("PRX1_SLAM")?.toInt() == 0) "PRX1_SLAM off" else null,
+        ).joinToString("  ·  ")
+        indoorArm.text = if (vehicle.armed) "Disarm" else "Arm"
+        indoorScanBtn.isVisible = vehicle.paramValue("PRX1_SCAN_FULL")?.toInt() == 0
+        val names = indoor.waypoints.map { "%s   (%.1f N, %.1f E)".format(it.name, it.x, it.y) }
+        if (names != indoorWpShown) { indoorWpShown = names; indoorWps.clear(); names.forEach { indoorWps.addElement(it) } }
     }
 
     // =========================================================================
@@ -913,5 +1027,10 @@ class GcsPanel : JPanel(BorderLayout()) {
             "trackAngle" to p.trackAngle, "warnDist" to p.warnDist, "warnAngle" to p.warnAngle, "minRange" to p.minRange)
             .forEach { (k, x) -> prefs.putFloat("lidar_$k", x) }
         prefs.putBoolean("lidar_skidSteer", p.skidSteer)
+    }
+
+    companion object {
+        const val TAB_INDOOR = 4
+        const val TAB_LOG = 5
     }
 }

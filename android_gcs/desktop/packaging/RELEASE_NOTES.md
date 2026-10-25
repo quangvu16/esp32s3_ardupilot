@@ -14,6 +14,12 @@ ask about network access: allow **Private networks** so the app can reach the bo
 
 Join the board's WiFi **`ardupilot123`**; the app connects to TCP `192.168.4.1:5760` by itself.
 
+Changes in 1.4:
+- New **Indoor** tab: indoor navigation after ROS 2 Nav2. Map a room with the LiDAR and save it
+  (ROS PGM + YAML), find the car in it (AMCL, or *Find me*), click to drive there round walls and
+  obstacles (A* + Regulated Pure Pursuit), waypoints and patrols, STOP. Needs the car's LiDAR SLAM
+  firmware (`PRX1_SLAM` 1, `PRX1_SCAN_FULL` 1). Guide: docs/INDOOR_NAV.md.
+
 Changes in 1.3:
 - The last "stop" (zero-stick) command is sent before the connection closes, so closing the
   window or Disconnect stops the car at once instead of after `RC_OVERRIDE_TIME`.

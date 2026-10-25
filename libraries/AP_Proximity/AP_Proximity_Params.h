@@ -25,6 +25,9 @@ public:
     AP_Float max_m;                                     // maximum range in meters
     AP_Float min_m;                                     // minimum range in meters
     AP_Int8  address;                                   // proximity address (for AP_Periph CAN)
+#if AP_PROXIMITY_LD06_ENABLED
+    AP_Int8  scan_full;                                 // LD06/LD14: send the scan to the GCS at 1 degree (5 messages)
+#endif
 #if AP_PROXIMITY_LD06_SLAM_ENABLED
     AP_Int8  slam;                                      // LD06/LD14: 1 = LiDAR SLAM to the EKF as external navigation
     AP_Float slam_cell;                                 // map cell size (m)

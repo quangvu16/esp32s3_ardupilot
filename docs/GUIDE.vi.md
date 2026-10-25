@@ -36,6 +36,7 @@ Có bốn ứng dụng trạm mặt đất dùng chung một lõi: Android, Wind
 11. [Trước mỗi lần chạy](#11-trước-mỗi-lần-chạy)
 12. [Tập luyện không cần xe](#12-tập-luyện-không-cần-xe)
 13. [Trong nhà không GPS (LiDAR SLAM)](#13-trong-nhà-không-gps-lidar-slam)
+14. [Tự hành trong nhà trên ứng dụng: bản đồ, chạm để đi, tuần tra](#14-tự-hành-trong-nhà-trên-ứng-dụng-bản-đồ-chạm-để-đi-tuần-tra)
 
 ## 1. Bạn có gì
 
@@ -265,3 +266,14 @@ trong bản đồ đó (khoảng ±10 cm khi thử nghiệm), rồi EKF kết h�
 
 Cách hoạt động, tham số, độ chính xác, chỉnh EKF cho RTK ngoài trời và xử lý sự cố có trong
 [Kết hợp cảm biến: IMU + LiDAR + GPS](SENSOR_FUSION.vi.md).
+
+## 14. Tự hành trong nhà trên ứng dụng: bản đồ, chạm để đi, tuần tra
+
+Tab **Indoor** hoạt động giống Nav2 của ROS 2, ngay trong ứng dụng: bấm **Map new**, lái chậm quanh phòng,
+rồi **Save map**. Lần sau bấm **Load map**, chạm vào chỗ muốn xe đến, hoặc thêm các điểm rồi bấm
+**Patrol**. Ứng dụng lập đường tránh tường và mọi vật LiDAR thấy, và dừng xe nếu không chắc xe đang ở
+đâu. Cần các tham số trong nhà ở mục 13 (với `PRX1_SCAN_FULL` 1).
+
+![Tab Indoor](indoor_nav_sitl.png)
+
+Từng bước, cách từng phần hoạt động, an toàn và thử nghiệm: [Tự hành trong nhà](INDOOR_NAV.vi.md).

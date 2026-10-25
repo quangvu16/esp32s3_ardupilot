@@ -17,6 +17,7 @@
 
 # ---------------------------------------------------------------- LiDAR SLAM
 PRX1_SLAM,1             # LD14 scan -> map -> position and heading to the EKF
+PRX1_SCAN_FULL,1        # LiDAR scan to the app at 1° (indoor maps and navigation in the app)
 PRX1_SLAM_CELL,0.1      # m per map cell
 PRX1_SLAM_SIZE,20       # m; 20 m x 20 m map around the start, 53 KB of RAM
 PRX1_SLAM_LAT,0         # deg; SET to your building's latitude  (e.g. 21.028511)
@@ -39,6 +40,7 @@ EK3_FLOW_DELAY,100      # ms; widens the EKF's look-back window from 60 to 100 m
                         # (no optical-flow sensor here, so nothing else uses this)
 
 # ---------------------------------------------------------------- slower, tighter
-CRUISE_SPEED,1          # m/s
-WP_SPEED,1              # m/s
+WP_SPEED,1              # m/s in Auto and Guided (and the app's indoor navigation's top speed).
+                        # Leave CRUISE_SPEED: it goes with CRUISE_THROTTLE, and lowering
+                        # it alone makes the car overshoot its speed.
 WP_RADIUS,0.5           # m; SLAM is good to ~0.1 m

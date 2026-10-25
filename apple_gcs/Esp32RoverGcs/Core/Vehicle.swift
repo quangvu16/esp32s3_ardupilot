@@ -115,6 +115,16 @@ final class Vehicle {
     /// Latest full LiDAR scan (OBSTACLE_DISTANCE from the LD14 driver), or nil before the first.
     var scan: LidarScan?
     var scanCount = 0
+    /// The car's own pose by autopilot time (LOCAL_POSITION_NED + ATTITUDE), for indoor navigation. Thread-safe.
+    let poses = PoseHistory()
+    var localX = 0.0, localY = 0.0, localVx = 0.0, localVy = 0.0
+    var localTime: Int64 = 0          // clockMs() of the last LOCAL_POSITION_NED, 0 = none
+    var vehicleBootMs: Int64 = 0
+    /// Ask for position and attitude at 10 Hz (indoor navigation).
+    var fastPose = false { didSet { if fastPose != oldValue { lastStreamsAt = 0 } } }
+    private var partScan: [Int]?
+    private var partScanUs: Int64 = -1
+    private var partScanDeg: Float = 0
     var rtcmBytes: Int64 = 0
     /// The car's track, newest last.
     var trail = [(Double, Double)]()
@@ -256,8 +266,8 @@ final class Vehicle {
         let rates: [(Int, Int)] = [
             (2, 2),   // EXTENDED_STATUS
             (3, 2),   // RC_CHANNELS
-            (6, 3),   // POSITION
-            (10, 8),  // EXTRA1: attitude
+            (6, fastPose ? 10 : 3),   // POSITION
+            (10, fastPose ? 10 : 8),  // EXTRA1: attitude
             (11, 4),  // EXTRA2: VFR_HUD
             (12, 3),  // EXTRA3: distance sensors, EKF, battery, mag cal
         ]
@@ -303,6 +313,13 @@ final class Vehicle {
         case Mav.ATTITUDE:
             roll = p.f32(4); pitch = p.f32(8); yaw = p.f32(12); yawRate = p.f32(24)
             lastAttitudeAt = clockMs()
+            poses.addYaw(p.u32(0), Double(yaw))
+        case Mav.LOCAL_POSITION_NED:
+            let t = p.u32(0)
+            localX = Double(p.f32(4)); localY = Double(p.f32(8))
+            localVx = Double(p.f32(16)); localVy = Double(p.f32(20))
+            localTime = clockMs(); vehicleBootMs = t
+            poses.addPosition(t, localX, localY)
         case Mav.GLOBAL_POSITION_INT:
             let la = p.i32(4), lo = p.i32(8)
             if la != 0 || lo != 0 {
@@ -343,10 +360,27 @@ final class Vehicle {
             let cm = (0..<72).map { p.u16(8 + 2 * $0) }
             let incF = p.f32(158)
             let inc = incF > 0 ? incF : Float(p.u8(157))
-            if inc > 0 {
-                scan = LidarScan(cm: cm, incrementDeg: inc, offsetDeg: p.f32(162),
-                                 minCm: p.u16(152), maxCm: p.u16(154), timeMs: clockMs())
+            let off = p.f32(162)
+            let us = p.u32(0) | (p.u32(4) << 32)
+            if inc > 0 && inc * 72 >= 359 {
+                scan = LidarScan(cm: cm, incrementDeg: inc, offsetDeg: off,
+                                 minCm: p.u16(152), maxCm: p.u16(154), timeMs: clockMs(), vehicleTimeUs: us)
                 scanCount += 1
+            } else if inc > 0 {
+                // a finer scan in parts (PRX_SCAN_FULL: 5 x 72 bins of 1°) with the same time
+                let bins = Int((360 / inc).rounded())
+                if us != partScanUs || partScan?.count != bins {
+                    partScan = [Int](repeating: 0xffff, count: bins); partScanUs = us; partScanDeg = 0
+                }
+                let first = Int((off / inc).rounded())
+                for i in 0..<72 where first + i >= 0 && first + i < bins { partScan![first + i] = cm[i] }
+                partScanDeg += 72 * inc
+                if partScanDeg >= 359, let full = partScan {
+                    scan = LidarScan(cm: full, incrementDeg: inc, offsetDeg: 0,
+                                     minCm: p.u16(152), maxCm: p.u16(154), timeMs: clockMs(), vehicleTimeUs: us)
+                    scanCount += 1
+                    partScanDeg = -1e9
+                }
             }
         case Mav.BATTERY_STATUS:
             if p.u8(32) == 0 && p.i8(35) >= 0 { batteryPct = p.i8(35) }
@@ -421,6 +455,19 @@ final class Vehicle {
         b.put16(28, Mav.CMD_DO_SET_HOME)
         b.put8(30, sysId); b.put8(31, compId); b.put8(32, Mav.FRAME_GLOBAL_RELATIVE_ALT_INT)
         send(Mav.COMMAND_INT, b)
+    }
+
+    /// Speed (m/s, negative reverse) and turn rate (rad/s, clockwise) in Guided mode:
+    /// SET_POSITION_TARGET_LOCAL_NED, body frame, velocity + yaw rate (type_mask 1511).
+    func sendVelocity(_ v: Double, _ yawRate: Double) {
+        var b = Mav.payload(Mav.SET_POSITION_TARGET_LOCAL_NED)
+        b.put32(0, Int(vehicleBootMs & 0xffffffff))
+        b.putF(16, Float(v))
+        b.putF(44, Float(yawRate))
+        b.put16(48, 1511)
+        b.put8(50, sysId); b.put8(51, compId)
+        b.put8(52, Mav.FRAME_BODY_NED)
+        send(Mav.SET_POSITION_TARGET_LOCAL_NED, b)
     }
 
     /// Drive to a point in Guided mode.

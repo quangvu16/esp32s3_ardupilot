@@ -8,9 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		EFCEE865B6F87A83E6DF5821 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFC4C26307441C8C3C99A69 /* AppModel.swift */; };
+		3C4BF8D54C45721456B24A6B /* IndoorNav.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9DEEC022257531C12435BB3 /* IndoorNav.swift */; };
 		0FD3F60310A316CEF28DEE6A /* Lidar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A2B639DECC68D86480EA4E /* Lidar.swift */; };
 		D61D3A3BEC968FD30A57BD92 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03196BAB537D0E13B9598370 /* Link.swift */; };
 		3500392B6EB5E85DC23222AF /* Mavlink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */; };
+		6D635062457BFE65AC5477DE /* NavDrive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5098F89C08A0204579D53CC6 /* NavDrive.swift */; };
+		711923F86DB7C862708892B4 /* NavLocalize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31950BA2519DAD4E34181E17 /* NavLocalize.swift */; };
+		8DBC1F7561110171B9C1B8A5 /* NavMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B199792EE89FA10ED98DA4A /* NavMap.swift */; };
 		846BA277318DF2938986AFA0 /* Ntrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = B594E5B0BA29B32EAF17D35C /* Ntrip.swift */; };
 		7CD5CB7D012E59F157F9299D /* Plan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CCFF6EC8F192150009E697 /* Plan.swift */; };
 		313DCD7F540524E9B29A14ED /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC891B73670C480A4628383 /* Vehicle.swift */; };
@@ -18,6 +22,7 @@
 		73CE78E40EF2CBA2356D1109 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35A9FD7E52FE051605685D5 /* Common.swift */; };
 		0CDA3B6199100A9642BA5C42 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B6916139746F883A6768B8 /* ContentView.swift */; };
 		7CBB6AE47C19369EF9D2936A /* DataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17626A5BFE354CC26C3A4D08 /* DataView.swift */; };
+		66A089154A0FF82FC666379B /* IndoorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA069BEA0AA09B5A38D8B883 /* IndoorView.swift */; };
 		ADFB469B284F5EDC0DA1C63E /* LidarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E56D6FE6D74475688BD439 /* LidarView.swift */; };
 		C12079FAEB9C05735BB2EB78 /* MapPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE52B8A82E732CE40BC693D /* MapPanel.swift */; };
 		EAD687934AE1A2F11BBFCF77 /* ParamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF9EF444FF4389E330C9C49 /* ParamsView.swift */; };
@@ -28,9 +33,13 @@
 /* Begin PBXFileReference section */
 		F5BF48AA40CAD7891EB709FC /* Esp32RoverGcs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Esp32RoverGcs.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBFC4C26307441C8C3C99A69 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		C9DEEC022257531C12435BB3 /* IndoorNav.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorNav.swift; sourceTree = "<group>"; };
 		A6A2B639DECC68D86480EA4E /* Lidar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lidar.swift; sourceTree = "<group>"; };
 		03196BAB537D0E13B9598370 /* Link.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
 		6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mavlink.swift; sourceTree = "<group>"; };
+		5098F89C08A0204579D53CC6 /* NavDrive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavDrive.swift; sourceTree = "<group>"; };
+		31950BA2519DAD4E34181E17 /* NavLocalize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavLocalize.swift; sourceTree = "<group>"; };
+		1B199792EE89FA10ED98DA4A /* NavMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavMap.swift; sourceTree = "<group>"; };
 		B594E5B0BA29B32EAF17D35C /* Ntrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ntrip.swift; sourceTree = "<group>"; };
 		93CCFF6EC8F192150009E697 /* Plan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plan.swift; sourceTree = "<group>"; };
 		CDC891B73670C480A4628383 /* Vehicle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vehicle.swift; sourceTree = "<group>"; };
@@ -38,6 +47,7 @@
 		A35A9FD7E52FE051605685D5 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
 		92B6916139746F883A6768B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		17626A5BFE354CC26C3A4D08 /* DataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataView.swift; sourceTree = "<group>"; };
+		AA069BEA0AA09B5A38D8B883 /* IndoorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorView.swift; sourceTree = "<group>"; };
 		83E56D6FE6D74475688BD439 /* LidarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LidarView.swift; sourceTree = "<group>"; };
 		CEE52B8A82E732CE40BC693D /* MapPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPanel.swift; sourceTree = "<group>"; };
 		BBF9EF444FF4389E330C9C49 /* ParamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamsView.swift; sourceTree = "<group>"; };
@@ -65,9 +75,13 @@
 				A58AF7622158EDBD572CA251 /* Esp32RoverGcsApp.swift */,
 			); path = Esp32RoverGcs; sourceTree = "<group>"; };
 		5ABEAAFE85A81CA6838F46ED /* Core */ = {isa = PBXGroup; children = (
+				C9DEEC022257531C12435BB3 /* IndoorNav.swift */,
 				A6A2B639DECC68D86480EA4E /* Lidar.swift */,
 				03196BAB537D0E13B9598370 /* Link.swift */,
 				6524DD4AEA4EBE023D8AEA8A /* Mavlink.swift */,
+				5098F89C08A0204579D53CC6 /* NavDrive.swift */,
+				31950BA2519DAD4E34181E17 /* NavLocalize.swift */,
+				1B199792EE89FA10ED98DA4A /* NavMap.swift */,
 				B594E5B0BA29B32EAF17D35C /* Ntrip.swift */,
 				93CCFF6EC8F192150009E697 /* Plan.swift */,
 				CDC891B73670C480A4628383 /* Vehicle.swift */,
@@ -76,6 +90,7 @@
 				A35A9FD7E52FE051605685D5 /* Common.swift */,
 				92B6916139746F883A6768B8 /* ContentView.swift */,
 				17626A5BFE354CC26C3A4D08 /* DataView.swift */,
+				AA069BEA0AA09B5A38D8B883 /* IndoorView.swift */,
 				83E56D6FE6D74475688BD439 /* LidarView.swift */,
 				CEE52B8A82E732CE40BC693D /* MapPanel.swift */,
 				BBF9EF444FF4389E330C9C49 /* ParamsView.swift */,
@@ -143,9 +158,13 @@
 /* Begin PBXSourcesBuildPhase section */
 		F2AB5FB218DA8B84623F4557 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
 				EFCEE865B6F87A83E6DF5821 /* AppModel.swift in Sources */,
+				3C4BF8D54C45721456B24A6B /* IndoorNav.swift in Sources */,
 				0FD3F60310A316CEF28DEE6A /* Lidar.swift in Sources */,
 				D61D3A3BEC968FD30A57BD92 /* Link.swift in Sources */,
 				3500392B6EB5E85DC23222AF /* Mavlink.swift in Sources */,
+				6D635062457BFE65AC5477DE /* NavDrive.swift in Sources */,
+				711923F86DB7C862708892B4 /* NavLocalize.swift in Sources */,
+				8DBC1F7561110171B9C1B8A5 /* NavMap.swift in Sources */,
 				846BA277318DF2938986AFA0 /* Ntrip.swift in Sources */,
 				7CD5CB7D012E59F157F9299D /* Plan.swift in Sources */,
 				313DCD7F540524E9B29A14ED /* Vehicle.swift in Sources */,
@@ -153,6 +172,7 @@
 				73CE78E40EF2CBA2356D1109 /* Common.swift in Sources */,
 				0CDA3B6199100A9642BA5C42 /* ContentView.swift in Sources */,
 				7CBB6AE47C19369EF9D2936A /* DataView.swift in Sources */,
+				66A089154A0FF82FC666379B /* IndoorView.swift in Sources */,
 				ADFB469B284F5EDC0DA1C63E /* LidarView.swift in Sources */,
 				C12079FAEB9C05735BB2EB78 /* MapPanel.swift in Sources */,
 				EAD687934AE1A2F11BBFCF77 /* ParamsView.swift in Sources */,
@@ -177,7 +197,7 @@
 				ENABLE_TESTABILITY = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -191,8 +211,8 @@
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quangvu16.Esp32RoverGcs;
-				MARKETING_VERSION = 1.0;
-				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 2;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -242,8 +262,8 @@
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.quangvu16.Esp32RoverGcs;
-				MARKETING_VERSION = 1.0;
-				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 2;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;

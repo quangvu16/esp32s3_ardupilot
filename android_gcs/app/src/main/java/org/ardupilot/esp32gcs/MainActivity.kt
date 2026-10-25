@@ -33,6 +33,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import kotlin.math.abs
+import org.ardupilot.esp32gcs.nav.IndoorNav
 
 /**
  * A small Mission Planner for ArduRover on the ESP32-S3: Data (HUD, map, modes,
@@ -126,6 +127,16 @@ class MainActivity : Activity() {
     private var lastBeepMs = 0L
     private var lidarSound = true
 
+    // indoor page
+    private lateinit var indoor: IndoorNav
+    private lateinit var indoorView: IndoorView
+    private lateinit var indoorStatus: TextView
+    private lateinit var indoorInfo: TextView
+    private lateinit var indoorTapBtn: Button
+    private lateinit var indoorArmBtn: Button
+    private lateinit var indoorScanBtn: Button
+    private var indoorAddMode = false
+
     // log page
     private lateinit var logText: TextView
     private var logShown = -1
@@ -144,7 +155,14 @@ class MainActivity : Activity() {
         content = FrameLayout(this)
         root.addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
         root.addView(tabBar())
-        pages += dataPage(); pages += planPage(); pages += paramsPage(); pages += setupPage(); pages += lidarPage(); pages += logPage()
+        indoor = IndoorNav(vehicle)
+        indoor.settings.apply {
+            speed = prefs.getFloat("indoor_speed", 0.4f).toDouble()
+            robotRadius = prefs.getFloat("indoor_radius", 0.2f).toDouble()
+            inflation = prefs.getFloat("indoor_inflation", 0.55f).toDouble()
+        }
+        pages += dataPage(); pages += planPage(); pages += paramsPage(); pages += setupPage(); pages += lidarPage()
+        pages += indoorPage(); pages += logPage()
         pages.forEach { content.addView(it, FrameLayout.LayoutParams(-1, -1)); it.visibility = View.GONE }
         setContentView(root)
         showPage(0)
@@ -164,6 +182,7 @@ class MainActivity : Activity() {
         ui.removeCallbacksAndMessages(null)
         ntrip?.stop()
         lidarDriver.stop()
+        indoor.stop(); indoor.close()
         tone?.release()
         vehicle.close()
         super.onDestroy()
@@ -265,7 +284,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL; setBackgroundColor(col(R.color.surface))
             setPadding(dp(4), dp(4), dp(4), dp(4))
         }
-        listOf("Data", "Plan", "Params", "Setup", "LiDAR", "Log").forEachIndexed { i, s ->
+        listOf("Data", "Plan", "Params", "Setup", "LiDAR", "Indoor", "Log").forEachIndexed { i, s ->
             val b = Button(this, null, 0, R.style.ToolButton).apply {
                 text = s; elevation = 0f
                 setOnClickListener { showPage(i) }
@@ -1313,6 +1332,132 @@ class MainActivity : Activity() {
     // Log page
     // =========================================================================
 
+    // =========================================================================
+    // Indoor page: Nav2-style navigation in a saved map (core: nav/IndoorNav)
+    // =========================================================================
+
+    private fun indoorPage(): View {
+        val v = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        indoorView = IndoorView(this, indoor).apply {
+            onTap = { x, y -> indoorTap(x, y) }
+            onPose = { x, y, yaw -> indoor.setPose(x, y, yaw); toast("Pose set: the car is there") }
+        }
+        v.addView(indoorView, lp(-1, 0, 1f))
+        indoorStatus = text("", 14f, bold = true).apply { setPadding(dp(12), dp(6), dp(12), 0); maxLines = 2 }
+        v.addView(indoorStatus)
+        indoorInfo = text("", 11f, R.color.muted).apply { setPadding(dp(12), 0, dp(12), dp(2)); maxLines = 2 }
+        v.addView(indoorInfo)
+
+        val stop = button("STOP") { indoor.stop() }.apply {
+            backgroundTintList = android.content.res.ColorStateList.valueOf(col(R.color.bad)); setTextColor(col(R.color.on_accent))
+        }
+        indoorArmBtn = button("Arm") { if (requireLink()) vehicle.arm(!vehicle.armed) }
+        indoorTapBtn = button("Tap: go here") { indoorAddMode = !indoorAddMode; refreshIndoor() }
+        val patrol = button("Patrol", accent = true) { if (requireLink()) indoor.startPatrol() }
+        val points = button("Waypoints…") { waypointsDialog() }
+        val findMe = button("Find me") { indoor.findMe() }
+        val setPose = button("Set pose") { toast("Press and hold where the car is, then drag the way it faces") }
+        val mapNew = button("Map new") {
+            confirm("Map a new room", "Put the car where it will always start, then drive it slowly round the room " +
+                "(Manual, or the stick on the Data tab). Save when the walls are complete.", "Start") { indoor.startMapping(); indoorView.refit() }
+        }
+        val save = button("Save map") { askMapName() }
+        val load = button("Load map") { loadMapDialog() }
+        indoorScanBtn = button("Use 1° scans") {
+            vehicle.setParam("PRX1_SCAN_FULL", 1f); toast("PRX1_SCAN_FULL = 1: finer scans for maps")
+        }
+        val settings = button("Settings…") { indoorSettings() }
+        v.addView(scrollRow(stop, indoorArmBtn, indoorTapBtn, patrol, points))
+        v.addView(scrollRow(mapNew, save, load, findMe, setPose, settings, indoorScanBtn).apply { setPadding(0, 0, 0, dp(6)) })
+        return v
+    }
+
+    private fun indoorTap(x: Double, y: Double) {
+        if (indoor.grid == null) { toast("Load or make a map first"); return }
+        if (indoorAddMode) { indoor.addWaypoint(x, y); return }
+        if (!requireLink()) return
+        if (!vehicle.armed) { toast("Arm the car first"); return }
+        confirm("Go here?", "Drive to %.1f m N, %.1f m E in Guided mode.".format(x, y), "Go") { indoor.goTo(x, y) }
+    }
+
+    private fun refreshIndoor() {
+        indoorView.invalidate()
+        indoorStatus.text = indoor.status
+        val loc = indoor.localizer
+        val nav = indoor.navigator
+        val scanRes = vehicle.scan?.let { if (it.cm.size >= 360) "1°" else "${it.incrementDeg.toInt()}°" } ?: "none"
+        indoorInfo.text = listOfNotNull(
+            indoor.mapName?.let { "Map: $it" } ?: if (indoor.mode == IndoorNav.Mode.MAPPING) "Mapping" else "No map",
+            loc?.let { if (it.initialised) "pose ±%.2f m, match %.0f%%".format(it.spreadXY, it.score * 100) else "pose not set" },
+            nav?.takeIf { it.active }?.lastCmd?.let { "%.2f m/s".format(it.v) },
+            "scan $scanRes",
+            if (vehicle.paramValue("PRX1_SLAM")?.toInt() == 0) "PRX1_SLAM is off: the car has no indoor position" else null,
+        ).joinToString("  ·  ")
+        indoorArmBtn.text = if (vehicle.armed) "Disarm" else "Arm"
+        indoorTapBtn.text = if (indoorAddMode) "Tap: add waypoint" else "Tap: go here"
+        indoorScanBtn.visibility = if (vehicle.paramValue("PRX1_SCAN_FULL")?.toInt() == 0) View.VISIBLE else View.GONE
+    }
+
+    private fun askMapName() {
+        if (indoor.grid == null) { toast("Nothing to save: Map new first"); return }
+        val e = edit("name", indoor.mapName ?: "room")
+        AlertDialog.Builder(this).setTitle("Save map").setView(e.apply { setPadding(dp(20), dp(10), dp(20), dp(10)) })
+            .setPositiveButton("Save") { _, _ ->
+                val n = e.text.toString().trim().replace(Regex("[^A-Za-z0-9_-]"), "_")
+                if (n.isNotEmpty()) indoor.saveMap(n)
+            }.setNegativeButton("Cancel", null).show()
+    }
+
+    private fun loadMapDialog() {
+        val names = indoor.maps()
+        if (names.isEmpty()) { toast("No saved maps yet"); return }
+        AlertDialog.Builder(this).setTitle("Load map")
+            .setItems(names.toTypedArray()) { _, i -> indoor.loadMap(names[i]); indoorView.refit() }
+            .setNeutralButton("Delete…") { _, _ ->
+                AlertDialog.Builder(this).setTitle("Delete which map?").setItems(names.toTypedArray()) { _, i ->
+                    confirm("Delete ${names[i]}?", "The map and its waypoints are removed.", "Delete") { indoor.deleteMap(names[i]) }
+                }.show()
+            }
+            .setNegativeButton("Cancel", null).show()
+    }
+
+    private fun waypointsDialog() {
+        val wps = indoor.waypoints
+        if (wps.isEmpty()) { toast("No waypoints: switch to \"Tap: add waypoint\" and tap the map"); return }
+        val labels = wps.map { "%s   (%.1f N, %.1f E)".format(it.name, it.x, it.y) }.toTypedArray()
+        AlertDialog.Builder(this).setTitle("Waypoints (the patrol goes in this order)")
+            .setItems(labels) { _, i ->
+                val w = wps[i]
+                AlertDialog.Builder(this).setTitle(w.name)
+                    .setPositiveButton("Go there") { _, _ -> if (requireLink()) indoor.goToWaypoint(w.name) }
+                    .setNeutralButton("Delete") { _, _ -> indoor.removeWaypoint(w.name) }
+                    .setNegativeButton("Cancel", null).show()
+            }
+            .setNeutralButton("Delete all") { _, _ -> confirm("Delete all waypoints?", "", "Delete") { indoor.clearWaypoints() } }
+            .setNegativeButton("Close", null).show()
+    }
+
+    private fun indoorSettings() {
+        val s = indoor.settings
+        val speed = edit("m/s", s.speed.toString(), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        val radius = edit("m", s.robotRadius.toString(), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        val inflation = edit("m", s.inflation.toString(), InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(10), dp(20), 0)
+            addView(labeled("Speed (m/s)", speed)); addView(labeled("Car radius (m)", radius)); addView(labeled("Keep away (m)", inflation))
+            addView(text("Car radius: half the car's width plus a little; the path keeps its centre this far from walls. " +
+                "Keep away: how far the path prefers to stay from walls. New values apply when a map is loaded or saved.", 11f, R.color.muted))
+        }
+        AlertDialog.Builder(this).setTitle("Indoor navigation").setView(box)
+            .setPositiveButton("OK") { _, _ ->
+                speed.text.toString().toDoubleOrNull()?.let { s.speed = it.coerceIn(0.1, 1.5) }
+                radius.text.toString().toDoubleOrNull()?.let { s.robotRadius = it.coerceIn(0.05, 1.0) }
+                inflation.text.toString().toDoubleOrNull()?.let { s.inflation = it.coerceIn(0.1, 2.0) }
+                prefs.edit().putFloat("indoor_speed", s.speed.toFloat()).putFloat("indoor_radius", s.robotRadius.toFloat())
+                    .putFloat("indoor_inflation", s.inflation.toFloat()).apply()
+            }.setNegativeButton("Cancel", null).show()
+    }
+
     private fun logPage(): View {
         logText = text("", 12f).apply { typeface = Typeface.MONOSPACE; setPadding(dp(12), dp(8), dp(12), dp(8)); setTextIsSelectable(true) }
         return ScrollView(this).apply { addView(logText) }
@@ -1468,6 +1613,7 @@ class MainActivity : Activity() {
                 ntripStatus.text = "${n.status}\n${n.bytes / 1024} kB, ${n.frames} frames${if (types.isNotEmpty()) "\nRTCM: $types" else ""}"
             }
         }
+        if (page == PAGE_INDOOR) refreshIndoor()
         if (page == PAGE_LOG) refreshLog()
     }
 
@@ -1538,7 +1684,8 @@ class MainActivity : Activity() {
 
     companion object {
         const val PAGE_LIDAR = 4
-        const val PAGE_LOG = 5
+        const val PAGE_INDOOR = 5
+        const val PAGE_LOG = 6
         const val REQ_LOAD_PARAMS = 1
         const val REQ_SAVE_PARAMS = 2
         const val REQ_LOAD_MISSION = 3

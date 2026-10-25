@@ -175,6 +175,15 @@ const AP_Param::GroupInfo AP_Proximity_Params::var_info[] = {
     AP_GROUPINFO("_SLAM_Y", 32, AP_Proximity_Params, slam_pos_y, 0.0f),
 #endif
 
+#if AP_PROXIMITY_LD06_ENABLED
+    // @Param: _SCAN_FULL
+    // @DisplayName: Full-resolution scan to the GCS
+    // @Description: LD06/LD14 only. Each rotation is sent to the ground station as OBSTACLE_DISTANCE: 0 = 72 bins of 5 degrees in one message, 1 = 360 bins of 1 degree in five messages (angle_offset 0, 72, 144, 216, 288), for maps and indoor navigation in the ground station. At most 5 rotations a second either way; 1 uses about 4.5 KB/s of the link.
+    // @Values: 0:72 bins of 5 deg,1:360 bins of 1 deg
+    // @User: Advanced
+    AP_GROUPINFO("_SCAN_FULL", 33, AP_Proximity_Params, scan_full, 0),
+#endif
+
     AP_GROUPEND
 };
 

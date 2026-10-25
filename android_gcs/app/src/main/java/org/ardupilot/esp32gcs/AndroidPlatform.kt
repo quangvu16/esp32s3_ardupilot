@@ -19,6 +19,7 @@ fun installAndroidPlatform(ctx: Context) {
     Platform.post = { main.post(it) }
     Platform.logError = { m, e -> android.util.Log.e("Gcs", m, e) }
     Platform.net = AndroidNetRoutes(ctx.applicationContext)
+    Platform.dataDir = ctx.filesDir
 }
 
 /** The board's WiFi has no internet: MAVLink is bound to WiFi, tiles and NTRIP to the network that has internet. */

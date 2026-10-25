@@ -11,14 +11,15 @@
 <circle cx="60" cy="118" r="6.5" fill="#FF5F57"/>
 <circle cx="80" cy="118" r="6.5" fill="#FEBC2E"/>
 <circle cx="100" cy="118" r="6.5" fill="#28C840"/>
-<rect x="188.0" y="104.0" width="344.0" height="30.0" rx="15" fill="#EBEBEB"/>
-<rect x="194.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
-<text x="220.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">Data</text>
-<text x="276.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Plan</text>
-<text x="332.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<text x="388.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
-<text x="444.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
-<text x="500.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="160.0" y="104.0" width="400.0" height="30.0" rx="15" fill="#EBEBEB"/>
+<rect x="166.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
+<text x="192.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">Data</text>
+<text x="248.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Plan</text>
+<text x="304.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
+<text x="360.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
+<text x="416.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
+<text x="472.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<text x="528.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <line x1="40" y1="142" x2="680" y2="142" stroke="#E0E0E0"/>
 <clipPath id="c2"><rect x="40.0" y="146.0" width="640.0" height="22.0" rx="0"/></clipPath><g clip-path="url(#c2)">
 <rect x="48.0" y="147.0" width="124.9" height="18.0" rx="9" fill="#34C759" opacity="0.18"/>
@@ -291,14 +292,15 @@
 <circle cx="740" cy="118" r="6.5" fill="#FF5F57"/>
 <circle cx="760" cy="118" r="6.5" fill="#FEBC2E"/>
 <circle cx="780" cy="118" r="6.5" fill="#28C840"/>
-<rect x="868.0" y="104.0" width="344.0" height="30.0" rx="15" fill="#EBEBEB"/>
-<text x="900.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Data</text>
-<rect x="930.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
-<text x="956.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">Plan</text>
-<text x="1012.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<text x="1068.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
-<text x="1124.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
-<text x="1180.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="840.0" y="104.0" width="400.0" height="30.0" rx="15" fill="#EBEBEB"/>
+<text x="872.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Data</text>
+<rect x="902.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
+<text x="928.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">Plan</text>
+<text x="984.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
+<text x="1040.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
+<text x="1096.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
+<text x="1152.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<text x="1208.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <line x1="720" y1="142" x2="1360" y2="142" stroke="#E0E0E0"/>
 <clipPath id="c7"><rect x="720.0" y="146.0" width="640.0" height="22.0" rx="0"/></clipPath><g clip-path="url(#c7)">
 <rect x="728.0" y="147.0" width="124.9" height="18.0" rx="9" fill="#34C759" opacity="0.18"/>
@@ -568,14 +570,15 @@
 <circle cx="1420" cy="118" r="6.5" fill="#FF5F57"/>
 <circle cx="1440" cy="118" r="6.5" fill="#FEBC2E"/>
 <circle cx="1460" cy="118" r="6.5" fill="#28C840"/>
-<rect x="1548.0" y="104.0" width="344.0" height="30.0" rx="15" fill="#EBEBEB"/>
-<text x="1580.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Data</text>
-<text x="1636.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Plan</text>
-<text x="1692.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<text x="1748.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
-<rect x="1778.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
-<text x="1804.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">LiDAR</text>
-<text x="1860.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="1520.0" y="104.0" width="400.0" height="30.0" rx="15" fill="#EBEBEB"/>
+<text x="1552.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Data</text>
+<text x="1608.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Plan</text>
+<text x="1664.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
+<text x="1720.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Setup</text>
+<rect x="1750.0" y="107.0" width="52.0" height="24.0" rx="12" fill="#D9D9D9"/>
+<text x="1776.0" y="123.5" font-size="11.5" fill="#000" font-weight="500" text-anchor="middle">LiDAR</text>
+<text x="1832.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<text x="1888.0" y="123.5" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <line x1="1400" y1="142" x2="2040" y2="142" stroke="#E0E0E0"/>
 <clipPath id="c10"><rect x="1400.0" y="146.0" width="640.0" height="22.0" rx="0"/></clipPath><g clip-path="url(#c10)">
 <rect x="1408.0" y="147.0" width="124.9" height="18.0" rx="9" fill="#34C759" opacity="0.18"/>

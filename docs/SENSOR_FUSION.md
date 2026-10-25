@@ -34,8 +34,8 @@ cover for the others.
 measurements (GPS outdoors, LiDAR indoors) stop the IMU from drifting.
 
 *Example:* at 1 m/s, a GPS update every 0.2 s leaves 20 cm gaps. The IMU fills them in
-smoothly, so the steering gets a fresh position on every main-loop cycle (hundreds of times a
-second), not 5 times a second.
+smoothly, so the steering gets a fresh position on every main-loop cycle (50 times a
+second on a Rover), not 5 times a second.
 
 *Source:* ArduPilot, "Extended Kalman Filter (EKF)" [1].
 
@@ -151,6 +151,9 @@ arrives 40–80 ms after its scan, so the EKF would fuse it as if it were newer 
 (unused) optical-flow delay to 100 ms widens the window. *Example:* at 1 m/s, a 40 ms error in
 timing puts the position 4 cm behind.
 
+To drive to places in a saved map from the phone (tap to go, patrols), see
+[Indoor navigation in the apps](INDOOR_NAV.md).
+
 ## 5. How accurate is it?
 
 Tested in ArduPilot's simulator (SITL): the real firmware, a simulated LD06 LiDAR in a 10 m × 8 m
@@ -161,7 +164,7 @@ room with a box, a cupboard, a chair and a short wall, and no GPS and no compass
 
 | Test | Position error, RMS | Max | Heading error | Scans matched |
 | --- | --- | --- | --- | --- |
-| SITL, 3 laps in Auto, EKF output ([`sitl_indoor.py`](../Tools/lidar_slam_test/sitl_indoor.py)) | **10–12 cm** | 20 cm | < 1° | 100 % |
+| SITL, 3 laps in Auto, EKF output ([`sitl_indoor.py`](../Tools/lidar_slam_test/sitl_indoor.py)) | **10–14 cm** | 20–22 cm | < 1° | 100 % |
 | Offline, 3 min of laps, LD14-like noise and dropouts, gyro bias 0.3°/s ([`test_slam.cpp`](../Tools/lidar_slam_test/test_slam.cpp)) | 7.7 cm | 14 cm | 1.8° | 100 % |
 | Same, 10 min (14 laps) | 8.2 cm | 14 cm | 2.3° | 100 % |
 

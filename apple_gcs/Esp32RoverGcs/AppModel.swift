@@ -14,6 +14,8 @@ final class AppModel: ObservableObject {
     let vehicle = Vehicle()
     let behaviours = LidarBehaviours()
     lazy var lidar = LidarDriver(vehicle: vehicle, behaviours: behaviours)
+    /// Indoor navigation (the Indoor tab), Nav2 style.
+    lazy var indoor = IndoorNav(vehicle: vehicle)
 
     @Published var tick = 0
     @Published var banner: String?
@@ -102,6 +104,15 @@ final class AppModel: ObservableObject {
         ntripCellular = defaults.object(forKey: "ntrip_cellular") as? Bool ?? true
         behaviours.mode = LidarBehaviours.Mode(rawValue: defaults.string(forKey: "lidar_mode") ?? "") ?? .off
         behaviours.p.skidSteer = defaults.bool(forKey: "lidar_skid")
+        if let v = defaults.object(forKey: "indoor_speed") as? Double { indoor.settings.speed = v }
+        if let v = defaults.object(forKey: "indoor_radius") as? Double { indoor.settings.robotRadius = v }
+        if let v = defaults.object(forKey: "indoor_inflation") as? Double { indoor.settings.inflation = v }
+    }
+
+    func setIndoorSettings(speed: Double, radius: Double, inflation: Double) {
+        indoor.settings.speed = speed; indoor.settings.robotRadius = radius; indoor.settings.inflation = inflation
+        defaults.set(speed, forKey: "indoor_speed"); defaults.set(radius, forKey: "indoor_radius")
+        defaults.set(inflation, forKey: "indoor_inflation")
     }
 
     func saveSettings() {
@@ -151,6 +162,7 @@ final class AppModel: ObservableObject {
 
     private func fastTick() {
         let now = clockMs()
+        indoor.feed()
         // the on-screen stick / keyboard: 10 Hz while held, then three zeros
         if stickHeld {
             stickZeros = 3
@@ -464,5 +476,6 @@ final class AppModel: ObservableObject {
     func stopDriving() {
         stickHeld = false
         stopLidar()
+        indoor.stop()
     }
 }
