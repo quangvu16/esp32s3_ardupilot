@@ -229,6 +229,9 @@ void AP_Proximity_LD06::parse_response_data()
         const float angle_deg = correct_angle_for_orientation(raw_angle_deg);
         const float distance_m = _dist_filt_mm.apply(distance_mm) * 0.001;
         const float confidence = _response[i + 2];
+#if AP_PROXIMITY_LD06_SEND_SCAN
+        scan_seen(angle_deg);
+#endif
 
         // ignore distance that are out-of-range or have low confidence.
         // The LD14's intensity is not a confidence, so it is not filtered on
@@ -305,22 +308,38 @@ void AP_Proximity_LD06::scan_packet(float raw_start_angle_deg)
     if (raw_start_angle_deg < _scan_last_start_deg) {
         send_scan();
         memset(_scan_cm, 0, sizeof(_scan_cm));
+        memset(_scan_seen, 0, sizeof(_scan_seen));
     }
     _scan_last_start_deg = raw_start_angle_deg;
+}
+
+// a measurement was made at angle_deg, whether or not it found anything: a
+// degree with no measurement at all this rotation (the packet that ends a
+// rotation carries a few degrees into the next) is sent as unknown, not clear
+void AP_Proximity_LD06::scan_seen(float angle_deg)
+{
+    const uint16_t bin = MIN(uint16_t(wrap_360(angle_deg)), uint16_t(LD06_SCAN_FULL_BINS - 1));
+    _scan_seen[bin / 8] |= 1U << (bin % 8);
 }
 
 // angle_deg is in the vehicle frame (after PRX_ORIENT and PRX_YAW_CORR)
 void AP_Proximity_LD06::scan_point(float angle_deg, float distance_m)
 {
-    const uint8_t bin = MIN(uint8_t(wrap_360(angle_deg) / (360.0f / LD06_SCAN_BINS)), LD06_SCAN_BINS - 1);
+    const uint16_t bin = MIN(uint16_t(wrap_360(angle_deg)), uint16_t(LD06_SCAN_FULL_BINS - 1));
     const uint16_t cm = MAX(uint16_t(distance_m * 100.0f), uint16_t(1));
     if (_scan_cm[bin] == 0 || cm < _scan_cm[bin]) {
         _scan_cm[bin] = cm;
     }
 }
 
-// OBSTACLE_DISTANCE in the vehicle frame: bin 0 is straight ahead, 5 degrees
-// per bin clockwise. Bins without a return are sent as max_distance + 1 (clear).
+// OBSTACLE_DISTANCE in the vehicle frame: bin 0 is straight ahead, angles
+// clockwise. Normally 72 bins of 5 degrees in one message. With PRX_SCAN_FULL
+// 1, 360 bins of 1 degree in five messages of 72 (angle_offset 0, 72, 144,
+// 216, 288) with the same time_usec, for maps and localisation in the apps.
+// Bins measured without a return are sent as max_distance + 1 (clear), bins not
+// measured this rotation as UINT16_MAX (unknown). time_usec is the
+// end of the rotation, on the autopilot's clock (as LOCAL_POSITION_NED's
+// time_boot_ms), so a ground station can match the scan to the pose.
 void AP_Proximity_LD06::send_scan()
 {
     const uint32_t now_ms = AP_HAL::millis();
@@ -331,12 +350,38 @@ void AP_Proximity_LD06::send_scan()
     mavlink_obstacle_distance_t pkt {};
     pkt.time_usec = AP_HAL::micros64();
     pkt.sensor_type = MAV_DISTANCE_SENSOR_LASER;
-    pkt.increment = 360 / LD06_SCAN_BINS;
     pkt.min_distance = uint16_t(distance_min() * 100.0f);
     pkt.max_distance = uint16_t(distance_max() * 100.0f);
     pkt.frame = MAV_FRAME_BODY_FRD;
+    const uint16_t clear = pkt.max_distance + 1;
+    auto seen = [this](uint16_t bin) { return (_scan_seen[bin / 8] & (1U << (bin % 8))) != 0; };
+    if (params.scan_full > 0) {
+        pkt.increment = 1;
+        pkt.increment_f = 1.0f;
+        for (uint16_t part = 0; part < LD06_SCAN_FULL_BINS / LD06_SCAN_BINS; part++) {
+            pkt.angle_offset = part * LD06_SCAN_BINS;
+            for (uint8_t i = 0; i < LD06_SCAN_BINS; i++) {
+                const uint16_t bin = part * LD06_SCAN_BINS + i;
+                const uint16_t cm = _scan_cm[bin];
+                pkt.distances[i] = cm != 0 ? cm : seen(bin) ? clear : UINT16_MAX;
+            }
+            gcs().send_to_active_channels(MAVLINK_MSG_ID_OBSTACLE_DISTANCE, (const char *)&pkt);
+        }
+        return;
+    }
+    const uint8_t per_bin = LD06_SCAN_FULL_BINS / LD06_SCAN_BINS;
+    pkt.increment = 360 / LD06_SCAN_BINS;
     for (uint8_t i = 0; i < LD06_SCAN_BINS; i++) {
-        pkt.distances[i] = _scan_cm[i] != 0 ? _scan_cm[i] : pkt.max_distance + 1;
+        uint16_t best = 0;
+        bool any_seen = false;
+        for (uint8_t k = 0; k < per_bin; k++) {
+            const uint16_t cm = _scan_cm[i * per_bin + k];
+            if (cm != 0 && (best == 0 || cm < best)) {
+                best = cm;
+            }
+            any_seen |= seen(i * per_bin + k);
+        }
+        pkt.distances[i] = best != 0 ? best : any_seen ? clear : UINT16_MAX;
     }
     gcs().send_to_active_channels(MAVLINK_MSG_ID_OBSTACLE_DISTANCE, (const char *)&pkt);
 }

@@ -17,6 +17,8 @@ object Platform {
     @Volatile var post: (Runnable) -> Unit = { it.run() }
     @Volatile var logError: (String, Throwable) -> Unit = { m, e -> System.err.println(m); e.printStackTrace() }
     @Volatile var net: NetRoutes = NetRoutes()
+    /** Where the app keeps its files (indoor maps). Android: filesDir; Windows: %APPDATA%\\Esp32RoverGcs. */
+    @Volatile var dataDir: java.io.File = java.io.File(System.getProperty("user.home"), ".esp32rovergcs")
 }
 
 /**

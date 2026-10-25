@@ -18,6 +18,7 @@ object Mav {
     const val PARAM_SET = 23
     const val GPS_RAW_INT = 24
     const val ATTITUDE = 30
+    const val LOCAL_POSITION_NED = 32
     const val GLOBAL_POSITION_INT = 33
     const val MISSION_REQUEST = 40
     const val MISSION_SET_CURRENT = 41
@@ -37,6 +38,7 @@ object Mav {
     const val COMMAND_INT = 75
     const val COMMAND_LONG = 76
     const val COMMAND_ACK = 77
+    const val SET_POSITION_TARGET_LOCAL_NED = 84
     const val SET_POSITION_TARGET_GLOBAL_INT = 86
     const val DISTANCE_SENSOR = 132
     const val BATTERY_STATUS = 147
@@ -58,6 +60,7 @@ object Mav {
         PARAM_SET to intArrayOf(168, 23),
         GPS_RAW_INT to intArrayOf(24, 52),
         ATTITUDE to intArrayOf(39, 28),
+        LOCAL_POSITION_NED to intArrayOf(185, 28),
         GLOBAL_POSITION_INT to intArrayOf(104, 28),
         MISSION_REQUEST to intArrayOf(230, 5),
         MISSION_SET_CURRENT to intArrayOf(28, 4),
@@ -77,6 +80,7 @@ object Mav {
         COMMAND_INT to intArrayOf(158, 35),
         COMMAND_LONG to intArrayOf(152, 33),
         COMMAND_ACK to intArrayOf(143, 10),
+        SET_POSITION_TARGET_LOCAL_NED to intArrayOf(143, 53),
         SET_POSITION_TARGET_GLOBAL_INT to intArrayOf(5, 53),
         DISTANCE_SENSOR to intArrayOf(85, 39),
         BATTERY_STATUS to intArrayOf(154, 54),
@@ -106,6 +110,7 @@ object Mav {
 
     const val FRAME_GLOBAL_RELATIVE_ALT = 3
     const val FRAME_GLOBAL_RELATIVE_ALT_INT = 6
+    const val FRAME_BODY_NED = 8
 
     fun crcAccumulate(b: Int, crc: Int): Int {
         var tmp = (b xor crc) and 0xff

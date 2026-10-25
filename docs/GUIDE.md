@@ -35,6 +35,7 @@ There are four ground station apps with the same core: Android, Windows, iPhone/
 11. [Before every drive](#11-before-every-drive)
 12. [Practise without the car](#12-practise-without-the-car)
 13. [Indoors without GPS (LiDAR SLAM)](#13-indoors-without-gps-lidar-slam)
+14. [Indoor navigation in the app: map, tap to go, patrol](#14-indoor-navigation-in-the-app-map-tap-to-go-patrol)
 
 ## 1. What you have
 
@@ -262,3 +263,14 @@ that map (about ±10 cm in tests), and the EKF fuses this with the IMU.
 
 How it works, the settings, accuracy, outdoor RTK tuning and troubleshooting are in
 [Sensor fusion: IMU + LiDAR + GPS](SENSOR_FUSION.md).
+
+## 14. Indoor navigation in the app: map, tap to go, patrol
+
+The **Indoor** tab works like ROS 2's Nav2, inside the app: **Map new** and drive slowly round the room,
+**Save map**; next time **Load map**, tap where the car should go, or add waypoints and press
+**Patrol**. The app plans round walls and anything the LiDAR sees, and stops if it is unsure where the
+car is. Needs the indoor parameters of section 13 (with `PRX1_SCAN_FULL` 1).
+
+![Indoor tab](indoor_nav_sitl.png)
+
+Step by step, how each part works, safety and tests: [Indoor navigation](INDOOR_NAV.md).

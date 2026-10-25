@@ -42,8 +42,10 @@
 <text x="166.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
 <rect x="194.3" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
 <text x="224.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<rect x="255.9" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
-<text x="276.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="255.9" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="286.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<rect x="317.6" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="338.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <rect x="40.0" y="194.0" width="840.0" height="372.0" rx="0" fill="#FFF"/>
 <rect x="46.0" y="200.0" width="55.0" height="24.0" rx="3" fill="#FDFDFD" stroke="#C5C5C5" stroke-width="1"/>
 <text x="73.5" y="216.0" font-size="11" fill="#000" text-anchor="middle">Disarm</text>
@@ -230,8 +232,10 @@
 <text x="1046.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">LiDAR</text>
 <rect x="1074.3" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
 <text x="1104.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<rect x="1135.9" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
-<text x="1156.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="1135.9" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="1166.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<rect x="1197.6" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="1218.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <rect x="920.0" y="194.0" width="840.0" height="372.0" rx="0" fill="#FFF"/>
 <rect x="926.0" y="200.0" width="48.8" height="24.0" rx="3" fill="#FDFDFD" stroke="#C5C5C5" stroke-width="1"/>
 <text x="950.4" y="216.0" font-size="11" fill="#000" text-anchor="middle">Fence</text>
@@ -340,8 +344,10 @@
 <text x="1926.2" y="184.0" font-size="11.5" fill="#000" font-weight="600" text-anchor="middle">LiDAR</text>
 <rect x="1954.3" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
 <text x="1984.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Params</text>
-<rect x="2015.9" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
-<text x="2036.6" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
+<rect x="2015.9" y="171.0" width="60.6" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="2046.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Indoor</text>
+<rect x="2077.6" y="171.0" width="41.3" height="21.0" rx="2" fill="#EAEAEA" stroke="#D0D0D0" stroke-width="1"/>
+<text x="2098.2" y="184.0" font-size="11.5" fill="#000" text-anchor="middle">Log</text>
 <rect x="1800.0" y="194.0" width="840.0" height="372.0" rx="0" fill="#FFF"/>
 <circle cx="1990.0" cy="380.0" r="168.0" fill="#FFF" stroke="#CFD7D1"/>
 <circle cx="1990.0" cy="380.0" r="42.0" fill="none" stroke="#CFD7D1" stroke-width="0.8" opacity="0.7"/>

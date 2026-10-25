@@ -44,6 +44,7 @@
 #define AP_PROXIMITY_LD06_SEND_SCAN HAL_GCS_ENABLED
 #endif
 #define LD06_SCAN_BINS 72
+#define LD06_SCAN_FULL_BINS 360                // PRX_SCAN_FULL: one bin per degree, sent as 5 x 72
 #define LD06_SCAN_MIN_INTERVAL_MS 200         // at most 5 scans a second
 
 #define MESSAGE_LENGTH_LD06         47
@@ -95,7 +96,9 @@ private:
     // collect a valid reading into the current rotation's scan
     void scan_point(float angle_deg, float distance_m);
     void send_scan();
-    uint16_t _scan_cm[LD06_SCAN_BINS];        ///< closest return per bin this rotation, 0 = none
+    uint16_t _scan_cm[LD06_SCAN_FULL_BINS];   ///< closest return per degree this rotation, 0 = none
+    uint8_t _scan_seen[LD06_SCAN_FULL_BINS / 8]; ///< degrees measured this rotation, with or without a return
+    void scan_seen(float angle_deg);
     float _scan_last_start_deg;               ///< raw start angle of the previous packet
     uint32_t _scan_last_sent_ms;
 #endif

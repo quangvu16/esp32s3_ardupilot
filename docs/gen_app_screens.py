@@ -304,7 +304,7 @@ def win_frame(s, x, y, tab):
     ty = y + 72
     s.e(f'<line x1="{x}" y1="{ty + 24}" x2="{x + WIN_W}" y2="{ty + 24}" stroke="#D0D0D0"/>')
     tx = x + 8
-    for name in ("Fly", "Plan", "LiDAR", "Params", "Log"):
+    for name in ("Fly", "Plan", "LiDAR", "Params", "Indoor", "Log"):
         w = tw(name, 11.5) + 22
         on = name == tab
         s.rect(tx, ty + (0 if on else 3), w, 24 if on else 21, "#FFF" if on else "#EAEAEA", rx=2,
@@ -506,7 +506,7 @@ def phone_chrome(s, tab):
     bot = P_H - 56
     s.rect(0, bot, P_W, 56, "#F9F9F9")
     s.e(f'<line x1="0" y1="{bot}" x2="{P_W}" y2="{bot}" stroke="#D1D1D6"/>')
-    names = ["Data", "Plan", "LiDAR", "Setup", "More"]
+    names = ["Data", "Plan", "LiDAR", "Indoor", "More"]
     tw_ = P_W / len(names)
     for i, n in enumerate(names):
         col = A_BLUE if n == tab else A_GRAY
@@ -519,6 +519,8 @@ def phone_chrome(s, tab):
             s.e(f'<circle cx="{ix}" cy="{iy}" r="2.5" fill="{col}"/><path d="M{ix - 6} {iy - 6} a8.5 8.5 0 0 0 0 12 M{ix + 6} {iy - 6} a8.5 8.5 0 0 1 0 12" fill="none" stroke="{col}" stroke-width="1.7"/>')
         elif n == "Setup":
             s.e(f'<path d="M{ix - 7} {iy + 7} l10 -10 M{ix + 1} {iy - 7} a4 4 0 1 0 6 6" fill="none" stroke="{col}" stroke-width="2"/>')
+        elif n == "Indoor":
+            s.e(f'<path d="M{ix - 8} {iy} l8 -7 l8 7 M{ix - 6} {iy - 1} v8 h12 v-8" fill="none" stroke="{col}" stroke-width="1.8" stroke-linejoin="round"/>')
         else:
             for k in (-7, 0, 7):
                 s.e(f'<circle cx="{ix + k}" cy="{iy}" r="2" fill="{col}"/>')
@@ -725,7 +727,7 @@ def mac_frame(s, x, y, tab):
     s.rect(x, y, MAC_W, 46, "#F6F6F6")
     for i, col in enumerate(("#FF5F57", "#FEBC2E", "#28C840")):
         s.e(f'<circle cx="{x + 20 + i * 20}" cy="{y + 22}" r="6.5" fill="{col}"/>')
-    names = ["Data", "Plan", "Params", "Setup", "LiDAR", "Log"]
+    names = ["Data", "Plan", "Params", "Setup", "LiDAR", "Indoor", "Log"]
     seg_w = 56
     sx = x + MAC_W / 2 - seg_w * len(names) / 2
     s.rect(sx - 4, y + 8, seg_w * len(names) + 8, 30, "#EBEBEB", rx=15)

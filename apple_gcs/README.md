@@ -12,8 +12,8 @@ Android app's shared core (`android_gcs/core`), the map is Apple's MapKit.
 ![Mac app: Data, Plan and LiDAR tabs](docs/screens-mac.svg)
 
 The drawings are made by `python3 docs/gen_app_screens.py` (from the repository root) from the app's
-layout. On an iPhone the tab bar shows Data, Plan, LiDAR, Setup and **More** (Params, Log); iPad and
-Mac show all six.
+layout. On an iPhone the tab bar shows Data, Plan, LiDAR, Indoor and **More** (Setup, Params, Log);
+iPad and Mac show all seven.
 
 | Tab | What it does |
 | --- | --- |
@@ -22,11 +22,12 @@ Mac show all six.
 | **Params** | Full list with search; write now or stage several; load a `.parm` file (stages only what differs), save one, reboot. |
 | **Setup** | TCP / UDP connection, accelerometer (6 positions or level), compass calibration, radio bars and calibration, LiDAR proximity sectors, RTK over NTRIP (over mobile data on an iPhone), set home, reboot, clear mission. |
 | **LiDAR** | The LD14 scan from above (tap to zoom 2 / 4 / 8 m) and hoverboard_laser's **Avoid**, **Follow** and **Warn**, with their settings. |
+| **Indoor** | Indoor navigation, Nav2 style: **Map new** and drive round the room, **Save map** / **Load map**, **Set pose** or **Find me**, tap the map to drive there (Guided, velocity targets), add waypoints and **Patrol**, **STOP**. See [INDOOR_NAV.md](../docs/INDOOR_NAV.md). |
 | **Log** | Every `STATUSTEXT` from the autopilot, newest first. |
 
 Safety, the same as the Android and Windows apps: letting go of the stick sends zero three times;
 a LiDAR behaviour stops the car when the scan is more than 1 s old; leaving the app (or closing the
-Mac window) stops any behaviour and the stick; on the Mac, held keys are forgotten when the window
+Mac window) stops any behaviour, the stick and indoor navigation; on the Mac, held keys are forgotten when the window
 loses the focus. ArduPilot keeps the last override for `RC_OVERRIDE_TIME` (3 s) if the link drops,
 so set `FS_GCS_ENABLE` (README step 3).
 
@@ -84,9 +85,10 @@ Notes:
 | `Core/Vehicle.swift` | Telemetry, commands, parameters, mission and fence transfers |
 | `Core/Lidar.swift` | Scan, hoverboard_laser behaviours, the driver that stops on a stale scan |
 | `Core/Plan.swift` | Fences, zig-zag, patrol, lap counter |
+| `Core/NavMap.swift`, `NavLocalize.swift`, `NavDrive.swift`, `IndoorNav.swift` | Indoor navigation, Nav2 style (a port of `android_gcs/core/.../nav`): map files, mapping, AMCL, costmap, A*, Regulated Pure Pursuit, navigator ([guide](../docs/INDOOR_NAV.md)) |
 | `Core/Ntrip.swift` | NTRIP 1 client and RTCM3 framing |
 | `AppModel.swift` | App state, settings, events, files |
-| `Views/` | The six tabs, the map, HUD and stick |
+| `Views/` | The seven tabs, the map, HUD and stick |
 | `tools/gen_xcodeproj.py` | Writes `Esp32RoverGcs.xcodeproj` |
 | `tools/build.sh` | Builds for the Mac and the iOS Simulator into `build.log`; `--watch` rebuilds on changes |
 | `tools/fake_rover.py` | A pretend ArduRover on TCP `127.0.0.1:5760` for trying the apps without the car ([guide §12](../docs/GUIDE.md#12-practise-without-the-car)) |

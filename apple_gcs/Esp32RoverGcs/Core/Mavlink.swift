@@ -13,6 +13,7 @@ enum Mav {
     static let PARAM_SET = 23
     static let GPS_RAW_INT = 24
     static let ATTITUDE = 30
+    static let LOCAL_POSITION_NED = 32
     static let GLOBAL_POSITION_INT = 33
     static let MISSION_REQUEST = 40
     static let MISSION_SET_CURRENT = 41
@@ -32,6 +33,7 @@ enum Mav {
     static let COMMAND_INT = 75
     static let COMMAND_LONG = 76
     static let COMMAND_ACK = 77
+    static let SET_POSITION_TARGET_LOCAL_NED = 84
     static let SET_POSITION_TARGET_GLOBAL_INT = 86
     static let DISTANCE_SENSOR = 132
     static let BATTERY_STATUS = 147
@@ -53,6 +55,7 @@ enum Mav {
         PARAM_SET: (168, 23),
         GPS_RAW_INT: (24, 52),
         ATTITUDE: (39, 28),
+        LOCAL_POSITION_NED: (185, 28),
         GLOBAL_POSITION_INT: (104, 28),
         MISSION_REQUEST: (230, 5),
         MISSION_SET_CURRENT: (28, 4),
@@ -72,6 +75,7 @@ enum Mav {
         COMMAND_INT: (158, 35),
         COMMAND_LONG: (152, 33),
         COMMAND_ACK: (143, 10),
+        SET_POSITION_TARGET_LOCAL_NED: (143, 53),
         SET_POSITION_TARGET_GLOBAL_INT: (5, 53),
         DISTANCE_SENSOR: (85, 39),
         BATTERY_STATUS: (154, 54),
@@ -104,6 +108,7 @@ enum Mav {
     static let FRAME_GLOBAL = 0
     static let FRAME_GLOBAL_RELATIVE_ALT = 3
     static let FRAME_GLOBAL_RELATIVE_ALT_INT = 6
+    static let FRAME_BODY_NED = 8
 
     static func crcAccumulate(_ b: UInt8, _ crc: UInt16) -> UInt16 {
         var tmp = b ^ UInt8(truncatingIfNeeded: crc)

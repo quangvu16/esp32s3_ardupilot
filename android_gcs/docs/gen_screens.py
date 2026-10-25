@@ -89,7 +89,7 @@ def chrome(tab, mode="Auto · ARMED"):
     top = STATUS + PILLS
     bot = H - TABS
     e(f'<rect y="{bot}" width="{W}" height="{TABS}" fill="{SURFACE}"/>')
-    names = ["Data", "Plan", "Params", "Setup", "LiDAR", "Log"]
+    names = ["Data", "Plan", "Params", "Setup", "LiDAR", "Indoor", "Log"]
     tw_ = (W - 6 - (len(names) - 1) * 2.5) / len(names)
     for i, n in enumerate(names):
         x = 3 + i * (tw_ + 2.5)

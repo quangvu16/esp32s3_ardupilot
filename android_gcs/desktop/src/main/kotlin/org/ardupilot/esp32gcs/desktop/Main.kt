@@ -10,6 +10,8 @@ import javax.swing.UIManager
 fun main() {
     // Vehicle events arrive on the Swing thread, like Android's main thread.
     Platform.post = { SwingUtilities.invokeLater(it) }
+    // Indoor maps: %APPDATA%\Esp32RoverGcs on Windows, ~/.esp32rovergcs elsewhere
+    System.getenv("APPDATA")?.let { Platform.dataDir = java.io.File(it, "Esp32RoverGcs") }
     runCatching { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()) }
     SwingUtilities.invokeLater {
         val prefs = Preferences.userRoot().node("esp32-rover-gcs")

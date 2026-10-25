@@ -25,18 +25,20 @@
 <rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
 <text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
 <rect y="580" width="280" height="40" fill="#FFFFFF"/>
-<rect x="3.0" y="584" width="43.6" height="32" rx="6" fill="#DFE8FA"/>
-<text x="24.8" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Data</text>
-<rect x="49.1" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="70.9" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
-<rect x="95.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="117.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
-<rect x="141.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="163.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
-<rect x="187.3" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="209.1" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
-<rect x="233.4" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="255.2" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="3.0" y="584" width="37.0" height="32" rx="6" fill="#DFE8FA"/>
+<text x="21.5" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Data</text>
+<rect x="42.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="61.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="82.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="100.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="121.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="161.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="179.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
+<rect x="200.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="219.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Indoor</text>
+<rect x="240.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="258.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
 <clipPath id="hud2"><rect y="54" width="280" height="174"/></clipPath><g clip-path="url(#hud2)">
 <g transform="rotate(7 140.0 141.0)">
 <rect x="-300" y="-246" width="880" height="397.44" fill="#2E74C4"/>
@@ -216,18 +218,20 @@
 <rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
 <text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
 <rect y="580" width="280" height="40" fill="#FFFFFF"/>
-<rect x="3.0" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="24.8" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
-<rect x="49.1" y="584" width="43.6" height="32" rx="6" fill="#DFE8FA"/>
-<text x="70.9" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Plan</text>
-<rect x="95.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="117.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
-<rect x="141.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="163.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
-<rect x="187.3" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="209.1" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
-<rect x="233.4" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="255.2" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="3.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="21.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="42.5" y="584" width="37.0" height="32" rx="6" fill="#DFE8FA"/>
+<text x="61.0" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Plan</text>
+<rect x="82.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="100.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="121.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="161.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="179.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
+<rect x="200.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="219.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Indoor</text>
+<rect x="240.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="258.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
 <rect x="6.0" y="61.2" width="49.4" height="28" rx="6" fill="#000" opacity="0.10"/>
 <rect x="6.0" y="60.0" width="49.4" height="28" rx="6" fill="#FFFFFF"/>
 <text x="30.7" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Fence</text>
@@ -315,18 +319,20 @@
 <rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
 <text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
 <rect y="580" width="280" height="40" fill="#FFFFFF"/>
-<rect x="3.0" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="24.8" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
-<rect x="49.1" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="70.9" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
-<rect x="95.2" y="584" width="43.6" height="32" rx="6" fill="#DFE8FA"/>
-<text x="117.0" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Params</text>
-<rect x="141.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="163.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
-<rect x="187.3" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="209.1" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
-<rect x="233.4" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="255.2" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="3.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="21.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="42.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="61.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="82.0" y="584" width="37.0" height="32" rx="6" fill="#DFE8FA"/>
+<text x="100.5" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Params</text>
+<rect x="121.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="161.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="179.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
+<rect x="200.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="219.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Indoor</text>
+<rect x="240.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="258.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
 <rect x="6.0" y="61.2" width="61.2" height="28" rx="6" fill="#000" opacity="0.10"/>
 <rect x="6.0" y="60.0" width="61.2" height="28" rx="6" fill="#FFFFFF"/>
 <text x="36.6" y="77.8" font-size="10.5" fill="#17201C" text-anchor="middle">Refresh</text>
@@ -395,18 +401,20 @@
 <rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
 <text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
 <rect y="580" width="280" height="40" fill="#FFFFFF"/>
-<rect x="3.0" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="24.8" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
-<rect x="49.1" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="70.9" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
-<rect x="95.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="117.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
-<rect x="141.2" y="584" width="43.6" height="32" rx="6" fill="#DFE8FA"/>
-<text x="163.0" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Setup</text>
-<rect x="187.3" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="209.1" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
-<rect x="233.4" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="255.2" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="3.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="21.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="42.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="61.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="82.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="100.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="121.5" y="584" width="37.0" height="32" rx="6" fill="#DFE8FA"/>
+<text x="140.0" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">Setup</text>
+<rect x="161.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="179.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">LiDAR</text>
+<rect x="200.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="219.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Indoor</text>
+<rect x="240.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="258.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
 <clipPath id="setup8"><rect y="54" width="280" height="526"/></clipPath><g clip-path="url(#setup8)">
 <text x="11.0" y="81.0" font-size="9" fill="#5A6861" font-weight="700" letter-spacing="0.7">RADIO</text>
 <text x="11.0" y="96.0" font-size="9" fill="#5A6861">Ch 1 steering, ch 3 throttle, ch 8 mode switch.</text>
@@ -499,18 +507,20 @@
 <rect x="360.2" y="29" width="87.5" height="18" rx="9" fill="#E3E8E4"/>
 <text x="367.7" y="41.6" font-size="9" fill="#5A6861" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">12.42 V · 86%</text>
 <rect y="580" width="280" height="40" fill="#FFFFFF"/>
-<rect x="3.0" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="24.8" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
-<rect x="49.1" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="70.9" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
-<rect x="95.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="117.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
-<rect x="141.2" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="163.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
-<rect x="187.3" y="584" width="43.6" height="32" rx="6" fill="#DFE8FA"/>
-<text x="209.1" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">LiDAR</text>
-<rect x="233.4" y="584" width="43.6" height="32" rx="6" fill="#FFFFFF"/>
-<text x="255.2" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
+<rect x="3.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="21.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Data</text>
+<rect x="42.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="61.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Plan</text>
+<rect x="82.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="100.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Params</text>
+<rect x="121.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="140.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Setup</text>
+<rect x="161.0" y="584" width="37.0" height="32" rx="6" fill="#DFE8FA"/>
+<text x="179.5" y="604.0" font-size="9.5" fill="#1F5FD1" font-weight="600" text-anchor="middle">LiDAR</text>
+<rect x="200.5" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="219.0" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Indoor</text>
+<rect x="240.0" y="584" width="37.0" height="32" rx="6" fill="#FFFFFF"/>
+<text x="258.5" y="604.0" font-size="9.5" fill="#17201C" text-anchor="middle">Log</text>
 <clipPath id="lidar10"><rect y="54" width="280" height="526"/></clipPath><g clip-path="url(#lidar10)">
 <rect x="11" y="60" width="258" height="255" fill="#FFFFFF"/>
 <circle cx="140.0" cy="187.5" r="29.9" fill="none" stroke="#CFD7D1" stroke-width="0.8"/>

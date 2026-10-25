@@ -10,6 +10,8 @@ struct LidarScan {
     let minCm: Int
     let maxCm: Int
     let timeMs: Int64
+    /// The end of the rotation on the autopilot's clock (OBSTACLE_DISTANCE time_usec), 0 = unknown.
+    var vehicleTimeUs: Int64 = 0
 
     /// Valid returns as (angle_deg, range_m), angle in the hoverboard_laser
     /// convention: robot frame, wrapped to (-180, 180], 0 straight ahead,

@@ -36,12 +36,14 @@ struct ContentView: View {
                 #if os(iOS)
                 // An iPhone shows four tabs and "More": keep the ones used while driving in front.
                 LidarView().tabItem { Label("LiDAR", systemImage: "dot.radiowaves.left.and.right") }
+                IndoorView().tabItem { Label("Indoor", systemImage: "house") }
                 SetupView().tabItem { Label("Setup", systemImage: "wrench.and.screwdriver") }
                 ParamsView().tabItem { Label("Params", systemImage: "slider.horizontal.3") }
                 #else
                 ParamsView().tabItem { Label("Params", systemImage: "slider.horizontal.3") }
                 SetupView().tabItem { Label("Setup", systemImage: "wrench.and.screwdriver") }
                 LidarView().tabItem { Label("LiDAR", systemImage: "dot.radiowaves.left.and.right") }
+                IndoorView().tabItem { Label("Indoor", systemImage: "house") }
                 #endif
                 LogView().tabItem { Label("Log", systemImage: "text.alignleft") }
             }

@@ -6,6 +6,7 @@
 SERIAL5_PROTOCOL 11
 PRX1_TYPE 16
 PRX1_SLAM 1
+PRX1_SCAN_FULL 1
 PRX1_SLAM_LAT -35.363261
 PRX1_SLAM_LON 149.165230
 
@@ -29,7 +30,9 @@ EK3_FLOW_DELAY 100
 # slow laps in a small room
 ARMING_CHECK 0
 AVOID_ENABLE 0          # avoidance would back the car away from the walls (2 m margin)
-CRUISE_SPEED 0.6
+# WP_SPEED sets the speed in Auto and Guided. CRUISE_SPEED stays with CRUISE_THROTTLE
+# (rover.parm: 5 m/s at 30 %): lowering it alone would make the throttle feed-forward
+# far too high, and the car would overshoot its speed.
 WP_SPEED 0.6
 WP_RADIUS 0.3
 LOG_DISARMED 1

@@ -117,16 +117,17 @@ proj_common = {
     "MACOSX_DEPLOYMENT_TARGET": "14.0",
     "SWIFT_VERSION": "5.0",
 }
+# Debug is optimised too (-O): the indoor navigation maths is ~20x slower at -Onone
 proj_debug = dict(proj_common, **{"DEBUG_INFORMATION_FORMAT": "dwarf", "ENABLE_TESTABILITY": "YES", "ONLY_ACTIVE_ARCH": "YES",
-    "GCC_OPTIMIZATION_LEVEL": "0", "SWIFT_OPTIMIZATION_LEVEL": '"-Onone"', "SWIFT_ACTIVE_COMPILATION_CONDITIONS": '"DEBUG $(inherited)"',
+    "GCC_OPTIMIZATION_LEVEL": "0", "SWIFT_OPTIMIZATION_LEVEL": '"-O"', "SWIFT_ACTIVE_COMPILATION_CONDITIONS": '"DEBUG $(inherited)"',
     "GCC_PREPROCESSOR_DEFINITIONS": '(\n\t\t\t\t\t"DEBUG=1",\n\t\t\t\t\t"$(inherited)",\n\t\t\t\t)'})
 proj_release = dict(proj_common, **{"DEBUG_INFORMATION_FORMAT": '"dwarf-with-dsym"', "SWIFT_COMPILATION_MODE": "wholemodule",
     "SWIFT_OPTIMIZATION_LEVEL": '"-O"'})
 target = {
     "PRODUCT_NAME": '"$(TARGET_NAME)"',
     "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE,
-    "MARKETING_VERSION": "1.0",
-    "CURRENT_PROJECT_VERSION": "1",
+    "MARKETING_VERSION": "1.1",
+    "CURRENT_PROJECT_VERSION": "2",
     "SDKROOT": "auto",
     "SUPPORTED_PLATFORMS": '"iphoneos iphonesimulator macosx"',
     "SUPPORTS_MACCATALYST": "NO",

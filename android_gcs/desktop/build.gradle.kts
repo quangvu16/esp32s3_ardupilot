@@ -23,7 +23,7 @@ tasks.register<Jar>("fatJar") {
     group = "build"
     description = "One runnable jar with Kotlin and the core included"
     archiveBaseName.set("Esp32RoverGcs")
-    archiveVersion.set("1.3")
+    archiveVersion.set("1.4")
     manifest { attributes["Main-Class"] = mainClassName }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets.main.get().output)

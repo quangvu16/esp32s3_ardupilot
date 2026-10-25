@@ -9,6 +9,7 @@ ArduPilot (ArduRover 4.6.3) for the **ESP32-S3** (`esp32s3devkit` board) driving
 - **u-blox ZED-F9P RTK GPS**, with NTRIP corrections sent from Mission Planner over WiFi
 - **LiDAR SLAM** on the ESP32-S3: the LD14 maps the room and gives the EKF position and heading,
   so the car also navigates **indoors without GPS** ([sensor fusion guide](docs/SENSOR_FUSION.md))
+- **Indoor navigation in the apps**, after ROS 2 Nav2: map a room, tap to go, patrol ([guide](docs/INDOOR_NAV.md))
 
 Based on the upstream [ArduPilot](https://github.com/ArduPilot/ardupilot) `ArduPilot-4.6`
 branch at commit `913e171eca7a37549d9f02e442698edfd4490435`. The upstream README is kept
@@ -27,6 +28,8 @@ as [README_ArduPilot.md](README_ArduPilot.md).
 | `libraries/AP_Proximity/LidarSlam.{h,cpp}`, `AP_Proximity_LD06.{h,cpp}`, `AP_Proximity_Params.{h,cpp}` | **LiDAR SLAM** (`PRX1_SLAM`): each LD06/LD14 rotation is deskewed with the gyro, matched against an occupancy-grid map (Hector-style Gauss-Newton, 3 resolutions) in a worker thread, and the pose goes to EKF3 as external navigation, so the car navigates indoors with no GPS or compass. See [docs/SENSOR_FUSION.md](docs/SENSOR_FUSION.md) |
 | `libraries/SITL/SITL.cpp`, `SIM_PS_LD06.{h,cpp}` | Simulator: an indoor room for the simulated LiDARs (`SIM_ROOM=1`); the simulated LD06 sends packets at its real rate |
 | `Tools/lidar_slam_test/` | Offline SLAM test, SITL indoor test without GPS, plot script |
+| `android_gcs/core/.../nav/`, `apple_gcs/.../Core/Nav*.swift`, `IndoorNav.swift`, the apps' Indoor tab | **Indoor navigation in the apps, Nav2 style**: maps saved as ROS PGM + YAML, AMCL localisation, layered costmap with inflation, A* planner, Regulated Pure Pursuit driving the car with velocity + turn-rate targets in Guided, recoveries, patrols. See [docs/INDOOR_NAV.md](docs/INDOOR_NAV.md) |
+| `libraries/AP_Proximity/AP_Proximity_LD06.cpp`, `AP_Proximity_Params.cpp` | `PRX1_SCAN_FULL` 1: the scan goes to the GCS at 1° (five OBSTACLE_DISTANCE messages); degrees not measured in a rotation are sent as unknown |
 | `esp32s3_rover_ld14_indoor.parm` | Indoors without GPS: SLAM on, GPS and compass off, EKF3 sources ExternalNav (load after the file above) |
 
 ## Wiring
